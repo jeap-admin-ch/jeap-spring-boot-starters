@@ -1,0 +1,6 @@
+# Disable fetching secrets from vault
+spring.cloud.vault.enabled: false
+
+# Define secrets locally instead
+test:
+  testSecret: local-secret-value

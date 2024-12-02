@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: test-app
+
+jeap:
+  monitor:
+    prometheus:
+      user: prometheus
+      password: "{noop}test"

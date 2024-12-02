@@ -1,0 +1,24 @@
+# Created by .ignore support plugin (hsz.mobi)
+target/
+!.mvn/wrapper/maven-wrapper.jar
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+*.iws
+*.iml
+*.ipr
+.idea/*
+.idea
+!.idea/runConfigurations/
+
+*.versionsBackup
+log.log
+.attach_pid*

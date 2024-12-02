@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="false">
+
+    <!--
+      Logback will output it's full initialization status logs if any warnings or errors have occurred. Due to
+      https://github.com/spring-projects/spring-boot/issues/34505, there is always at least one logback configuration
+      warning when using <springProperty>. As our configuration is well-tested, all logback status messages
+      are suppressed until the referenced GitHub issue is fixed.
+      This works because org.springframework.boot.logging.logback.LogbackLoggingSystem will not print logback status
+      messages if a status listener is already defined.
+    -->
+    <statusListener class="ch.qos.logback.core.status.NopStatusListener"/>
+
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    <include resource="jeap/logging/logback-properties.xml"/>
+
+    <turboFilter class="ch.admin.bit.jeap.log.filter.LogMessageFilter">
+        <LogMessage>Found no committed offset for partition</LogMessage>
+    </turboFilter>
+
+    <if condition='property("cloudwatch").equals("true")'>
+        <then>
+            <include resource="jeap/logging/logback-cloudwatch.xml"/>
+        </then>
+    </if>
+    <if condition='property("rhos").equals("true")'>
+        <then>
+            <include resource="jeap/logging/logback-rhos.xml"/>
+        </then>
+    </if>
+    <if condition='property("logrelay").equals("true")'>
+        <then>
+            <include resource="jeap/logging/logback-logrelay.xml"/>
+        </then>
+    </if>
+    <if condition='property("consoletext").equals("true")'>
+        <then>
+            <include resource="jeap/logging/logback-consoletext.xml"/>
+        </then>
+    </if>
+    <if condition='property("consolejson").equals("true")'>
+        <then>
+            <include resource="jeap/logging/logback-consolejson.xml"/>
+        </then>
+    </if>
+    <if condition='property("rollingfile").equals("true")'>
+        <then>
+            <include resource="jeap/logging/logback-rollingfile.xml"/>
+            <root level="INFO">
+                <appender-ref ref="MAIN_APPENDER"/>
+                <appender-ref ref="ROLLING_FILE"/>
+            </root>
+        </then>
+        <else>
+            <root level="INFO">
+                <appender-ref ref="MAIN_APPENDER"/>
+            </root>
+        </else>
+    </if>
+
+
+    <!-- The tracking of unused config properties in the kafka client is flawed. The warnings for unknown config
+         properties that are necessary to configure i.e. custom interceptors are thus suppressed here (see https://issues.apache.org/jira/browse/KAFKA-7509 et al).
+    -->
+    <logger name="org.apache.kafka.clients.producer.ProducerConfig" level="ERROR"/>
+    <logger name="org.apache.kafka.clients.consumer.ConsumerConfig" level="ERROR"/>
+    <logger name="org.apache.kafka.clients.admin.AdminClientConfig" level="ERROR"/>
+</configuration>

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true">
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    <springProperty scope="context" name="app" source="spring.application.name"/>
+    <springProperty scope="context" name="withBootAdmin" source="spring.boot.admin.client.enabled"/>
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <charset>UTF-8</charset>
+            <Pattern>%d %highlight(%-5level) [${app},%X{traceId:-},%X{spanId:-}] %cyan(%logger{35}) - %msg %marker%n</Pattern>
+        </encoder>
+    </appender>
+    <appender name="CLASSIC" class="ch.qos.logback.core.FileAppender">
+        <file>target/testoutput/classic.log</file>
+        <append>false</append>
+        <immediateFlush>true</immediateFlush>
+        <encoder>
+            <charset>UTF-8</charset>
+            <Pattern>%d %level [${app},%X{traceId:-},%X{spanId:-}] %logger{35} - %msg%n</Pattern>
+        </encoder>
+    </appender>
+    <appender name="JSON" class="ch.qos.logback.core.FileAppender">
+        <file>target/testoutput/json.log</file>
+        <append>false</append>
+        <immediateFlush>true</immediateFlush>
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <providers>
+                <timestamp/>
+                <context/>
+                <loggerName>
+                    <fieldName>logger</fieldName>
+                    <shortenedLoggerNameLength>20</shortenedLoggerNameLength>
+                </loggerName>
+                <logLevel/>
+                <tags/>
+                <threadName/>
+                <mdc/>
+                <arguments/>
+                <logstashMarkers/>
+                <stackHash>
+                    <fieldName>exception-hash</fieldName>
+                </stackHash>
+                <stackTrace>
+                    <fieldName>exception</fieldName>
+                    <throwableConverter class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
+                        <maxDepthPerThrowable>40</maxDepthPerThrowable>
+                        <maxLength>4096</maxLength>
+                        <shortenedClassNameLength>20</shortenedClassNameLength>
+                        <rootCauseFirst>true</rootCauseFirst>
+                        <exclude>sun\.reflect\..*\.invoke.*</exclude>
+                    </throwableConverter>
+                </stackTrace>
+                <message/>
+            </providers>
+        </encoder>
+    </appender>
+
+    <root level="TRACE">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="CLASSIC"/>
+        <appender-ref ref="JSON"/>
+    </root>
+</configuration>

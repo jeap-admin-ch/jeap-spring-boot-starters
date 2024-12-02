@@ -1,0 +1,57 @@
+{
+  "properties": [
+    {
+      "name": "jeap.postgresql.aws.enabled",
+      "description": "Flag to enable the jEAP Postgresql AWS Starter.",
+      "defaultValue": false,
+      "type": "java.lang.Boolean"
+    },
+    {
+      "name": "jeap.datasource.replica.enabled",
+      "description": "Flag to enable replica functionality.",
+      "defaultValue": false,
+      "type": "java.lang.Boolean"
+    },
+    {
+      "name": "jeap.datasource.aws.enable-advanced-jdbc-wrapper",
+      "description": "Flag to enable the AWS advanced Jdbc wrapper.",
+      "defaultValue": true,
+      "type": "java.lang.Boolean"
+    }
+  ],
+  "hints": [
+    {
+      "name": "jeap.postgresql.aws.enabled",
+      "values": [
+        {
+          "value": true
+        },
+        {
+          "value": false
+        }
+      ]
+    },
+    {
+      "name": "jeap.datasource.replica.enabled",
+      "values": [
+        {
+          "value": true
+        },
+        {
+          "value": false
+        }
+      ]
+    },
+    {
+      "name": "jeap.datasource.aws.enable-advanced-jdbc-wrapper",
+      "values": [
+        {
+          "value": true
+        },
+        {
+          "value": false
+        }
+      ]
+    }
+  ]
+}

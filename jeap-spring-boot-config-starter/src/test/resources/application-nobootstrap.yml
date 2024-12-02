@@ -1,0 +1,7 @@
+spring:
+  config:
+    import: "configserver:"
+
+jme:
+  test:
+    application: nobootstrap

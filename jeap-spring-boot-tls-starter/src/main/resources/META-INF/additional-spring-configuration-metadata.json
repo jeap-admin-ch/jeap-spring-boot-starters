@@ -1,0 +1,9 @@
+{
+  "properties": [
+    {
+      "name": "jeap.web.tls.enabled",
+      "defaultValue": true,
+      "type": "java.lang.Boolean"
+    }
+  ]
+}

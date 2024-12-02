@@ -1,0 +1,29 @@
+{
+  "name": "test-app",
+  "profiles": [
+    "local"
+  ],
+  "label": null,
+  "version": null,
+  "state": null,
+  "propertySources": [
+    {
+      "name": "test",
+      "source": {
+        "some-other-dynamic-property": "stays-put"
+      }
+    },
+    {
+      "name": "classpath:/configuration/application-local.yml",
+      "source": {
+        "some-property": "static"
+      }
+    },
+    {
+      "name": "classpath:/configuration/application.yml",
+      "source": {
+        "general-config.property": "some property for all services and environments"
+      }
+    }
+  ]
+}

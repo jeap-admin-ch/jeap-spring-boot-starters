@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: "test-app"
+jeap:
+  security:
+    oauth2:
+      resourceserver:
+        resource-id: "test-resource"
+        system-name: "test-system"
+        authorization-server:
+          issuer: "http://keycloak/auth/realm"
+        b2b-gateway:
+          issuer: "http://b2b/auth"
+          jwk-set-uri: "http://b2b/.well-known/jwks.json"
+          claim-set-converter-name: "test-b2b-converter"
+        auth-servers:
+          - issuer: "http://keycloak2/auth/realm"
+            claim-set-converter-name: "test-keycloak2-converter"
+          - issuer: "http://keycloak3/auth/realm"
+            jwk-set-uri: "http://keycloak3/auth/realm/jwks.json"
+            authenticationContexts: [user]
+          - issuer: "http://b2b2/auth"
+            jwk-set-uri: "http://b2b/.well-known/jwks.json"
+            authenticationContexts: [b2b]

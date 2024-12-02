@@ -1,0 +1,2 @@
+server:
+  max-http-request-header-size: 64KB

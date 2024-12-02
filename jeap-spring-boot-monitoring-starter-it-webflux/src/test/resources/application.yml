@@ -1,0 +1,17 @@
+jeap:
+  monitor:
+    prometheus:
+      user: prometheus
+      password: "{noop}test"
+    actuator:
+      user: actuator
+      password: "{noop}test"
+spring:
+  application:
+    name: jme-monitor-test
+  webflux:
+    base-path: "/${spring.application.name}"
+management:
+  server:
+    port: 0
+    base-path: "/jme-management-test"

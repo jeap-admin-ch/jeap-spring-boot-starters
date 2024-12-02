@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <url>https://github.com/jeap-admin-ch/jeap-spring-boot-starters</url>
+    <scm>
+        <url>https://github.com/jeap-admin-ch/jeap-spring-boot-starters</url>
+    </scm>
+    <developers>
+        <developer>
+            <name>BIT</name>
+            <organization>Federal Office of Information Technology, Systems and Telecommunication FOITT</organization>
+            <organizationUrl>https://www.bit.admin.ch/</organizationUrl>
+        </developer>
+    </developers>
+
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+        </license>
+    </licenses>
+
+    <packaging>pom</packaging>
+
+    <artifactId>jeap-spring-boot-starters</artifactId>
+    <version>17.10.1-SNAPSHOT</version>
+
+    <parent>
+        <artifactId>jeap-internal-spring-boot-parent</artifactId>
+        <groupId>ch.admin.bit.jeap</groupId>
+        <version>5.2.5</version>
+    </parent>
+
+    <modules>
+        <module>jeap-spring-boot-application-starter</module>
+        <module>jeap-spring-boot-config-aws-starter</module>
+        <module>jeap-spring-boot-postgresql-aws-starter</module>
+        <module>jeap-spring-boot-rest-request-tracing</module>
+        <module>jeap-spring-boot-logging-starter</module>
+        <module>jeap-spring-boot-logging-starter-it</module>
+        <module>jeap-spring-boot-security-starter</module>
+        <module>jeap-spring-boot-security-starter-test</module>
+        <module>jeap-spring-boot-config-starter</module>
+        <module>jeap-spring-boot-tx</module>
+        <module>jeap-spring-boot-db-migration-starter</module>
+        <module>jeap-spring-boot-db-migration-starter-it</module>
+        <module>jeap-spring-boot-web-config-starter</module>
+        <module>jeap-spring-boot-web-config-starter-it-servlet</module>
+        <module>jeap-spring-boot-web-config-starter-it-webflux</module>
+        <module>jeap-spring-boot-monitoring-starter</module>
+        <module>jeap-spring-boot-monitoring-starter-it-mvc</module>
+        <module>jeap-spring-boot-monitoring-starter-it-webflux</module>
+        <module>jeap-spring-boot-object-storage-starter</module>
+        <module>jeap-spring-boot-swagger</module>
+        <module>jeap-spring-boot-swagger-starter</module>
+        <module>jeap-spring-boot-swagger-webflux-starter</module>
+        <module>jeap-spring-boot-security-starter-it</module>
+        <module>jeap-spring-boot-security-starter-it-webmvc</module>
+        <module>jeap-spring-boot-security-starter-it-webflux</module>
+        <module>jeap-spring-boot-vault-starter</module>
+        <module>jeap-spring-boot-config-starter-it</module>
+        <module>jeap-spring-boot-cloud-autoconfig-starter</module>
+        <module>jeap-spring-boot-featureflag-starter</module>
+        <module>jeap-spring-boot-tls-starter</module>
+        <module>jeap-spring-boot-tls-starter-it-webmvc</module>
+        <module>jeap-spring-boot-tls-starter-it-webflux</module>
+    </modules>
+
+    <properties>
+        <springdoc-openapi.version>2.5.0</springdoc-openapi.version>
+        <logstash.version>7.2</logstash.version>
+        <wiremock.version>2.35.0</wiremock.version>
+        <java-cfenv-boot.version>2.4.2</java-cfenv-boot.version>
+        <maven.javadoc.skip>false</maven.javadoc.skip>
+    </properties>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <configuration>
+                        <archive>
+                            <manifestEntries>
+                                <Bundle-License>https://www.apache.org/licenses/LICENSE-2.0</Bundle-License>
+                            </manifestEntries>
+                        </archive>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+
+        <plugins>
+            <!-- Check third-party license compliance -->
+            <plugin>
+                <groupId>org.honton.chas</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+            </plugin>
+            <!-- Generate third-party license list -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

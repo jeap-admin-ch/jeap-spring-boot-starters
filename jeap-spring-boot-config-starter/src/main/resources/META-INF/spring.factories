@@ -1,0 +1,7 @@
+org.springframework.cloud.bootstrap.BootstrapConfiguration=\
+  ch.admin.bit.jeap.config.client.ConfigServerAuthFromVaultConfig
+org.springframework.context.ApplicationContextInitializer=\
+  ch.admin.bit.jeap.config.client.JeapConfigClientApplicationContextInitializer
+org.springframework.boot.env.EnvironmentPostProcessor=\
+  ch.admin.bit.jeap.config.client.ClientBaseConfigEnvPostProcessor,\
+  ch.admin.bit.jeap.config.client.ClientDefaultConfigEnvPostProcessor

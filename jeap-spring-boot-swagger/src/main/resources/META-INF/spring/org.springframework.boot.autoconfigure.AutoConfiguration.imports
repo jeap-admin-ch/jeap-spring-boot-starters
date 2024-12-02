@@ -1,0 +1,6 @@
+ch.admin.bit.jeap.swagger.ActuatorSwaggerConfig
+ch.admin.bit.jeap.swagger.HttpsServerBaseUrlConfiguration
+ch.admin.bit.jeap.swagger.SwaggerOauthConfiguration
+ch.admin.bit.jeap.swagger.SwaggerProperties
+ch.admin.bit.jeap.swagger.SwaggerWebSecurityConfig
+

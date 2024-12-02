@@ -1,0 +1,5 @@
+org.springframework.boot.context.config.ConfigDataLocationResolver=\
+ch.admin.bit.jeap.config.aws.appconfig.config.AppConfigDataLocationResolver
+
+org.springframework.boot.context.config.ConfigDataLoader=\
+ch.admin.bit.jeap.config.aws.appconfig.config.AppConfigDataLoader

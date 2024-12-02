@@ -1,0 +1,55 @@
+<included>
+
+    <appender name="LOGRELAY" class="ch.admin.bit.jeap.log.syslog.TLSSyslogAppender">
+        <syslogHost>${logrelayHost}</syslogHost>
+        <port>${logrelayPort}</port>
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <prefix class="ch.admin.bit.jeap.log.syslog.encoder.SyslogMessagePrefixEncoder"/>
+            <providers>
+                <provider class="ch.admin.bit.jeap.log.cloudfoundry.CloudFoundryAttributeProvider"/>
+                <provider class="net.logstash.logback.composite.loggingevent.LoggingEventNestedJsonProvider">
+                    <fieldName>msg</fieldName>
+                    <providers>
+                        <timestamp/>
+                        <provider class="ch.admin.bit.jeap.log.json.FieldValueJsonProvider">
+                            <fieldName>app</fieldName>
+                            <value>${app}</value>
+                        </provider>
+                        <loggerName>
+                            <fieldName>logger</fieldName>
+                            <shortenedLoggerNameLength>20</shortenedLoggerNameLength>
+                        </loggerName>
+                        <logLevel/>
+                        <tags/>
+                        <threadName/>
+                        <mdc/>
+                        <arguments/>
+                        <logstashMarkers/>
+                        <stackHash>
+                            <fieldName>exception-hash</fieldName>
+                        </stackHash>
+                        <stackTrace>
+                            <fieldName>exception</fieldName>
+                            <throwableConverter class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
+                                <maxDepthPerThrowable>40</maxDepthPerThrowable>
+                                <maxLength>4096</maxLength>
+                                <shortenedClassNameLength>20</shortenedClassNameLength>
+                                <rootCauseFirst>true</rootCauseFirst>
+                                <exclude>sun\.reflect\..*\.invoke.*</exclude>
+                            </throwableConverter>
+                        </stackTrace>
+                        <message/>
+                    </providers>
+                </provider>
+            </providers>
+        </encoder>
+    </appender>
+
+    <appender name="MAIN_APPENDER" class="ch.qos.logback.classic.AsyncAppender">
+        <queueSize>${asyncAppenderQueueSize}</queueSize>
+        <maxFlushTime>${asyncAppenderMaxFlushTimeMs}</maxFlushTime>
+        <neverBlock>${asyncAppenderNeverBlockFlag}</neverBlock>
+        <appender-ref ref="LOGRELAY"/>
+    </appender>
+
+</included>

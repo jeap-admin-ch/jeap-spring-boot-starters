@@ -1,0 +1,9 @@
+ch.admin.bit.jeap.monitor.MonitoringConfig
+ch.admin.bit.jeap.monitor.ActuatorSecurity
+ch.admin.bit.jeap.monitor.metrics.health.HealthMetricsAutoConfig
+ch.admin.bit.jeap.monitor.metrics.dependency.DependencyMetricsAutoConfig
+ch.admin.bit.jeap.monitor.metrics.truststore.TrustStoreMetricsAutoConfig
+ch.admin.bit.jeap.monitor.metrics.rest.RestTracingMetricsAutoConfig
+ch.admin.bit.jeap.monitor.metrics.log.LoggingMetricsContextRefreshAutoConfig
+ch.admin.bit.jeap.monitor.metrics.app.SpringBootAppNameMetricsAutoConfig
+ch.admin.bit.jeap.monitor.metrics.security.RestSecurityTracingMetricsAutoConfig

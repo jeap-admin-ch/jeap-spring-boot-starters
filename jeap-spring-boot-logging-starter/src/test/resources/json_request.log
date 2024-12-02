@@ -1,0 +1,1 @@
+{"@timestamp":"2020-05-29T12:47:17.653+02:00","logger":"c.a.b.j.l.RestRequestTracer","level":"TRACE","thread_name":"main","method":"POST","uri":"https://example.com/test?a=b","message":"Incoming HTTP/2.0 POST Request to https://example.com/test?a=b"}
