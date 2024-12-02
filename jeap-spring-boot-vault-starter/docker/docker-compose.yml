@@ -1,0 +1,25 @@
+---
+version: '3'
+services:
+  vault-server:
+    image: vault:1.12.0
+    container_name: vault-server
+    ports:
+      - "8200:8200"
+    environment:
+      - VAULT_DEV_ROOT_TOKEN_ID=secret
+      - VAULT_DEV_LISTEN_ADDRESS=0.0.0.0:8200
+      - >
+        VAULT_LOCAL_CONFIG={"disable_mlock": true}
+
+  vault-client:
+    image: vault:1.12.0
+    links:
+      - vault-server
+    container_name: vault-client
+    depends_on:
+      - vault-server
+    volumes:
+      - ./vault-test-config.sh:/vault-test-config.sh
+      - ./jeap-spring-boot-vault-starter-pol.hcl:/jeap-spring-boot-vault-starter-pol.hcl
+    command: '/bin/sh /vault-test-config.sh'

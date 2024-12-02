@@ -1,0 +1,11 @@
+jeap:
+  datasource:
+    aws:
+      enable-advanced-jdbc-wrapper: false
+
+logging:
+   level:
+     org.springframework.orm.jpa: DEBUG
+     org.springframework.transaction: DEBUG
+     ch.admin.bit.jeap.db.tx.ReadOnlyReplicaAwareTransactionManager: DEBUG
+     ch.admin.bit.jeap.db.tx.TransactionRoutingDataSource: DEBUG

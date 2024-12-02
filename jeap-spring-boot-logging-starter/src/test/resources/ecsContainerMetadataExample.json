@@ -1,0 +1,9 @@
+{
+  "Labels": {
+    "com.amazonaws.ecs.cluster": "arn:aws:ecs:eu-central-2:119346410550:cluster/bit-jme",
+    "com.amazonaws.ecs.container-name": "jme-log-service",
+    "com.amazonaws.ecs.task-arn": "arn:aws:ecs:eu-central-2:119346410550:task/bit-jme/115f69c58ca4421992881281da7f4406",
+    "com.amazonaws.ecs.task-definition-family": "jme-log-service",
+    "com.amazonaws.ecs.task-definition-version": "10"
+  }
+}

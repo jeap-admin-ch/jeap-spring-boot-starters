@@ -1,0 +1,36 @@
+<included>
+    <!-- Logging config properties -->
+    <springProperty scope="context" name="app" source="spring.application.name"/>
+    <springProperty scope="context" name="logrelayHost"
+                    source="jeap.logging.logrelay.host"
+                    defaultValue="logrelaycaasp.bit.admin.ch"/>
+    <springProperty scope="context" name="logrelayPort"
+                    source="jeap.logging.logrelay.port"
+                    defaultValue="6514"/>
+    <springProperty scope="context" name="asyncAppenderQueueSize"
+                    source="jeap.logging.logrelay.async-queue-size"
+                    defaultValue="2048"/>
+    <springProperty scope="context" name="asyncAppenderMaxFlushTimeMs"
+                    source="jeap.logging.logrelay.max-flush-time-ms"
+                    defaultValue="5000"/>
+    <springProperty scope="context" name="asyncAppenderNeverBlockFlag"
+                    source="jeap.logging.logrelay.never-block"
+                    defaultValue="true"/>
+    <springProperty scope="context" name="jeapLoggingPlatform"
+                    source="jeap.logging.platform"/>
+
+    <!-- Properties used by JeapLogFormatContextListener to decide which log format/appender to use -->
+    <springProperty scope="context" name="adminEnabled" source="spring.boot.admin.client.enabled"/>
+    <springProperty scope="context" name="adminUrl" source="spring.boot.admin.client.url"/>
+    <springProfile name="rollingLogFile">
+        <property scope="context" name="rollingLogFileProfile" value="true"/>
+    </springProfile>
+    <springProfile name="cloud">
+        <property scope="context" name="cloudProfile" value="true"/>
+    </springProfile>
+    <springProfile name="logrelay">
+        <property scope="context" name="logrelayProfile" value="true"/>
+    </springProfile>
+    <contextListener class="ch.admin.bit.jeap.log.logback.JeapLogConfigurationContextListener"/>
+
+</included>

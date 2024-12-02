@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: jeap-security-auth-service
+  webflux:
+    base-path: /${spring.application.name}
+
+jeap:
+  security:
+    oauth2:
+      resourceserver:
+        system-name: "jme"
+        log:
+          authentication-failure:
+            enabled: true
+          access-denied:
+            enabled: true
+            debug: true
+        # authorization-server set by tests
+        # b2b-gateway set by tests
+
+logging:
+  level:
+    ch.admin.bit.jeap.security.resource: DEBUG

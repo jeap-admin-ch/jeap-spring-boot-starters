@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: app
+  config:
+    import: "jeap-app-config-aws:"

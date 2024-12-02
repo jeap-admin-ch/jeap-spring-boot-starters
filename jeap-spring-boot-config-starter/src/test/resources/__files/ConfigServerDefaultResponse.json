@@ -1,0 +1,11 @@
+{
+  "name": "test-app",
+  "profiles": [
+    "default"
+  ],
+  "label": null,
+  "version": null,
+  "state": null,
+  "propertySources": [
+  ]
+}

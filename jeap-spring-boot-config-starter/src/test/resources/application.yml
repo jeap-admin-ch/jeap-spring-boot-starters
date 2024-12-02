@@ -1,0 +1,10 @@
+spring:
+  cloud:
+    bus:
+      enabled: false
+      destination: bus
+    vault:
+      enabled: false
+  application:
+    name: test-app
+

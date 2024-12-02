@@ -1,0 +1,9 @@
+{
+  "properties": [
+    {
+      "name": "jeap.datasource.replica.enabled",
+      "defaultValue": false,
+      "type": "java.lang.Boolean"
+    }
+  ]
+}

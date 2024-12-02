@@ -1,0 +1,9 @@
+togglz:
+  features:
+    MY_FIRST_FEATURE_FLAG:
+      enabled: true
+    MY_SECOND_FEATURE_FLAG:
+      enabled: false
+spring:
+  application:
+    name: feature-flags-test

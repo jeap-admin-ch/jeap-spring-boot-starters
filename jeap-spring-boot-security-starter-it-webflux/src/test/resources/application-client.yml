@@ -1,0 +1,15 @@
+server:
+  port: 8280
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          test-client:
+            client-id: "client-id"
+            client-secret: "client-secret"
+            authorization-grant-type: "client_credentials"
+            provider: "mock-provider"
+        provider:
+          mock-provider:
+            issuer-uri: "http://localhost:9090/oauth"

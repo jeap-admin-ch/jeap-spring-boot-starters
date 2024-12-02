@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: jeap-spring-boot-vault-starter
+  cloud:
+    vault:
+      enabled: true
+  config:
+    import: "vault://"
+
+jeap:
+  vault:
+    url: http://localhost:28282
+    system-name: jeap
+    app-role:
+      role-id: "9999-8888-7777"
+      secret-id: "1234-5678-9012-3456"
