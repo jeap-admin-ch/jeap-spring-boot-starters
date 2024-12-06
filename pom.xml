@@ -3,9 +3,9 @@
          xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <url>https://github.com/jeap-admin-ch/jeap-spring-boot-starters</url>
+    <url>https://github.com/jeap-admin-ch/jeap-spring-boot-starters/tree/main</url>
     <scm>
-        <url>https://github.com/jeap-admin-ch/jeap-spring-boot-starters</url>
+        <url>https://github.com/jeap-admin-ch/jeap-spring-boot-starters.git</url>
     </scm>
     <developers>
         <developer>
@@ -30,7 +30,7 @@
     <parent>
         <artifactId>jeap-internal-spring-boot-parent</artifactId>
         <groupId>ch.admin.bit.jeap</groupId>
-        <version>5.2.5</version>
+        <version>5.3.0</version>
     </parent>
 
     <modules>
