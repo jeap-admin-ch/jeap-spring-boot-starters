@@ -8,9 +8,9 @@ import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.autoconfigure.actuate.observability.AutoConfigureObservability;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.server.LocalManagementPort;
 import org.springframework.context.annotation.Bean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -22,7 +22,7 @@ class HealthMetricsAutoConfigExcludedIT {
     @LocalManagementPort
     int localManagementPort;
 
-    @MockBean(name = "exampleHealthIndicator")
+    @MockitoBean(name = "exampleHealthIndicator")
     HealthIndicator exampleHealthIndicator;
 
     @Test

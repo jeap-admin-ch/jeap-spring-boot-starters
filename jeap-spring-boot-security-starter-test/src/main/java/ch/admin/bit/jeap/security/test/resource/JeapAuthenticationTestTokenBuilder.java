@@ -152,6 +152,7 @@ public class JeapAuthenticationTestTokenBuilder {
         }
     }
 
+    @SafeVarargs
     private <E> Set<E> setOf(E... elements) {
         Set<E> set = new HashSet<>();
         if (elements != null) {

@@ -1,4 +1,4 @@
-package ch.admin.bit.jeap.config.aws.appconfig.config;
+package ch.admin.bit.jeap.config.aws.context;
 
 import lombok.experimental.UtilityClass;
 import org.apache.commons.logging.Log;
@@ -13,6 +13,8 @@ import java.util.List;
 
 /**
  * This class configures the deferred log factory for the configured loggers
+ * Note: This class is based on <a href="https://github.com/awspring/spring-cloud-aws">Spring Cloud AWS</a>,
+ * which is licensed under the Apache License 2.0.
  */
 @UtilityClass
 public final class BootstrapLoggingHelper {
