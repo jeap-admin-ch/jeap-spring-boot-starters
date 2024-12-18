@@ -22,8 +22,8 @@ public class AwsSecretsManagerConfigDataLoader implements ConfigDataLoader<AwsSe
 
     public AwsSecretsManagerConfigDataLoader(DeferredLogFactory logFactory) {
         BootstrapLoggingHelper.reconfigureLoggers(logFactory,
-                "ch.admin.bit.jeap.config.aws.appconfig.config.AppConfigPropertySources",
-                "ch.admin.bit.jeap.config.aws.appconfig.client.JeapAppConfigDataClient");
+                AwsSecretsManagerPropertySources.class.getName(),
+                AwsSecretsManagerPropertySource.class.getName());
     }
 
     @Override

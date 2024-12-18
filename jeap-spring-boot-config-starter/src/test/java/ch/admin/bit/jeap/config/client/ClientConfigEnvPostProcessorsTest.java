@@ -2,7 +2,6 @@ package ch.admin.bit.jeap.config.client;
 
 import org.apache.commons.logging.LogFactory;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.logging.DeferredLogFactory;
 import org.springframework.core.env.Environment;
@@ -19,7 +18,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@Disabled // Fixme
 class ClientConfigEnvPostProcessorsTest {
 
     private MockEnvironment mockEnvironment;
@@ -31,7 +29,7 @@ class ClientConfigEnvPostProcessorsTest {
     @BeforeEach
     void initialize() {
         when(deferredLogFactory.getLog((Class<?>) any())).thenAnswer(invocation ->
-            LogFactory.getLog(invocation.getArgument(0).getClass()));
+                LogFactory.getLog(invocation.getArgument(0).getClass()));
         mockEnvironment = new MockEnvironment();
         baseEnvPostProcessor = new ClientBaseConfigEnvPostProcessor(deferredLogFactory);
         defaultEnvPostProcessor = new ClientDefaultConfigEnvPostProcessor(deferredLogFactory);
@@ -115,7 +113,7 @@ class ClientConfigEnvPostProcessorsTest {
     }
 
     private static void assertProperties(Environment environment, Map<String, Object> properties) {
-        properties.forEach( (key, o) -> {
+        properties.forEach((key, o) -> {
             assertThat(environment.containsProperty(key)).isTrue();
             if (o instanceof String value) {
                 assertThat(environment.getProperty(key)).isEqualTo(getInterpolatedValue(value));
@@ -124,7 +122,7 @@ class ClientConfigEnvPostProcessorsTest {
     }
 
     private static void addInterpolatedPropertyValues(MockEnvironment mockEnvironment, Map<String, Object> properties) {
-        properties.forEach( (key, o) -> {
+        properties.forEach((key, o) -> {
             if (o instanceof String value) {
                 String interpolatedPropertyName = getInterpolatedPropertyName(value);
                 if (interpolatedPropertyName != null) {
@@ -142,7 +140,7 @@ class ClientConfigEnvPostProcessorsTest {
     private static String getInterpolatedValue(String value) {
         String interpolatedPropertyName = getInterpolatedPropertyName(value);
         if (interpolatedPropertyName != null) {
-            String[] nameParts = interpolatedPropertyName.split("\\.");
+            String[] nameParts = interpolatedPropertyName.split("[.:]");
             return nameParts[nameParts.length - 1]; // last name part
         } else {
             return value;

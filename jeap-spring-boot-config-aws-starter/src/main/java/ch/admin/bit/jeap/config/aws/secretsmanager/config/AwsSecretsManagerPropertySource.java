@@ -21,6 +21,7 @@ import java.util.Set;
  */
 public class AwsSecretsManagerPropertySource extends EnumerablePropertySource<SecretsManagerClient> {
 
+    // Must not be final, see BootstrapLoggingHelper.reconfigureLoggers
     @SuppressWarnings("FieldMayBeFinal")
     private static Log LOG = LogFactory.getLog(AwsSecretsManagerPropertySource.class);
     private static final String PREFIX_PART = "?prefix=";

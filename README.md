@@ -40,12 +40,12 @@ This project includes code from the following open-source projects:
    Link: [https://https://github.com/spring-projects](https://github.com/spring-projects)  
    License: Apache 2.0
    Included Code: jEAP is based on the Spring Framework and Spring Boot. Small code snippets from the Spring Framework
-   are included in this project, i.e. int the Spring Config server integration starter.            
+   are included in this project, namely in the jeap-spring-boot-config-starter.            
    Changes: Minor modifications to fit project requirements.
 2. **[Spring Cloud AWS]**  
    Repository: [https://github.com/awspring/spring-cloud-aws](https://github.com/awspring/spring-cloud-aws)  
    License: Apache 2.0
-   Included Code: The AppConfig and Secrets Manager integration is loosely based on Spring Cloud AWS code.
+   Included Code: The AppConfig and Secrets Manager integrations are partially based on Spring Cloud AWS code.
 
 ## License
 
