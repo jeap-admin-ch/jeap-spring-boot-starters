@@ -3,6 +3,7 @@ package ch.admin.bit.jeap.config.aws.appconfig.config;
 import ch.admin.bit.jeap.config.aws.appconfig.JeapAWSAppConfigProperties;
 import ch.admin.bit.jeap.config.aws.appconfig.client.JeapAppConfigDataClient;
 import ch.admin.bit.jeap.config.aws.appconfig.client.JeapAppConfigDataClientFactory;
+import ch.admin.bit.jeap.config.aws.context.BootstrapLoggingHelper;
 import org.springframework.boot.context.config.ConfigData;
 import org.springframework.boot.context.config.ConfigDataLoader;
 import org.springframework.boot.context.config.ConfigDataLoaderContext;

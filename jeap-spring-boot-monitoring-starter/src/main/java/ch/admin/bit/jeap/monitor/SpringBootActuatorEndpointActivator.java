@@ -1,6 +1,5 @@
 package ch.admin.bit.jeap.monitor;
 
-import io.micrometer.core.instrument.util.StringUtils;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
@@ -10,6 +9,7 @@ import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
+import org.springframework.util.StringUtils;
 
 import java.util.*;
 import java.util.function.Function;
@@ -44,7 +44,7 @@ class SpringBootActuatorEndpointActivator implements EnvironmentPostProcessor {
 
     private void enableAdditionalPermittedEndpoints(ConfigurableEnvironment environment) {
         String additionalPermittedEndpoints = environment.getProperty(MonitoringConfig.ADDITIONAL_PERMITTED_ENDPOINTS_PROPERTY);
-        if (StringUtils.isNotBlank(additionalPermittedEndpoints)) {
+        if (StringUtils.hasText(additionalPermittedEndpoints)) {
             Map<String, Object> endpointEnablingProperties = getEndpointEnablingProperties(additionalPermittedEndpoints);
             if (!endpointEnablingProperties.isEmpty()) {
                 addPropertiesToEnvironment(endpointEnablingProperties, environment);

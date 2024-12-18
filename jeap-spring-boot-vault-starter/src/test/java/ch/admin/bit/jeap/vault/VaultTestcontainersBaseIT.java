@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @SuppressWarnings("SpringBootApplicationProperties")
 @Slf4j
 @Testcontainers(disabledWithoutDocker = true)
-@SpringBootTest(properties = "jeap.vault.url=http://localhost:28282")
+@SpringBootTest
 class VaultTestcontainersBaseIT {
 
     @Autowired
@@ -37,6 +37,9 @@ class VaultTestcontainersBaseIT {
     static void init(boolean bootstrapEnabled)  {
         log.info("Enabling bootstrap context: {}", bootstrapEnabled);
         System.setProperty("spring.cloud.bootstrap.enabled", Boolean.toString(bootstrapEnabled));
+        String vaultUrl = "http://" + vaultContainer.getHost() + ":" + vaultContainer.getFirstMappedPort();
+        log.info("Vault address: {}", vaultUrl);
+        System.setProperty("jeap.vault.url", vaultUrl);
         ExecResult execResult = vaultContainer.execInContainer("/vault-test-config.sh");
         log.info("Test config stdout: {}", execResult.getStdout());
         log.info("Test config stderr: {}", execResult.getStderr());
@@ -46,5 +49,6 @@ class VaultTestcontainersBaseIT {
     @AfterAll
     static void reset() {
         System.clearProperty("spring.cloud.bootstrap.enabled");
+        System.clearProperty("jeap.vault.url");
     }
 }

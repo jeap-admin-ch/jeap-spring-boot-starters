@@ -5,6 +5,11 @@ Third-Party Dependency Licenses
 Third-party dependencies grouped by their license type (see [pom.xml](/pom.xml) for version information):
 
 
+Apache License Version 2.0
+-------------------------------
+
+* Hibernate Commons Annotations - [org.hibernate.common:hibernate-commons-annotations](http://hibernate.org)
+
 Apache License, Version 2.0
 -------------------------------
 
@@ -37,7 +42,9 @@ Apache License, Version 2.0
  * JCIP Annotations under Apache License - [com.github.stephenc.jcip:jcip-annotations](http://stephenc.github.com/jcip-annotations)
  * WireMock - [com.github.tomakehurst:wiremock-jre8-standalone](http://wiremock.org)
  * WireMock - [com.github.tomakehurst:wiremock-jre8-standalone](http://wiremock.org)
- * Gson - [com.google.code.gson:gson](https://github.com/google/gson/gson)
+* Gson - [com.google.code.gson:gson](https://github.com/google/gson)
+* error-prone
+  annotations - [com.google.errorprone:error_prone_annotations](https://errorprone.info/error_prone_annotations)
  * json-path - [com.jayway.jsonpath:json-path](https://github.com/jayway/JsonPath)
  * Nimbus Content Type - [com.nimbusds:content-type](https://bitbucket.org/connect2id/nimbus-content-type)
  * Nimbus LangTag - [com.nimbusds:lang-tag](https://bitbucket.org/connect2id/nimbus-language-tags)
@@ -47,11 +54,6 @@ Apache License, Version 2.0
  * HikariCP - [com.zaxxer:HikariCP](https://github.com/brettwooldridge/HikariCP)
  * Apache Commons Codec - [commons-codec:commons-codec](https://commons.apache.org/proper/commons-codec/)
  * Apache Commons Logging - [commons-logging:commons-logging](http://commons.apache.org/proper/commons-logging/)
- * Spring Cloud AWS Autoconfigure - [io.awspring.cloud:spring-cloud-aws-autoconfigure](https://spring.io/spring-cloud/spring-cloud-aws/spring-cloud-aws-autoconfigure)
- * Spring Cloud AWS Core - [io.awspring.cloud:spring-cloud-aws-core](https://spring.io/spring-cloud/spring-cloud-aws/spring-cloud-aws-core)
- * Spring Cloud AWS Secrets Manager Integration - [io.awspring.cloud:spring-cloud-aws-secrets-manager](https://spring.io/spring-cloud/spring-cloud-aws/spring-cloud-aws-secrets-manager)
- * Spring Cloud AWS Starter - [io.awspring.cloud:spring-cloud-aws-starter](https://spring.io/spring-cloud/spring-cloud-aws/spring-cloud-aws-starters/spring-cloud-aws-starter)
- * Spring Cloud AWS Secrets Manager Starter - [io.awspring.cloud:spring-cloud-aws-starter-secrets-manager](https://spring.io/spring-cloud/spring-cloud-aws/spring-cloud-aws-starters/spring-cloud-aws-starter-secrets-manager)
  * context-propagation - [io.micrometer:context-propagation](https://github.com/micrometer-metrics/context-propagation)
  * micrometer-commons - [io.micrometer:micrometer-commons](https://github.com/micrometer-metrics/micrometer)
  * micrometer-core - [io.micrometer:micrometer-core](https://github.com/micrometer-metrics/micrometer)
@@ -105,11 +107,10 @@ Apache License, Version 2.0
  * Prometheus Metrics Core - [io.prometheus:prometheus-metrics-core](http://github.com/prometheus/client_java/prometheus-metrics-core)
  * Prometheus Metrics Exposition Formats - [io.prometheus:prometheus-metrics-exposition-formats](http://github.com/prometheus/client_java/prometheus-metrics-exposition-formats)
  * Prometheus Metrics Model - [io.prometheus:prometheus-metrics-model](http://github.com/prometheus/client_java/prometheus-metrics-model)
- * Shaded Protobuf - [io.prometheus:prometheus-metrics-shaded-protobuf](http://github.com/prometheus/client_java/prometheus-metrics-shaded-dependencies/prometheus-metrics-shaded-protobuf)
  * Prometheus Metrics Tracer Common - [io.prometheus:prometheus-metrics-tracer-common](http://github.com/prometheus/client_java/prometheus-metrics-tracer/prometheus-metrics-tracer-common)
- * json-path - [io.rest-assured:json-path](http://maven.apache.org)
- * REST Assured - [io.rest-assured:rest-assured](http://code.google.com/p/rest-assured)
- * rest-assured-common - [io.rest-assured:rest-assured-common](http://maven.apache.org)
+* json-path - [io.rest-assured:json-path](https://rest-assured.io/)
+* REST Assured - [io.rest-assured:rest-assured](https://rest-assured.io/)
+* rest-assured-common - [io.rest-assured:rest-assured-common](https://rest-assured.io/)
  * xml-path - [io.rest-assured:xml-path](https://rest-assured.io/xml-path/)
  * Jandex: Core - [io.smallrye:jandex](https://smallrye.io)
  * swagger-annotations-jakarta - [io.swagger.core.v3:swagger-annotations-jakarta](https://github.com/swagger-api/swagger-core/modules/swagger-annotations-jakarta)
@@ -127,7 +128,6 @@ Apache License, Version 2.0
  * Byte Buddy (without dependencies) - [net.bytebuddy:byte-buddy](https://bytebuddy.net/byte-buddy)
  * Byte Buddy agent - [net.bytebuddy:byte-buddy-agent](https://bytebuddy.net/byte-buddy-agent)
  * Java Native Access - [net.java.dev.jna:jna](https://github.com/java-native-access/jna)
- * TypeTools - [net.jodah:typetools](http://github.com/jhalterman/typetools/)
  * Logstash Logback Encoder - [net.logstash.logback:logstash-logback-encoder](https://github.com/logfellow/logstash-logback-encoder)
  * ASM based accessors helper used by json-smart - [net.minidev:accessors-smart](https://urielch.github.io/)
  * JSON Small and Fast Parser - [net.minidev:json-smart](https://urielch.github.io/)
@@ -141,12 +141,16 @@ Apache License, Version 2.0
  * Apache HttpClient - [org.apache.httpcomponents:httpclient](http://hc.apache.org/httpcomponents-client-ga)
  * Apache HttpCore - [org.apache.httpcomponents:httpcore](http://hc.apache.org/httpcomponents-core-ga)
  * Apache HttpClient Mime - [org.apache.httpcomponents:httpmime](http://hc.apache.org/httpcomponents-client)
- * Apache HttpClient - [org.apache.httpcomponents.client5:httpclient5](https://hc.apache.org/httpcomponents-client-5.0.x/5.3.1/httpclient5/)
- * Apache HttpComponents Core HTTP/1.1 - [org.apache.httpcomponents.core5:httpcore5](https://hc.apache.org/httpcomponents-core-5.2.x/5.2.5/httpcore5/)
- * Apache HttpComponents Core HTTP/2 - [org.apache.httpcomponents.core5:httpcore5-h2](https://hc.apache.org/httpcomponents-core-5.2.x/5.2.5/httpcore5-h2/)
+* Apache
+  HttpClient - [org.apache.httpcomponents.client5:httpclient5](https://hc.apache.org/httpcomponents-client-5.4.x/5.4.1/httpclient5/)
+* Apache HttpComponents Core
+  HTTP/1.1 - [org.apache.httpcomponents.core5:httpcore5](https://hc.apache.org/httpcomponents-core-5.3.x/5.3.1/httpcore5/)
+* Apache HttpComponents Core
+  HTTP/2 - [org.apache.httpcomponents.core5:httpcore5-h2](https://hc.apache.org/httpcomponents-core-5.3.x/5.3.1/httpcore5-h2/)
  * Apache Kafka - [org.apache.kafka:kafka-clients](https://kafka.apache.org)
  * Apache Log4j API - [org.apache.logging.log4j:log4j-api](https://logging.apache.org/log4j/2.x/log4j/log4j-api/)
- * Apache Log4j to SLF4J Adapter - [org.apache.logging.log4j:log4j-to-slf4j](https://logging.apache.org/log4j/2.x/log4j/log4j-to-slf4j/)
+* Log4j API to SLF4J
+  Adapter - [org.apache.logging.log4j:log4j-to-slf4j](https://logging.apache.org/log4j/2.x/log4j/log4j-to-slf4j/)
  * tomcat-embed-core - [org.apache.tomcat.embed:tomcat-embed-core](https://tomcat.apache.org/)
  * tomcat-embed-el - [org.apache.tomcat.embed:tomcat-embed-el](https://tomcat.apache.org/)
  * tomcat-embed-websocket - [org.apache.tomcat.embed:tomcat-embed-websocket](https://tomcat.apache.org/)
@@ -158,11 +162,7 @@ Apache License, Version 2.0
  * flyway-database-postgresql - [org.flywaydb:flyway-database-postgresql](https://flywaydb.org/flyway-database-postgresql)
  * Hibernate Validator Engine - [org.hibernate.validator:hibernate-validator](http://hibernate.org/validator/hibernate-validator)
  * JBoss Logging 3 - [org.jboss.logging:jboss-logging](http://www.jboss.org)
- * IntelliJ IDEA Annotations - [org.jetbrains:annotations](http://www.jetbrains.org)
  * JetBrains Java Annotations - [org.jetbrains:annotations](https://github.com/JetBrains/java-annotations)
- * Kotlin Stdlib - [org.jetbrains.kotlin:kotlin-stdlib](https://kotlinlang.org/)
- * Kotlin Stdlib Jdk7 - [org.jetbrains.kotlin:kotlin-stdlib-jdk7](https://kotlinlang.org/)
- * Kotlin Stdlib Jdk8 - [org.jetbrains.kotlin:kotlin-stdlib-jdk8](https://kotlinlang.org/)
  * LZ4 and xxHash - [org.lz4:lz4-java](https://github.com/lz4/lz4-java)
  * Objenesis - [org.objenesis:objenesis](http://objenesis.org/objenesis)
  * org.opentest4j:opentest4j - [org.opentest4j:opentest4j](https://github.com/ota4j-team/opentest4j)
@@ -195,7 +195,6 @@ Apache License, Version 2.0
  * spring-boot-loader - [org.springframework.boot:spring-boot-loader](https://spring.io/projects/spring-boot)
  * spring-boot-starter - [org.springframework.boot:spring-boot-starter](https://spring.io/projects/spring-boot)
  * spring-boot-starter-actuator - [org.springframework.boot:spring-boot-starter-actuator](https://spring.io/projects/spring-boot)
- * spring-boot-starter-aop - [org.springframework.boot:spring-boot-starter-aop](https://spring.io/projects/spring-boot)
  * spring-boot-starter-data-jpa - [org.springframework.boot:spring-boot-starter-data-jpa](https://spring.io/projects/spring-boot)
  * spring-boot-starter-jdbc - [org.springframework.boot:spring-boot-starter-jdbc](https://spring.io/projects/spring-boot)
  * spring-boot-starter-json - [org.springframework.boot:spring-boot-starter-json](https://spring.io/projects/spring-boot)
@@ -240,7 +239,6 @@ Apache License, Version 2.0
  * spring-security-oauth2-core - [org.springframework.security:spring-security-oauth2-core](https://spring.io/projects/spring-security)
  * spring-security-oauth2-jose - [org.springframework.security:spring-security-oauth2-jose](https://spring.io/projects/spring-security)
  * spring-security-oauth2-resource-server - [org.springframework.security:spring-security-oauth2-resource-server](https://spring.io/projects/spring-security)
- * spring-security-rsa - [org.springframework.security:spring-security-rsa](http://github.com/spring-projects/spring-security-oauth)
  * spring-security-rsa - [org.springframework.security:spring-security-rsa](http://github.com/spring-projects/spring-security-oauth)
  * spring-security-test - [org.springframework.security:spring-security-test](https://spring.io/projects/spring-security)
  * spring-security-web - [org.springframework.security:spring-security-web](https://spring.io/projects/spring-security)
@@ -362,7 +360,6 @@ GNU Lesser General Public License
 GNU Library General Public License v2.1 or later
 -------------------------------
 
- * Hibernate Commons Annotations - [org.hibernate.common:hibernate-commons-annotations](http://hibernate.org)
  * Hibernate ORM - hibernate-core - [org.hibernate.orm:hibernate-core](https://hibernate.org/orm)
 
 LGPL-2.1-or-later
@@ -386,6 +383,7 @@ MIT License
  * Testcontainers :: JDBC - [org.testcontainers:jdbc](https://java.testcontainers.org)
  * Testcontainers :: JUnit Jupiter Extension - [org.testcontainers:junit-jupiter](https://testcontainers.org)
  * Testcontainers :: JUnit Jupiter Extension - [org.testcontainers:junit-jupiter](https://java.testcontainers.org)
+* Testcontainers :: Localstack - [org.testcontainers:localstack](https://java.testcontainers.org)
  * Testcontainers :: JDBC :: PostgreSQL - [org.testcontainers:postgresql](https://java.testcontainers.org)
  * Testcontainers Core - [org.testcontainers:testcontainers](https://java.testcontainers.org)
  * Testcontainers :: Vault - [org.testcontainers:vault](https://testcontainers.org)
@@ -406,5 +404,4 @@ Public Domain
 
  * AOP alliance - [aopalliance:aopalliance](http://aopalliance.sourceforge.net)
  * HdrHistogram - [org.hdrhistogram:HdrHistogram](http://hdrhistogram.github.io/HdrHistogram/)
- * JSON in Java - [org.json:json](https://github.com/douglascrockford/JSON-java)
  * LatencyUtils - [org.latencyutils:LatencyUtils](http://latencyutils.github.io/LatencyUtils/)

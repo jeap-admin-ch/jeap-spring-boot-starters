@@ -7,7 +7,7 @@
     <parent>
         <groupId>ch.admin.bit.jeap</groupId>
         <artifactId>jeap-spring-boot-starters</artifactId>
-        <version>17.12.1-SNAPSHOT</version>
+        <version>17.13.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>jeap-spring-boot-config-aws-starter</artifactId>
@@ -59,11 +59,7 @@
         </dependency>
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
-            <artifactId>url-connection-client</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.awspring.cloud</groupId>
-            <artifactId>spring-cloud-aws-starter-secrets-manager</artifactId>
+            <artifactId>secretsmanager</artifactId>
             <exclusions>
                 <!-- URL connection client (JDK default, no dependencies) is added as dependency -->
                 <exclusion>
@@ -75,6 +71,10 @@
                     <artifactId>netty-nio-client</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>url-connection-client</artifactId>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -85,11 +85,6 @@
             <artifactId>spring-cloud-commons</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>jakarta.annotation</groupId>
             <artifactId>jakarta.annotation-api</artifactId>
         </dependency>
@@ -98,26 +93,26 @@
             <artifactId>spring-cloud-context</artifactId>
         </dependency>
 
-        <!--
-         The CredentialsProviderAutoConfiguration from io.awspring.cloud requires a region to be set when
-         sts is on the classpath. sts is thus included on the classpath in tests to be able to test if the credential
-         provider override works to avoid CredentialsProviderAutoConfiguration kicking in.
-        -->
+        <!-- Test dependencies -->
         <dependency>
-            <groupId>software.amazon.awssdk</groupId>
-            <artifactId>sts</artifactId>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
-            <exclusions>
-                <!-- URL connection client (JDK default, no dependencies) is added as dependency -->
-                <exclusion>
-                    <groupId>software.amazon.awssdk</groupId>
-                    <artifactId>apache-client</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>software.amazon.awssdk</groupId>
-                    <artifactId>netty-nio-client</artifactId>
-                </exclusion>
-            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>localstack</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 

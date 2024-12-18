@@ -2,6 +2,7 @@ package ch.admin.bit.jeap.config.aws.appconfig.config;
 
 import ch.admin.bit.jeap.config.aws.appconfig.JeapAWSAppConfigProperties;
 import ch.admin.bit.jeap.config.aws.appconfig.JeapSpringApplicationProperties;
+import ch.admin.bit.jeap.config.aws.context.ConfigContexts;
 import org.springframework.boot.BootstrapRegistry;
 import org.springframework.boot.context.config.ConfigDataLocation;
 import org.springframework.boot.context.config.ConfigDataLocationNotFoundException;
@@ -34,9 +35,9 @@ public class AppConfigDataLocationResolver extends AbstractAppConfigDataLocation
     @Override
     public List<AppConfigDataResource> resolveProfileSpecific(ConfigDataLocationResolverContext resolverContext, ConfigDataLocation location, Profiles profiles) throws ConfigDataLocationNotFoundException {
         JeapAWSAppConfigProperties jeapAWSAppConfigProperties = loadJeapAWSAppConfigProperties(resolverContext.getBinder());
-        registerBean(resolverContext, JeapAWSAppConfigProperties.class, jeapAWSAppConfigProperties);
+        ConfigContexts.registerBean(resolverContext, JeapAWSAppConfigProperties.class, jeapAWSAppConfigProperties);
         AppConfigDataClient appConfigDataClient = createAppConfigDataClient(jeapAWSAppConfigProperties);
-        registerAndPromoteBean(resolverContext, AppConfigDataClient.class, BootstrapRegistry.InstanceSupplier.of(appConfigDataClient));
+        ConfigContexts.registerAndPromoteBean(resolverContext, AppConfigDataClient.class, BootstrapRegistry.InstanceSupplier.of(appConfigDataClient));
         return getLocationArguments(location, resolverContext, jeapAWSAppConfigProperties).stream()
                 .map(locationArg -> new AppConfigDataResource(locationArg.appId(), locationArg.profileId(), location.isOptional(), new AppConfigPropertySources()))
                 .collect(Collectors.toList());
