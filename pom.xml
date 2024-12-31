@@ -25,7 +25,7 @@
     <packaging>pom</packaging>
 
     <artifactId>jeap-spring-boot-starters</artifactId>
-    <version>17.14.0-SNAPSHOT</version>
+    <version>17.15.0-SNAPSHOT</version>
 
     <parent>
         <artifactId>jeap-internal-spring-boot-parent</artifactId>
@@ -69,7 +69,7 @@
     </modules>
 
     <properties>
-        <springdoc-openapi.version>2.5.0</springdoc-openapi.version>
+        <springdoc-openapi.version>2.7.0</springdoc-openapi.version>
         <logstash.version>7.2</logstash.version>
         <wiremock.version>2.35.0</wiremock.version>
         <java-cfenv-boot.version>2.4.2</java-cfenv-boot.version>

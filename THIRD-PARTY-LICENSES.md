@@ -159,6 +159,7 @@ Apache License, Version 2.0
  * Hibernate Validator Engine - [org.hibernate.validator:hibernate-validator](http://hibernate.org/validator/hibernate-validator)
  * JBoss Logging 3 - [org.jboss.logging:jboss-logging](http://www.jboss.org)
  * JetBrains Java Annotations - [org.jetbrains:annotations](https://github.com/JetBrains/java-annotations)
+ * JSpecify annotations - [org.jspecify:jspecify](http://jspecify.org/)
  * LZ4 and xxHash - [org.lz4:lz4-java](https://github.com/lz4/lz4-java)
  * Objenesis - [org.objenesis:objenesis](http://objenesis.org/objenesis)
  * org.opentest4j:opentest4j - [org.opentest4j:opentest4j](https://github.com/ota4j-team/opentest4j)
@@ -245,7 +246,7 @@ Apache License, Version 2.0
  * Togglz - Spring Boot Starter - [org.togglz:togglz-spring-boot-starter](https://www.togglz.org/togglz-spring-boot/togglz-spring-boot-starter/)
  * Togglz - Spring Framework integration - [org.togglz:togglz-spring-core](https://www.togglz.org/togglz-spring-core/)
  * Togglz - Spring Security integration - [org.togglz:togglz-spring-security](https://www.togglz.org/togglz-spring-security/)
- * Swagger UI - [org.webjars:swagger-ui](http://webjars.org)
+ * Swagger UI - [org.webjars:swagger-ui](https://www.webjars.org)
  * snappy-java - [org.xerial.snappy:snappy-java](https://github.com/xerial/snappy-java)
  * org.xmlunit:xmlunit-core - [org.xmlunit:xmlunit-core](https://www.xmlunit.org/)
  * SnakeYAML - [org.yaml:snakeyaml](https://bitbucket.org/snakeyaml/snakeyaml)
@@ -383,6 +384,7 @@ MIT License
  * Testcontainers :: JDBC :: PostgreSQL - [org.testcontainers:postgresql](https://java.testcontainers.org)
  * Testcontainers Core - [org.testcontainers:testcontainers](https://java.testcontainers.org)
  * Testcontainers :: Vault - [org.testcontainers:vault](https://testcontainers.org)
+ * webjars-locator-lite - [org.webjars:webjars-locator-lite](https://webjars.org)
 
 Mozilla Public License, Version 2.0
 -------------------------------
