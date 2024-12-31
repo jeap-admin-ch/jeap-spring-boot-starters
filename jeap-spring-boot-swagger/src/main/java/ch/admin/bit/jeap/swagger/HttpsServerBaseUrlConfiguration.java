@@ -5,6 +5,7 @@ import org.springdoc.core.customizers.ServerBaseUrlCustomizer;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.HttpRequest;
 import org.springframework.util.StringUtils;
 
 import java.net.MalformedURLException;
@@ -20,10 +21,10 @@ public class HttpsServerBaseUrlConfiguration {
         return new HttpsEnforcerServerBaseUrlCustomizer();
     }
 
-    static class HttpsEnforcerServerBaseUrlCustomizer implements ServerBaseUrlCustomizer{
+    static class HttpsEnforcerServerBaseUrlCustomizer implements ServerBaseUrlCustomizer {
 
         @Override
-        public String customize(String serverBaseUrl) {
+        public String customize(String serverBaseUrl, HttpRequest request) {
             try {
                 if (StringUtils.hasText(serverBaseUrl)) {
                     URL url = new URL(serverBaseUrl);
