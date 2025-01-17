@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [17.15.1] - 2025-01-17
+
+### Changed
+
+- Update spring-security-rsa from 1.0.9.RELEASE to 1.1.5
+
 ## [17.15.0] - 2024-12-31
 
 ### Changed
