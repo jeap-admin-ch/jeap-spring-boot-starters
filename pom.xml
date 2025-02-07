@@ -6,10 +6,13 @@
     <url>https://github.com/jeap-admin-ch/jeap-spring-boot-starters/tree/main</url>
     <scm>
         <url>https://github.com/jeap-admin-ch/jeap-spring-boot-starters.git</url>
+        <connection>scm:git:git://github.com/jeap-admin-ch/jeap-spring-boot-starters.git</connection>
+        <developerConnection>scm:git:ssh://github.com:jeap-admin-ch/jeap-spring-boot-starters.git</developerConnection>
     </scm>
     <developers>
         <developer>
             <name>BIT</name>
+            <email>jeap-community@bit.admin.ch</email>
             <organization>Federal Office of Information Technology, Systems and Telecommunication FOITT</organization>
             <organizationUrl>https://www.bit.admin.ch/</organizationUrl>
         </developer>
@@ -25,12 +28,12 @@
     <packaging>pom</packaging>
 
     <artifactId>jeap-spring-boot-starters</artifactId>
-    <version>17.15.1-SNAPSHOT</version>
+    <version>17.16.0-SNAPSHOT</version>
 
     <parent>
         <artifactId>jeap-internal-spring-boot-parent</artifactId>
         <groupId>ch.admin.bit.jeap</groupId>
-        <version>5.4.1</version>
+        <version>5.5.0</version>
     </parent>
 
     <modules>
@@ -74,6 +77,9 @@
         <wiremock.version>2.35.0</wiremock.version>
         <java-cfenv-boot.version>2.4.2</java-cfenv-boot.version>
         <maven.javadoc.skip>false</maven.javadoc.skip>
+        <!-- TODO Remove -->
+        <maven-central-autopublish>false</maven-central-autopublish>
+        <maven-central-wait-until>validated</maven-central-wait-until>
     </properties>
 
     <build>
