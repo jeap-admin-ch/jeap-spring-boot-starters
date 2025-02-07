@@ -77,9 +77,6 @@
         <wiremock.version>2.35.0</wiremock.version>
         <java-cfenv-boot.version>2.4.2</java-cfenv-boot.version>
         <maven.javadoc.skip>false</maven.javadoc.skip>
-        <!-- TODO Remove -->
-        <maven-central-autopublish>false</maven-central-autopublish>
-        <maven-central-wait-until>validated</maven-central-wait-until>
     </properties>
 
     <build>
