@@ -6,3 +6,4 @@ ch.admin.bit.jeap.security.resource.configuration.MvcSecurityConfiguration
 ch.admin.bit.jeap.security.resource.configuration.WebFluxSecurityConfiguration
 ch.admin.bit.jeap.security.resource.token.TokenConfiguration
 ch.admin.bit.jeap.security.restclient.OAuth2RestClientConfiguration
+ch.admin.bit.jeap.security.user.JeapCurrentUserEndpointConfiguration
