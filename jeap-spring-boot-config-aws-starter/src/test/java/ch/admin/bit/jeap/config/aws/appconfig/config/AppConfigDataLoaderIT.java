@@ -9,7 +9,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.springframework.boot.*;
+import org.springframework.boot.BootstrapRegistry;
+import org.springframework.boot.BootstrapRegistryInitializer;
+import org.springframework.boot.SpringApplication;
 import org.springframework.boot.context.config.ConfigDataResourceNotFoundException;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.Environment;
@@ -63,6 +65,24 @@ class AppConfigDataLoaderIT {
             assertThat(context.getEnvironment().getProperty(ATTRIBUTE_KEY)).isEqualTo(ATTRIBUTE_VALUE_APP);
             assertThat(context.getEnvironment().getProperty("jeap.test.common")).isEqualTo("false");
             assertThat(context.getEnvironment().getProperty("jeap.test.platform.common")).isEqualTo("false");
+            assertThat(context.getEnvironment().getProperty("jeap.test.certs.common")).isEqualTo("false");
+            assertThat(context.getEnvironment().getProperty("jeap.test.application")).isEqualTo("true");
+        }
+    }
+
+    @Test
+    void resolvesPropertyFromAppConfig_defaultConfigs_certsNotFoundIgnored() {
+        String importConfiguration = "--spring.config.import=jeap-app-config-aws:";
+        String appNameConfiguration = "--spring.application.name=app";
+        SpringApplication application = new SpringApplication(Application.class);
+        AwsConfigurerClientConfigurationMock appConfigMock = new AwsConfigurerClientConfigurationMock();
+        application.addBootstrapRegistryInitializer(appConfigMock);
+        appConfigMock.setSimulateCommonCertsNotFound(true);
+        try (var context = runApplication(application, importConfiguration, appNameConfiguration)) {
+            assertThat(context.getEnvironment().getProperty(ATTRIBUTE_KEY)).isEqualTo(ATTRIBUTE_VALUE_APP);
+            assertThat(context.getEnvironment().getProperty("jeap.test.common")).isEqualTo("false");
+            assertThat(context.getEnvironment().getProperty("jeap.test.platform.common")).isEqualTo("false");
+            assertThat(context.getEnvironment().getProperty("jeap.test.certs.common")).isNull();
             assertThat(context.getEnvironment().getProperty("jeap.test.application")).isEqualTo("true");
         }
     }
@@ -78,6 +98,7 @@ class AppConfigDataLoaderIT {
             assertThat(context.getEnvironment().getProperty(ATTRIBUTE_KEY)).isEqualTo(ATTRIBUTE_VALUE_APP);
             assertThat(context.getEnvironment().getProperty("jeap.test.common")).isNull();
             assertThat(context.getEnvironment().getProperty("jeap.test.platform.common")).isEqualTo("false");
+            assertThat(context.getEnvironment().getProperty("jeap.test.certs.common")).isEqualTo("false");
             assertThat(context.getEnvironment().getProperty("jeap.test.application")).isEqualTo("true");
         }
     }
@@ -93,6 +114,7 @@ class AppConfigDataLoaderIT {
             assertThat(context.getEnvironment().getProperty(ATTRIBUTE_KEY)).isEqualTo(ATTRIBUTE_VALUE_APP);
             assertThat(context.getEnvironment().getProperty("jeap.test.common")).isEqualTo("false");
             assertThat(context.getEnvironment().getProperty("jeap.test.platform.common")).isNull();
+            assertThat(context.getEnvironment().getProperty("jeap.test.certs.common")).isEqualTo("false");
             assertThat(context.getEnvironment().getProperty("jeap.test.application")).isEqualTo("true");
         }
     }
@@ -109,6 +131,7 @@ class AppConfigDataLoaderIT {
             assertThat(context.getEnvironment().getProperty(ATTRIBUTE_KEY)).isEqualTo(ATTRIBUTE_VALUE_APP);
             assertThat(context.getEnvironment().getProperty("jeap.test.common")).isNull();
             assertThat(context.getEnvironment().getProperty("jeap.test.platform.common")).isNull();
+            assertThat(context.getEnvironment().getProperty("jeap.test.certs.common")).isEqualTo("false");
             assertThat(context.getEnvironment().getProperty("jeap.test.application")).isEqualTo("true");
         }
     }
@@ -122,13 +145,14 @@ class AppConfigDataLoaderIT {
             assertThat(context.getEnvironment().getProperty(ATTRIBUTE_KEY)).isEqualTo(ATTRIBUTE_VALUE_APP);
             assertThat(context.getEnvironment().getProperty("jeap.test.common")).isEqualTo("false");
             assertThat(context.getEnvironment().getProperty("jeap.test.platform.common")).isEqualTo("false");
+            assertThat(context.getEnvironment().getProperty("jeap.test.certs.common")).isEqualTo("false");
             assertThat(context.getEnvironment().getProperty("jeap.test.application")).isEqualTo("true");
         }
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"--spring.config.import=jeap-app-config-aws:common/config,jeap-app-config-aws:app/config;common-platform/config",
-            "--spring.config.import=jeap-app-config-aws:common/config;app/config;common-platform/config"})
+    @ValueSource(strings = {"--spring.config.import=jeap-app-config-aws:common/config,jeap-app-config-aws:app/config;common-certs/config;common-platform/config",
+            "--spring.config.import=jeap-app-config-aws:common/config;app/config;common-certs/config;common-platform/config" })
     void resolvesPropertyFromAppConfig_applicationAfterCommon_appOverrides(String importConfiguration) {
         SpringApplication application = new SpringApplication(Application.class);
         application.addBootstrapRegistryInitializer(new AwsConfigurerClientConfigurationMock());
@@ -137,22 +161,24 @@ class AppConfigDataLoaderIT {
             assertThat(context.getEnvironment().getProperty(ATTRIBUTE_KEY)).isEqualTo(ATTRIBUTE_VALUE_APP);
             assertThat(context.getEnvironment().getProperty("jeap.test.common")).isEqualTo("false");
             assertThat(context.getEnvironment().getProperty("jeap.test.platform.common")).isEqualTo("false");
+            assertThat(context.getEnvironment().getProperty("jeap.test.certs.common")).isEqualTo("false");
             assertThat(context.getEnvironment().getProperty("jeap.test.application")).isEqualTo("true");
         }
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"--spring.config.import=jeap-app-config-aws:app/config,jeap-app-config-aws:common/config;jeap-app-config-aws:common-platform/config",
-            "--spring.config.import=jeap-app-config-aws:app/config;common/config;common-platform/config"})
+    @ValueSource(strings = {"--spring.config.import=jeap-app-config-aws:app/config,jeap-app-config-aws:common/config;jeap-app-config-aws:common-certs/config;common-platform/config",
+            "--spring.config.import=jeap-app-config-aws:app/config;common/config;common-certs/config;common-platform/config" })
     void resolvesPropertyFromAppConfig_commonAfterApplication_commonOverrides() {
         SpringApplication application = new SpringApplication(Application.class);
         application.addBootstrapRegistryInitializer(new AwsConfigurerClientConfigurationMock());
 
         try (ConfigurableApplicationContext context = runApplication(application,
-                "--spring.config.import=jeap-app-config-aws:app/config,jeap-app-config-aws:common/config,jeap-app-config-aws:common-platform/config")) {
+                "--spring.config.import=jeap-app-config-aws:app/config,jeap-app-config-aws:common/config,jeap-app-config-aws:common-certs/config;common-platform/config")) {
             assertThat(context.getEnvironment().getProperty(ATTRIBUTE_KEY)).isEqualTo(ATTRIBUTE_VALUE_COMMON);
             assertThat(context.getEnvironment().getProperty("jeap.test.common")).isEqualTo("false");
             assertThat(context.getEnvironment().getProperty("jeap.test.platform.common")).isEqualTo("false");
+            assertThat(context.getEnvironment().getProperty("jeap.test.certs.common")).isEqualTo("false");
             assertThat(context.getEnvironment().getProperty("jeap.test.application")).isEqualTo("true");
         }
     }
@@ -167,6 +193,7 @@ class AppConfigDataLoaderIT {
             assertThat(context.getEnvironment().getProperty(ATTRIBUTE_KEY)).isEqualTo(ATTRIBUTE_VALUE_COMMON);
             assertThat(context.getEnvironment().getProperty("jeap.test.common")).isEqualTo("false");
             assertThat(context.getEnvironment().getProperty("jeap.test.platform.common")).isEqualTo("false");
+            assertThat(context.getEnvironment().getProperty("jeap.test.certs.common")).isNull();
             assertThat(context.getEnvironment().getProperty("jeap.test.application")).isNull();
         }
     }
@@ -181,6 +208,7 @@ class AppConfigDataLoaderIT {
             assertThat(context.getEnvironment().getProperty(ATTRIBUTE_KEY)).isEqualTo(ATTRIBUTE_VALUE_APP);
             assertThat(context.getEnvironment().getProperty("jeap.test.common")).isNull();
             assertThat(context.getEnvironment().getProperty("jeap.test.platform.common")).isNull();
+            assertThat(context.getEnvironment().getProperty("jeap.test.certs.common")).isNull();
             assertThat(context.getEnvironment().getProperty("jeap.test.application")).isEqualTo("true");
         }
     }
@@ -343,6 +371,8 @@ class AppConfigDataLoaderIT {
         @Getter
         private int commonPlatformPollCount = 0;
         @Getter
+        private int commonCertsPollCount = 0;
+        @Getter
         private int commonPollCount = 0;
         @Getter
         private int appPollCount = 0;
@@ -363,6 +393,7 @@ class AppConfigDataLoaderIT {
         private int commonNumFailedGetLatestConfigurationRequests = 0;
         private String commonValue = ATTRIBUTE_VALUE_COMMON;
         private boolean commonPlatformChanged = true;
+        private boolean commonCertsChanged = true;
         private boolean commonChanged = true;
         private final Map<String, String> appProperties = new HashMap<>(Map.of(
                 ATTRIBUTE_KEY, ATTRIBUTE_VALUE_APP,
@@ -370,6 +401,8 @@ class AppConfigDataLoaderIT {
                 ATTRIBUTE_REFRESH_SCOPE_KEY, ATTRIBUTE_REFRESH_SCOPE_VALUE,
                 ATTRIBUTE_STANDARD_SCOPE_KEY, ATTRIBUTE_STANDARD_SCOPE_VALUE));
         private boolean appChanged = true;
+        @Setter
+        private boolean simulateCommonCertsNotFound = false;
 
         AwsConfigurerClientConfigurationMock() {}
 
@@ -377,11 +410,6 @@ class AppConfigDataLoaderIT {
             this();
             this.commonNextPollIntervalSeconds = commonNextPollIntervalSeconds;
             this.appNextPollIntervalSecondsList = appNextPollIntervalSecondsList;
-        }
-
-        void changeCommonValue(String newCommonValue) {
-            this.commonValue = newCommonValue;
-            this.commonChanged = true;
         }
 
         void changeAppValue(String key, String newValue) {
@@ -420,6 +448,29 @@ class AppConfigDataLoaderIT {
                                         .configuration(configuration)
                                         .contentType("application/json")
                                         .nextPollConfigurationToken("token-common-platform-" + ++commonPlatformPollCount)
+                                        .nextPollIntervalInSeconds(commonNextPollIntervalSeconds)
+                                        .build();
+                            } else if (sessionToken.startsWith("token-common-certs")) {
+                                if (simulateCommonCertsNotFound) {
+                                    throw new RuntimeException("simulating missing app config appid");
+                                }
+
+                                assertThat(getLatestConfigurationRequest.configurationToken()).isEqualTo("token-common-certs-" + commonCertsPollCount);
+                                SdkBytes configuration;
+                                if (!commonCertsChanged) {
+                                    configuration = SdkBytes.fromUtf8String("");
+                                } else {
+                                    configuration = SdkBytes.fromUtf8String("""
+                                            {
+                                            "jeap.test.certs.common": false
+                                            }
+                                            """);
+                                    commonCertsChanged = false;
+                                }
+                                return GetLatestConfigurationResponse.builder()
+                                        .configuration(configuration)
+                                        .contentType("application/json")
+                                        .nextPollConfigurationToken("token-common-certs-" + ++commonCertsPollCount)
                                         .nextPollIntervalInSeconds(commonNextPollIntervalSeconds)
                                         .build();
                             } else if (sessionToken.startsWith("token-common")) {

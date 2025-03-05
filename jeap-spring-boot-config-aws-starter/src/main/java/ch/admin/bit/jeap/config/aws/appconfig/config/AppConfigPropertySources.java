@@ -30,7 +30,7 @@ public class AppConfigPropertySources {
 				throw new AppConfigPropertySourceNotFoundException(name, e);
 			}
 			else {
-				log.warn("Unable to load AppConfig for property source '" + name + "'. " + e.getMessage());
+				log.info("Unable to load optional AppConfig location for property source '" + name + "'. " + e.getMessage());
 			}
 		}
 

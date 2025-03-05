@@ -8,6 +8,7 @@ import org.springframework.lang.Nullable;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Properties;
 
 @EqualsAndHashCode(callSuper = true)
 public class AppConfigPropertySource<T extends JeapAppConfigDataClient> extends EnumerablePropertySource<T> {
@@ -19,7 +20,10 @@ public class AppConfigPropertySource<T extends JeapAppConfigDataClient> extends 
 	}
 
 	public void init() {
-		this.source.getProperties().forEach((property, value) -> this.properties.put((String) property, value));
+		Properties props = source.getProperties();
+		if (props != null) {
+			props.forEach((property, value) -> this.properties.put((String) property, value));
+		}
 	}
 
 	@Override

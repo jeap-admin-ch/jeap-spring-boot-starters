@@ -45,7 +45,7 @@ class JeapAppConfigDataClientPollingDisabledTest {
     void setup() {
         when(appConfigDataClient.startConfigurationSession(any(StartConfigurationSessionRequest.class))).thenReturn(startConfigurationSessionResponse);
         when(appConfigDataClient.getLatestConfiguration(any(GetLatestConfigurationRequest.class))).thenReturn(getLatestConfigurationResponse);
-        jeapAppConfigDataClient = new JeapAppConfigDataClient(appConfigDataClient, "appId", "envId", "profileId");
+        jeapAppConfigDataClient = new JeapAppConfigDataClient(appConfigDataClient, "appId", "envId", "profileId", false);
     }
 
     @Test
