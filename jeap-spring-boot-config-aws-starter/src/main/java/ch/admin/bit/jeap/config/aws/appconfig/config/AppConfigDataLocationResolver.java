@@ -25,6 +25,7 @@ public class AppConfigDataLocationResolver extends AbstractAppConfigDataLocation
     public static final String PREFIX = "jeap-app-config-aws:";
     public static final String STANDARD_APP_CONFIG_COMMON_APPLICATION_NAME = "common";
     public static final String STANDARD_APP_CONFIG_COMMON_PLATFORM_APPLICATION_NAME = "common-platform";
+    public static final String STANDARD_APP_CONFIG_COMMON_CERTS_APPLICATION_NAME = "common-certs";
     public static final String STANDARD_APP_CONFIG_PROFILE_NAME = "config";
 
     @Override
@@ -39,7 +40,7 @@ public class AppConfigDataLocationResolver extends AbstractAppConfigDataLocation
         AppConfigDataClient appConfigDataClient = createAppConfigDataClient(jeapAWSAppConfigProperties);
         ConfigContexts.registerAndPromoteBean(resolverContext, AppConfigDataClient.class, BootstrapRegistry.InstanceSupplier.of(appConfigDataClient));
         return getLocationArguments(location, resolverContext, jeapAWSAppConfigProperties).stream()
-                .map(locationArg -> new AppConfigDataResource(locationArg.appId(), locationArg.profileId(), location.isOptional(), new AppConfigPropertySources()))
+                .map(locationArg -> new AppConfigDataResource(locationArg.appId(), locationArg.profileId(), locationArg.optional() || location.isOptional(), new AppConfigPropertySources()))
                 .collect(Collectors.toList());
     }
 
@@ -70,12 +71,13 @@ public class AppConfigDataLocationResolver extends AbstractAppConfigDataLocation
                                                                JeapAWSAppConfigProperties jeapAWSAppConfigProperties) {
         List<LocationArgument> defaultLocations = new ArrayList<>();
         if (!jeapAWSAppConfigProperties.isNoDefaultCommonConfig()) {
-            defaultLocations.add(new LocationArgument(STANDARD_APP_CONFIG_COMMON_APPLICATION_NAME, STANDARD_APP_CONFIG_PROFILE_NAME));
+            defaultLocations.add(LocationArgument.mandatory(STANDARD_APP_CONFIG_COMMON_APPLICATION_NAME, STANDARD_APP_CONFIG_PROFILE_NAME));
         }
+        defaultLocations.add(LocationArgument.optional(STANDARD_APP_CONFIG_COMMON_CERTS_APPLICATION_NAME, STANDARD_APP_CONFIG_PROFILE_NAME));
         if (!jeapAWSAppConfigProperties.isNoDefaultCommonPlatformConfig()) {
-            defaultLocations.add(new LocationArgument(STANDARD_APP_CONFIG_COMMON_PLATFORM_APPLICATION_NAME, STANDARD_APP_CONFIG_PROFILE_NAME));
+            defaultLocations.add(LocationArgument.mandatory(STANDARD_APP_CONFIG_COMMON_PLATFORM_APPLICATION_NAME, STANDARD_APP_CONFIG_PROFILE_NAME));
         }
-        defaultLocations.add(new LocationArgument(jeapSpringApplicationProperties.getName(), STANDARD_APP_CONFIG_PROFILE_NAME));
+        defaultLocations.add(LocationArgument.mandatory(jeapSpringApplicationProperties.getName(), STANDARD_APP_CONFIG_PROFILE_NAME));
         return defaultLocations;
     }
 

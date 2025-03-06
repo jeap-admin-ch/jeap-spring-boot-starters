@@ -15,12 +15,12 @@ public class JeapAppConfigDataClientFactory {
 
     private static final Map<String, JeapAppConfigDataClient> clients = new HashMap<>();
 
-    synchronized public static JeapAppConfigDataClient create(String appId, String envId, String profileId,
+    synchronized public static JeapAppConfigDataClient create(String appId, String envId, String profileId, boolean optional,
                                                               Integer requiredMinimumPollIntervalInSeconds,
                                                               AppConfigDataClient appConfigDataClient) {
         final String clientId = String.join("-", profileId, envId, appId);
         return clients.computeIfAbsent(clientId, k ->
-                new JeapAppConfigDataClient(appConfigDataClient, appId, envId, profileId, requiredMinimumPollIntervalInSeconds));
+                new JeapAppConfigDataClient(appConfigDataClient, appId, envId, profileId, optional, requiredMinimumPollIntervalInSeconds));
     }
 
     synchronized public static void evictAllCachedClients() {

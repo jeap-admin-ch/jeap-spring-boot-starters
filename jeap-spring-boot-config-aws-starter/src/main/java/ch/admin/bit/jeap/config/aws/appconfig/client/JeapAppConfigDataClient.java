@@ -35,6 +35,7 @@ public class JeapAppConfigDataClient {
     private final String appId;
     private final String envId;
     private final String profileId;
+    private final boolean optional;
     private Integer requiredMinimumPollIntervalInSeconds;
     private ThreadPoolTaskScheduler taskScheduler;
     private String sessionToken;
@@ -42,19 +43,21 @@ public class JeapAppConfigDataClient {
     private Integer currentPollIntervalSeconds;
     private ZonedDateTime nextPollDateTime = ZonedDateTime.now();
     private JeapAppConfigDataChangedListener changedListener;
+    private boolean optionalFailureLoggedOnce = false;
 
 
     // Non-polling jeap app config client
-    JeapAppConfigDataClient(AppConfigDataClient appConfigDataClient, String appId, String envId, String profileId) {
+    JeapAppConfigDataClient(AppConfigDataClient appConfigDataClient, String appId, String envId, String profileId, boolean optional) {
         this.appConfigDataClient = appConfigDataClient;
         this.appId = appId;
         this.envId = envId;
         this.profileId = profileId;
+        this.optional = optional;
     }
 
     // Polling jeap app config client
-    JeapAppConfigDataClient(AppConfigDataClient appConfigDataClient, String appId, String envId, String profileId, Integer requiredMinimumPollIntervalInSeconds) {
-        this(appConfigDataClient, appId, envId, profileId);
+    JeapAppConfigDataClient(AppConfigDataClient appConfigDataClient, String appId, String envId, String profileId, boolean optional, Integer requiredMinimumPollIntervalInSeconds) {
+        this(appConfigDataClient, appId, envId, profileId, optional);
         this.requiredMinimumPollIntervalInSeconds = requiredMinimumPollIntervalInSeconds;
         this.currentPollIntervalSeconds = Optional.ofNullable(requiredMinimumPollIntervalInSeconds).orElse(NEXT_POLL_INTERVAL_SECONDS_FALLBACK);
         this.taskScheduler = new ThreadPoolTaskScheduler();
@@ -86,12 +89,17 @@ public class JeapAppConfigDataClient {
             try {
                 latestConfigurationResponse = getLatestConfiguration();
             } catch (Exception e) {
-                if (properties == null) {
-                    // If the properties have not yet been successfully fetched, this was the first call to the appconfig service during the application startup. 
-                    // At this time, the logging system has not yet been initialized. Therefore, we have to write the error directly to the console.
-                    e.printStackTrace(System.err);
+                if (!optional) {
+                    if (properties == null) {
+                        // If the properties have not yet been successfully fetched, this was the first call to the appconfig service during the application startup.
+                        // At this time, the logging system has not yet been initialized. Therefore, we have to write the error directly to the console.
+                        e.printStackTrace(System.err);
+                    }
+                    log.error("Getting latest configuration from AppConfig failed for " + appConfigInfo(), e);
+                } else if (!optionalFailureLoggedOnce) {
+                    log.info("Ignoring: Getting latest configuration from AppConfig failed for optional config location at " + appConfigInfo() + " " + e);
+                    optionalFailureLoggedOnce = true;
                 }
-                log.error("Getting latest configuration from AppConfig service failed for " + appConfigInfo(), e);
                 // try again with the next poll...
                 return;
             }

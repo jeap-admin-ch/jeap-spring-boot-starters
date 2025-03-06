@@ -32,6 +32,7 @@ public class AppConfigDataLoader implements ConfigDataLoader<AppConfigDataResour
                     resource.getAppId(),
                     props.getEnvId(),
                     resource.getProfileId(),
+                    resource.isOptional(),
                     props.getRequiredMinimumPollIntervalInSeconds(),
                     context.getBootstrapContext().get(AppConfigDataClient.class));
             String propertySourceName = resource.getAppId() + "/" + resource.getProfileId();
@@ -44,10 +45,11 @@ public class AppConfigDataLoader implements ConfigDataLoader<AppConfigDataResour
                 return null;
             }
         } catch (Exception e) {
-            //No Logger at this point available
-            e.printStackTrace(System.err);
+            if (!resource.isOptional()) {
+                //No Logger at this point available
+                e.printStackTrace(System.err);
+            }
             throw new ConfigDataResourceNotFoundException(resource, e);
         }
     }
-
 }
