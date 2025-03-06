@@ -10,6 +10,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Changed
 
 - Update parent from 5.5.5 to 5.6.0
+- Update aws-advanced-jdbc-wrapper from 2.5.0 to 2.5.4
 
 ## [17.20.0] - 2025-03-05
 
