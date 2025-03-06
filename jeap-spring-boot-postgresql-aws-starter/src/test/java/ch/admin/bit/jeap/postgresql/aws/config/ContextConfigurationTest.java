@@ -2,7 +2,6 @@ package ch.admin.bit.jeap.postgresql.aws.config;
 
 import ch.admin.bit.jeap.db.tx.ReadReplicaAwareTransactionManager;
 import ch.admin.bit.jeap.db.tx.ReadReplicaAwareTransactionRoutingDataSource;
-import ch.admin.bit.jeap.postgresql.aws.RDSDataSource;
 import ch.admin.bit.jeap.postgresql.aws.TestConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.junit.jupiter.api.Test;
@@ -31,8 +30,8 @@ class ContextConfigurationTest {
                             assertThat(context).hasNotFailed();
 
                             assertThat(context).hasBean("dataSource");
-                            assertThat(context.getBean("dataSource")).isInstanceOf(RDSDataSource.class);
-                            RDSDataSource dataSource = (RDSDataSource) context.getBean("dataSource");
+                            assertThat(context.getBean("dataSource")).isInstanceOf(HikariDataSource.class);
+                            HikariDataSource dataSource = (HikariDataSource) context.getBean("dataSource");
                             assertThat(dataSource.getJdbcUrl()).doesNotContain("jdbc:h2:mem:dummy");
 
                             assertThat(context).hasBean("transactionRoutingDataSource");
@@ -61,8 +60,8 @@ class ContextConfigurationTest {
                             assertThat(context).hasNotFailed();
 
                             assertThat(context).hasBean("dataSource");
-                            assertThat(context.getBean("dataSource")).isInstanceOf(RDSDataSource.class);
-                            RDSDataSource dataSource = (RDSDataSource) context.getBean("dataSource");
+                            assertThat(context.getBean("dataSource")).isInstanceOf(HikariDataSource.class);
+                            HikariDataSource dataSource = (HikariDataSource) context.getBean("dataSource");
                             assertThat(dataSource.getJdbcUrl()).contains("jdbc:h2:mem:dummy");
 
                             assertThat(context).hasBean("transactionRoutingDataSource");
@@ -93,8 +92,8 @@ class ContextConfigurationTest {
                             assertThat(context).hasNotFailed();
 
                             assertThat(context).hasBean("dataSource");
-                            assertThat(context.getBean("dataSource")).isInstanceOf(RDSDataSource.class);
-                            RDSDataSource dataSource = (RDSDataSource) context.getBean("dataSource");
+                            assertThat(context.getBean("dataSource")).isInstanceOf(HikariDataSource.class);
+                            HikariDataSource dataSource = (HikariDataSource) context.getBean("dataSource");
                             assertThat(dataSource.getJdbcUrl()).contains("jdbc:h2:mem:dummy");
 
                             assertThat(context).hasBean("transactionRoutingDataSource");
@@ -127,15 +126,15 @@ class ContextConfigurationTest {
                             assertThat(context).hasNotFailed();
 
                             assertThat(context).hasBean("dataSource");
-                            assertThat(context.getBean("dataSource")).isInstanceOf(RDSDataSource.class);
-                            RDSDataSource dataSource = (RDSDataSource) context.getBean("dataSource");
+                            assertThat(context.getBean("dataSource")).isInstanceOf(HikariDataSource.class);
+                            HikariDataSource dataSource = (HikariDataSource) context.getBean("dataSource");
                             assertThat(dataSource.getJdbcUrl()).contains("jdbc:h2:mem:dummy");
 
                             assertThat(context).hasBean("transactionRoutingDataSource");
                             assertThat(context.getBean("transactionRoutingDataSource")).isInstanceOf(ReadReplicaAwareTransactionRoutingDataSource.class);
 
                             assertThat(context).hasBean("replicaDataSource");
-                            RDSDataSource replicaDataSource = (RDSDataSource) context.getBean("replicaDataSource");
+                            HikariDataSource replicaDataSource = (HikariDataSource) context.getBean("replicaDataSource");
                             assertThat(replicaDataSource.getJdbcUrl()).contains("jdbc:h2:mem:dummy-readonly");
 
                             assertThat(context).hasBean("transactionManager");
@@ -161,12 +160,12 @@ class ContextConfigurationTest {
                     assertThat(context).hasNotFailed();
 
                     assertThat(context).hasBean("dataSource");
-                    assertThat(context.getBean("dataSource")).isInstanceOf(RDSDataSource.class);
-                    RDSDataSource dataSource = (RDSDataSource) context.getBean("dataSource");
+                    assertThat(context.getBean("dataSource")).isInstanceOf(HikariDataSource.class);
+                    HikariDataSource dataSource = (HikariDataSource) context.getBean("dataSource");
                     assertThat(dataSource.getJdbcUrl()).contains("jdbc:postgresql://somehost:5432/theapp_db?ssl=true,sslMode=verify-full,sslfactory=org.postgresql.ssl.DefaultJavaSSLFactory");
 
                     assertThat(context).hasBean("replicaDataSource");
-                    RDSDataSource replicaDataSource = (RDSDataSource) context.getBean("replicaDataSource");
+                    HikariDataSource replicaDataSource = (HikariDataSource) context.getBean("replicaDataSource");
                     assertThat(replicaDataSource.getJdbcUrl()).contains("jdbc:postgresql://somereplicahost:5432/theapp_db?ssl=true,sslMode=verify-full,sslfactory=org.postgresql.ssl.DefaultJavaSSLFactory");
                 });
     }
@@ -188,12 +187,12 @@ class ContextConfigurationTest {
                     assertThat(context).hasNotFailed();
 
                     assertThat(context).hasBean("dataSource");
-                    assertThat(context.getBean("dataSource")).isInstanceOf(RDSDataSource.class);
-                    RDSDataSource dataSource = (RDSDataSource) context.getBean("dataSource");
+                    assertThat(context.getBean("dataSource")).isInstanceOf(HikariDataSource.class);
+                    HikariDataSource dataSource = (HikariDataSource) context.getBean("dataSource");
                     assertThat(dataSource.getJdbcUrl()).contains("jdbc:postgresql://somehost:5432/test_db?ssl=true,sslMode=verify-full,sslfactory=org.postgresql.ssl.DefaultJavaSSLFactory");
 
                     assertThat(context).hasBean("replicaDataSource");
-                    RDSDataSource replicaDataSource = (RDSDataSource) context.getBean("replicaDataSource");
+                    HikariDataSource replicaDataSource = (HikariDataSource) context.getBean("replicaDataSource");
                     assertThat(replicaDataSource.getJdbcUrl()).contains("jdbc:postgresql://somereplicahost:5432/test_db?ssl=true,sslMode=verify-full,sslfactory=org.postgresql.ssl.DefaultJavaSSLFactory");
                 });
     }
@@ -216,12 +215,12 @@ class ContextConfigurationTest {
                     assertThat(context).hasNotFailed();
 
                     assertThat(context).hasBean("dataSource");
-                    assertThat(context.getBean("dataSource")).isInstanceOf(RDSDataSource.class);
-                    RDSDataSource dataSource = (RDSDataSource) context.getBean("dataSource");
+                    assertThat(context.getBean("dataSource")).isInstanceOf(HikariDataSource.class);
+                    HikariDataSource dataSource = (HikariDataSource) context.getBean("dataSource");
                     assertThat(dataSource.getJdbcUrl()).contains("jdbc:postgresql://somehost:5432/test_db?ssl=true,sslMode=verify-full,sslfactory=org.postgresql.ssl.DefaultJavaSSLFactory");
 
                     assertThat(context).hasBean("replicaDataSource");
-                    RDSDataSource replicaDataSource = (RDSDataSource) context.getBean("replicaDataSource");
+                    HikariDataSource replicaDataSource = (HikariDataSource) context.getBean("replicaDataSource");
                     assertThat(replicaDataSource.getJdbcUrl()).contains("jdbc:postgresql://somereplicahost:5432/replica_db?ssl=true,sslMode=verify-full,sslfactory=org.postgresql.ssl.DefaultJavaSSLFactory");
                 });
     }

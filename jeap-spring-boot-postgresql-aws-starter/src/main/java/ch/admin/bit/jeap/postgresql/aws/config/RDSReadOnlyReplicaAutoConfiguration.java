@@ -10,7 +10,6 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
-import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 
 import static org.springframework.util.StringUtils.hasText;
 
@@ -44,17 +43,15 @@ public class RDSReadOnlyReplicaAutoConfiguration {
     public HikariDataSource replicaDataSource(@Qualifier("replicaDataSourceProperties") DataSourceProperties properties,
                                            @Qualifier("replicaJeapPostgreSQLAWSProperties") JeapPostgreSQLAWSProperties jeapPostgreSQLAWSProperties,
                                            @Qualifier("wrapperTargetDataSourceProperties") WrapperTargetDataSourceProperties wrapperTargetDataSourceProperties,
-                                           AwsCredentialsProvider awsCredentialsProvider,
                                            @Value("${spring.application.name:}") String applicationName,
-                                           @Value("${jeap.datasource.aws.database-name:}") String databaseName,
-                                           @Value("${jeap.datasource.aws.enable-advanced-jdbc-wrapper:true}") boolean enableAdvancedJdbcWrapper) {
+                                           @Value("${jeap.datasource.aws.database-name:}") String databaseName) {
         String inferredUsername = inferUsername(properties, applicationName);
         log.info("Inferred replica datasource username: {}", inferredUsername);
 
         String inferredJdbcUrl = inferJdbcUrl(properties, jeapPostgreSQLAWSProperties, applicationName, databaseName);
         log.info("Inferred replica Jdbc Url: {}", inferredJdbcUrl);
 
-        return HikariDataSourceFactory.create(properties, jeapPostgreSQLAWSProperties, wrapperTargetDataSourceProperties, awsCredentialsProvider, enableAdvancedJdbcWrapper, inferredUsername, inferredJdbcUrl);
+        return HikariDataSourceFactory.create(properties, wrapperTargetDataSourceProperties, inferredUsername, inferredJdbcUrl);
     }
 
     static String inferJdbcUrl(DataSourceProperties properties, JeapPostgreSQLAWSProperties jeapPostgreSQLAWSProperties, String applicationName, String databaseName) {

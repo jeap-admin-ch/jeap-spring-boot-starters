@@ -5,6 +5,7 @@ import ch.admin.bit.jeap.db.tx.ReadReplicaAwareTransactionRoutingDataSource;
 import ch.admin.bit.jeap.db.tx.TransactionalReadReplica;
 import ch.admin.bit.jeap.postgresql.aws.infrastructure.persistence.Person;
 import ch.admin.bit.jeap.postgresql.aws.infrastructure.persistence.PersonRepository;
+import com.zaxxer.hikari.HikariDataSource;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,21 +55,21 @@ class MultipleInstanceRDSDataSourceIT {
 
         Map<Object, DataSource> resolvedDataSources = readReplicaAwareTransactionRoutingDataSource.getResolvedDataSources();
 
-        RDSDataSource writerDataSource = (RDSDataSource) resolvedDataSources.get(ReadReplicaAwareTransactionRoutingDataSource.WRITER_KEY);
+        HikariDataSource writerDataSource = (HikariDataSource) resolvedDataSources.get(ReadReplicaAwareTransactionRoutingDataSource.WRITER_KEY);
         assertNotNull(readReplicaAwareTransactionRoutingDataSource.getResolvedDefaultDataSource());
         assertEquals(writerDataSource, readReplicaAwareTransactionRoutingDataSource.getResolvedDefaultDataSource());
         assertEquals("jdbc:h2:mem:readwrite;DB_CLOSE_ON_EXIT=FALSE", writerDataSource.getJdbcUrl());
         assertEquals("user", writerDataSource.getUsername());
         assertEquals(25, writerDataSource.getHikariConfigMXBean().getMaximumPoolSize());
         assertEquals("hik-pool", writerDataSource.getHikariConfigMXBean().getPoolName());
-        assertTrue(writerDataSource.getPassword().contains("?DBUser=user&Action=connect"));
+        assertEquals("pass-rw", writerDataSource.getPassword());
 
-        RDSDataSource readerDataSource = (RDSDataSource) resolvedDataSources.get(ReadReplicaAwareTransactionRoutingDataSource.READER_KEY);
+        HikariDataSource readerDataSource = (HikariDataSource) resolvedDataSources.get(ReadReplicaAwareTransactionRoutingDataSource.READER_KEY);
         assertEquals("jdbc:h2:mem:readonly;DB_CLOSE_ON_EXIT=FALSE", readerDataSource.getJdbcUrl());
         assertEquals("user-ro", readerDataSource.getUsername());
         assertEquals(35, readerDataSource.getHikariConfigMXBean().getMaximumPoolSize());
         assertEquals("hik-ro-pool", readerDataSource.getHikariConfigMXBean().getPoolName());
-        assertTrue(readerDataSource.getPassword().contains("?DBUser=user-ro&Action=connect"));
+        assertEquals("pass-ro", readerDataSource.getPassword());
     }
 
     @Test

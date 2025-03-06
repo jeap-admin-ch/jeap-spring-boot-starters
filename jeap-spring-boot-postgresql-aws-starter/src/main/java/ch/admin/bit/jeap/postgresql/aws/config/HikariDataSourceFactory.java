@@ -1,17 +1,15 @@
 package ch.admin.bit.jeap.postgresql.aws.config;
 
-import ch.admin.bit.jeap.postgresql.aws.RDSDataSource;
 import com.zaxxer.hikari.HikariDataSource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
-import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.jdbc.ds.AwsWrapperDataSource;
 
 @Slf4j
 public class HikariDataSourceFactory {
 
-    public static HikariDataSource create(DataSourceProperties properties, JeapPostgreSQLAWSProperties jeapPostgreSQLAWSProperties, WrapperTargetDataSourceProperties wrapperTargetDataSourceProperties, AwsCredentialsProvider awsCredentialsProvider, boolean enableAdvancedJdbcWrapper, String userName, String jdbcUrl) {
-        if (enableAdvancedJdbcWrapper) {
+    public static HikariDataSource create(DataSourceProperties properties, WrapperTargetDataSourceProperties wrapperTargetDataSourceProperties, String userName, String jdbcUrl) {
+        if (!isTestDatabase(jdbcUrl, properties)) {
             log.info("Enabling AWS Advanced Jdbc Wrapper.");
             HikariDataSource ds = new HikariDataSource();
             ds.setUsername(userName);
@@ -21,17 +19,17 @@ public class HikariDataSourceFactory {
             ds.addDataSourceProperty("targetDataSourceProperties", wrapperTargetDataSourceProperties);
             return ds;
         } else {
-            log.info("AWS Advanced Jdbc Wrapper is not enabled.");
+            // The AWS wrapper is not compatible with H2 databases, therefore we initialize a regular Hikari datasource
+            // for H2 databases
+            log.info("Detected test configuration database. Initializing a test H2 datasource.");
             properties.setUrl(jdbcUrl);
             properties.setUsername(userName);
-            RDSDataSource rdsDataSource = properties.initializeDataSourceBuilder().type(RDSDataSource.class).build();
-
-            rdsDataSource.setCredentialsProvider(awsCredentialsProvider);
-            rdsDataSource.setRegion(jeapPostgreSQLAWSProperties.getRegion());
-            rdsDataSource.setHostname(jeapPostgreSQLAWSProperties.getHostname());
-            rdsDataSource.setPort(jeapPostgreSQLAWSProperties.getPort());
-            return rdsDataSource;
+            return properties.initializeDataSourceBuilder().type(HikariDataSource.class).build();
         }
+    }
+
+    private static boolean isTestDatabase(String jdbcUrl, DataSourceProperties properties) {
+        return jdbcUrl.toLowerCase().contains("jdbc:h2:") || (properties.getDriverClassName() != null && properties.getDriverClassName().equals("org.h2.Driver"));
     }
 
 }

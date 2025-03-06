@@ -30,12 +30,6 @@ import static org.springframework.util.StringUtils.hasText;
 public class JeapPostgreSQLAWSDataSourceAutoConfig {
 
     @Bean
-    @ConditionalOnMissingBean(AwsCredentialsProvider.class)
-    DefaultCredentialsProvider awsCredentialsProvider() {
-        return DefaultCredentialsProvider.create();
-    }
-
-    @Bean
     @ConfigurationProperties("jeap.datasource")
     public DataSourceProperties dataSourceProperties() {
         return new DataSourceProperties();
@@ -58,16 +52,14 @@ public class JeapPostgreSQLAWSDataSourceAutoConfig {
     public HikariDataSource dataSource(@Qualifier("dataSourceProperties") DataSourceProperties properties,
                                        JeapPostgreSQLAWSProperties jeapPostgreSQLAWSProperties,
                                        @Qualifier("wrapperTargetDataSourceProperties") WrapperTargetDataSourceProperties wrapperTargetDataSourceProperties,
-                                       AwsCredentialsProvider awsCredentialsProvider,
-                                       @Value("${spring.application.name:}") String applicationName,
-                                       @Value("${jeap.datasource.aws.enable-advanced-jdbc-wrapper:true}") boolean enableAdvancedJdbcWrapper) {
+                                       @Value("${spring.application.name:}") String applicationName) {
         String inferredUsername = inferUsername(properties, applicationName);
         log.info("Inferred datasource username: {}", inferredUsername);
 
         String inferredJdbcUrl = inferJdbcUrl(properties, jeapPostgreSQLAWSProperties, applicationName);
         log.info("Inferred Jdbc Url: {}", inferredJdbcUrl);
 
-        return HikariDataSourceFactory.create(properties, jeapPostgreSQLAWSProperties, wrapperTargetDataSourceProperties, awsCredentialsProvider, enableAdvancedJdbcWrapper, inferredUsername, inferredJdbcUrl);
+        return HikariDataSourceFactory.create(properties, wrapperTargetDataSourceProperties, inferredUsername, inferredJdbcUrl);
     }
 
     @Bean

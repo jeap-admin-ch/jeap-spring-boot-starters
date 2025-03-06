@@ -45,10 +45,10 @@ class SingleInstanceRDSDataSourceIT {
 
         Map<Object, DataSource> resolvedDataSources = readReplicaAwareTransactionRoutingDataSource.getResolvedDataSources();
 
-        RDSDataSource rdsDataSource = (RDSDataSource) resolvedDataSources.get(ReadReplicaAwareTransactionRoutingDataSource.WRITER_KEY);
+        HikariDataSource rdsDataSource = (HikariDataSource) resolvedDataSources.get(ReadReplicaAwareTransactionRoutingDataSource.WRITER_KEY);
         assertEquals(25, rdsDataSource.getHikariConfigMXBean().getMaximumPoolSize());
         assertEquals("hik-pool", rdsDataSource.getHikariConfigMXBean().getPoolName());
-        assertTrue(rdsDataSource.getPassword().contains("?DBUser=user&Action=connect"));
+        assertEquals("pass-rw", rdsDataSource.getPassword());
 
         assertNull(resolvedDataSources.get(ReadReplicaAwareTransactionRoutingDataSource.READER_KEY));
     }
@@ -61,19 +61,6 @@ class SingleInstanceRDSDataSourceIT {
 
         assertTrue(randomPerson1.isEmpty());
         assertTrue(persons.isEmpty());
-    }
-
-    @Test
-    @Transactional
-    void ignoreConfigurationChangesIfHikariConfigurationIsSealed() {
-        // There is already a H2 Database running when the test starts, we now attempt to modify the configuration.
-        // Usually it will fail, we ignore the exception as this might happen during AppConfig config refresh
-        HikariDataSource hikariDataSource = (HikariDataSource) ((ReadReplicaAwareTransactionRoutingDataSource) dataSource).getResolvedDefaultDataSource();
-
-        hikariDataSource.setSchema("schema");
-        hikariDataSource.setPoolName("poolName");
-        assertEquals("PUBLIC", hikariDataSource.getSchema());
-        assertEquals("hik-pool", hikariDataSource.getPoolName());
     }
 
     @Test

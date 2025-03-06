@@ -6,8 +6,15 @@ jeap:
   datasource:
     url: jdbc:h2:mem:readwrite;DB_CLOSE_ON_EXIT=FALSE
     username: user
+    password: pass-rw
     driverClassname: org.h2.Driver
     hikari:
       schema: PUBLIC # Default H2 schema name
       pool-name: hik-pool
       maximum-pool-size: 25
+
+spring:
+  jpa:
+    properties:
+      hibernate:
+        default_schema: PUBLIC
