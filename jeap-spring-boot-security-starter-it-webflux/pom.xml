@@ -7,7 +7,7 @@
     <parent>
         <groupId>ch.admin.bit.jeap</groupId>
     	<artifactId>jeap-spring-boot-starters</artifactId>
-        <version>17.20.0-SNAPSHOT</version>
+        <version>17.21.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>jeap-spring-boot-security-starter-it-webflux</artifactId>
