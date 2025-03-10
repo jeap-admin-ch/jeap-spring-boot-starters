@@ -5,13 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [17.22.0] - 2025-03-06
+## [17.23.0] - 2025-03-10
 
 ### Changed
 
 - Several improvements in jeap-spring-boot-postgresql-starter:
     - Schema name is also set to 'data' for JPA. It might require changing the schema name in tests with H2 database, as the default H2 schema name is 'public'.
     - Removed legacy RDSDataSource implementation.
+
+## [17.22.0] - 2025-03-10
+
+### Changed
+
+- Configure proxy to work around the issue https://github.com/aws/aws-sdk-java-v2/issues/4728 which is coming with the aws sdk update
 
 ## [17.21.0] - 2025-03-06
 

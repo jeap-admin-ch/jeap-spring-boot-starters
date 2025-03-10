@@ -13,6 +13,8 @@ import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.http.urlconnection.ProxyConfiguration;
+import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.S3ClientBuilder;
 import software.amazon.awssdk.services.s3.S3Configuration;
@@ -42,6 +44,12 @@ public class S3ClientConfiguration {
             S3ClientBuilder s3ClientBuilder = S3Client.builder()
                     .region(properties.getRegion())
                     .serviceConfiguration(serviceConfiguration())
+                    .httpClient(UrlConnectionHttpClient.builder()
+                            .proxyConfiguration(ProxyConfiguration.builder() // Configure proxy to work around the issue https://github.com/aws/aws-sdk-java-v2/issues/4728 which is coming with the aws sdk update
+                                    .useSystemPropertyValues(false)
+                                    .useEnvironmentVariablesValues(false)
+                                    .build())
+                            .build())
                     .credentialsProvider(awsCredentialsProvider);
 
             if (hasText(properties.getEndpointUrl())) {
