@@ -1,0 +1,10 @@
+{
+  "properties": [
+    {
+      "name": "jeap.health.metric.update-rate-seconds",
+      "description": "How often the health indicator is queried to produce the state of the 'health' metric. Set to -1 to disable the health metric.",
+      "defaultValue": 120,
+      "type": "java.lang.Integer"
+    }
+  ]
+}

@@ -9,6 +9,12 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- The "health" metric is updated asycnchronously to avoid evaluting the health indicators for every metric update
+
+## [17.23.0] - 2025-03-11
+
+### Changed
+
 - Several improvements in jeap-spring-boot-postgresql-starter:
     - Schema name is also set to 'data' for JPA. It might require changing the schema name in tests with H2 database, as the default H2 schema name is 'public'.
     - Removed legacy RDSDataSource implementation.
