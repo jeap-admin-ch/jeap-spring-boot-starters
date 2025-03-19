@@ -22,7 +22,7 @@ public class HealthMetricsAutoConfig {
     private Status currentStatus = Status.UP;
 
     @PostConstruct
-    public void doSomethingAfterStartup() {
+    public void createHealthMetric() {
         this.meterRegistry.gauge("health", this, HealthMetricsAutoConfig::statusToCode);
     }
 

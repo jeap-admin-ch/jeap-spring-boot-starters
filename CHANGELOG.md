@@ -5,11 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [17.23.0] - 2025-03-11
+## [17.24.0] - 2025-03-19
 
 ### Changed
 
 - The "health" metric is updated asycnchronously to avoid evaluting the health indicators for every metric update
+  - jeap.health.metric.update-rate-seconds is set to 120 by default. Set to -1 to disable the health metric.
 
 ## [17.23.0] - 2025-03-11
 

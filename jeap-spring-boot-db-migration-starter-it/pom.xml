@@ -7,7 +7,7 @@
     <parent>
         <groupId>ch.admin.bit.jeap</groupId>
         <artifactId>jeap-spring-boot-starters</artifactId>
-        <version>17.23.0-SNAPSHOT</version>
+        <version>17.24.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>jeap-spring-boot-db-migration-starter-it</artifactId>
