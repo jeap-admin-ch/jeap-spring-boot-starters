@@ -3,8 +3,6 @@ package ch.admin.bit.jeap.starter.object.storage.domain;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import software.amazon.awssdk.regions.Region;
 
@@ -16,8 +14,6 @@ import java.net.URISyntaxException;
 @ToString
 @ConfigurationProperties(prefix = "jeap.s3.client")
 public class S3ClientProperties {
-
-    private static final Logger log = LoggerFactory.getLogger(S3ClientProperties.class);
 
     /**
      * Enables / Disables the S3Client
