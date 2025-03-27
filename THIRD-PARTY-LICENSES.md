@@ -29,6 +29,7 @@ Apache License Version 2.0
  * Jackson-dataformat-TOML - [com.fasterxml.jackson.dataformat:jackson-dataformat-toml](https://github.com/FasterXML/jackson-dataformats-text)
  * Jackson-dataformat-YAML - [com.fasterxml.jackson.dataformat:jackson-dataformat-yaml](https://github.com/FasterXML/jackson-dataformats-text)
  * Jackson datatype: jdk8 - [com.fasterxml.jackson.datatype:jackson-datatype-jdk8](https://github.com/FasterXML/jackson-modules-java8/jackson-datatype-jdk8)
+ * Jackson datatype: Joda - [com.fasterxml.jackson.datatype:jackson-datatype-joda](https://github.com/FasterXML/jackson-datatype-joda)
  * Jackson datatype: JSR310 - [com.fasterxml.jackson.datatype:jackson-datatype-jsr310](https://github.com/FasterXML/jackson-modules-java8/jackson-datatype-jsr310)
  * Jackson-module-parameter-names - [com.fasterxml.jackson.module:jackson-module-parameter-names](https://github.com/FasterXML/jackson-modules-java8/jackson-module-parameter-names)
  * docker-java-api - [com.github.docker-java:docker-java-api](https://github.com/docker-java/docker-java)
@@ -120,6 +121,7 @@ Apache License Version 2.0
  * Brave W3C Propagation: Trace Context - [io.zipkin.contrib.brave-propagation-w3c:brave-propagation-tracecontext](https://github.com/openzipkin-contrib/brave-propagation-w3c/brave-propagation-tracecontext)
  * Jakarta Dependency Injection - [jakarta.inject:jakarta.inject-api](https://github.com/eclipse-ee4j/injection-api)
  * Jakarta Bean Validation API - [jakarta.validation:jakarta.validation-api](https://beanvalidation.org)
+ * Joda-Time - [joda-time:joda-time](https://www.joda.org/joda-time/)
  * Byte Buddy (without dependencies) - [net.bytebuddy:byte-buddy](https://bytebuddy.net/byte-buddy)
  * Byte Buddy agent - [net.bytebuddy:byte-buddy-agent](https://bytebuddy.net/byte-buddy-agent)
  * Java Native Access - [net.java.dev.jna:jna](https://github.com/java-native-access/jna)
@@ -304,9 +306,9 @@ BSD License 3
 Bouncy Castle Licence
 -------------------------------
 
- * Bouncy Castle PKIX, CMS, EAC, TSP, PKCS, OCSP, CMP, and CRMF APIs - [org.bouncycastle:bcpkix-jdk18on](https://www.bouncycastle.org/java.html)
- * Bouncy Castle Provider - [org.bouncycastle:bcprov-jdk18on](https://www.bouncycastle.org/java.html)
- * Bouncy Castle ASN.1 Extension and Utility APIs - [org.bouncycastle:bcutil-jdk18on](https://www.bouncycastle.org/java.html)
+ * Bouncy Castle PKIX, CMS, EAC, TSP, PKCS, OCSP, CMP, and CRMF APIs - [org.bouncycastle:bcpkix-jdk18on](https://www.bouncycastle.org/download/bouncy-castle-java/)
+ * Bouncy Castle Provider - [org.bouncycastle:bcprov-jdk18on](https://www.bouncycastle.org/download/bouncy-castle-java/)
+ * Bouncy Castle ASN.1 Extension and Utility APIs - [org.bouncycastle:bcutil-jdk18on](https://www.bouncycastle.org/download/bouncy-castle-java/)
 
 Eclipse Distribution License - v 1.0
 -------------------------------
