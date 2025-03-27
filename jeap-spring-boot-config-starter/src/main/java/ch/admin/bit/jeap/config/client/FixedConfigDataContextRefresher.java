@@ -17,6 +17,7 @@ import org.springframework.core.env.StandardEnvironment;
 import org.springframework.core.io.support.SpringFactoriesLoader;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Supplier;
 
 /**
@@ -48,52 +49,42 @@ class FixedConfigDataContextRefresher extends ConfigDataContextRefresher {
         if (logger.isTraceEnabled()) {
             logger.trace("Re-processing environment to add config data");
         }
-        StandardEnvironment environment = copyEnvironment(getContext().getEnvironment());
-        ConfigurableBootstrapContext bootstrapContext = getContext().getBeanProvider(ConfigurableBootstrapContext.class)
-                .getIfAvailable(DefaultBootstrapContext::new);
 
-        // run thru all EnvironmentPostProcessor instances. This lets things like vcap and
-        // decrypt happen after refresh. The hard coded call to
-        // ConfigDataEnvironmentPostProcessor.applyTo() is now automated as well.
+        StandardEnvironment environment = this.copyEnvironment(this.getContext().getEnvironment());
+        ConfigurableBootstrapContext bootstrapContext = this.getContext().getBeanProvider(ConfigurableBootstrapContext.class).getIfAvailable(DefaultBootstrapContext::new);
         DeferredLogFactory logFactory = new PassthruDeferredLogFactory();
-        List<String> classNames = SpringFactoriesLoader.loadFactoryNames(EnvironmentPostProcessor.class,
-                getClass().getClassLoader());
-        Instantiator<EnvironmentPostProcessor> instantiator = new Instantiator<>(EnvironmentPostProcessor.class,
-                (parameters) -> {
-                    parameters.add(DeferredLogFactory.class, logFactory);
-                    parameters.add(Log.class, logFactory::getLog);
-                    parameters.add(ConfigurableBootstrapContext.class, bootstrapContext);
-                    parameters.add(BootstrapContext.class, bootstrapContext);
-                    parameters.add(BootstrapRegistry.class, bootstrapContext);
-                });
-        List<EnvironmentPostProcessor> postProcessors = instantiator.instantiate(classNames);
-        for (EnvironmentPostProcessor postProcessor : postProcessors) {
-            postProcessor.postProcessEnvironment(environment, application);
+        List<String> classNames = SpringFactoriesLoader.loadFactoryNames(EnvironmentPostProcessor.class, this.getClass().getClassLoader());
+        Instantiator<EnvironmentPostProcessor> instantiator = new Instantiator<>(EnvironmentPostProcessor.class, (parameters) -> {
+            parameters.add(DeferredLogFactory.class, logFactory);
+            Objects.requireNonNull(logFactory);
+            parameters.add(Log.class, logFactory::getLog);
+            parameters.add(ConfigurableBootstrapContext.class, bootstrapContext);
+            parameters.add(BootstrapContext.class, bootstrapContext);
+            parameters.add(BootstrapRegistry.class, bootstrapContext);
+        });
+
+        for(EnvironmentPostProcessor postProcessor : instantiator.instantiate(classNames)) {
+            postProcessor.postProcessEnvironment(environment, this.application);
         }
 
-        if (environment.getPropertySources().contains(REFRESH_ARGS_PROPERTY_SOURCE)) {
-            environment.getPropertySources().remove(REFRESH_ARGS_PROPERTY_SOURCE);
-        }
-        MutablePropertySources target = getContext().getEnvironment().getPropertySources();
+        MutablePropertySources target = this.getContext().getEnvironment().getPropertySources();
         String targetName = null;
-        for (PropertySource<?> source : environment.getPropertySources()) {
+
+        for(PropertySource<?> source : environment.getPropertySources()) {
             String name = source.getName();
             if (target.contains(name)) {
                 targetName = name;
             }
+
             if (!this.standardSources.contains(name)) {
                 if (target.contains(name)) {
                     target.replace(name, source);
+                } else if (targetName != null) {
+                    target.addAfter(targetName, source);
+                    targetName = name;
                 } else {
-                    if (targetName != null) {
-                        target.addAfter(targetName, source);
-                        // update targetName to preserve ordering
-                        targetName = name;
-                    } else {
-                        // targetName was null so we are at the start of the list
-                        target.addFirst(source);
-                        targetName = name;
-                    }
+                    target.addFirst(source);
+                    targetName = name;
                 }
             }
         }
