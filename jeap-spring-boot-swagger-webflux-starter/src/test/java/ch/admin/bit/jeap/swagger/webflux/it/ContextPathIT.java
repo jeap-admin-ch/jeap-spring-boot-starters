@@ -11,7 +11,7 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 @AutoConfigureWebTestClient
 class ContextPathIT {
     private final static String SWAGGER_REDIRECT_URL = "/test/swagger-ui.html";
-    private final static String SWAGGER_UI_URL = "/test/webjars/swagger-ui/index.html";
+    private final static String SWAGGER_UI_URL = "/test/swagger-ui/index.html";
     private final static String SWAGGER_CONFIG_URL = "/test/api-docs/swagger-config";
     private final static String OPEN_API_SPEC_URL = "/test/api-docs/test";
     private final static String OAUTH_REDIRECT_URL = "http://localhost/test/webjars/swagger-ui/oauth2-redirect.html";
@@ -57,6 +57,6 @@ class ContextPathIT {
                 .uri(OPEN_API_SPEC_URL)
                 .exchange()
                 .expectStatus().isOk()
-                .expectBody().json("{'openapi':'3.0.1'}");
+                .expectBody().json("{'openapi':'3.1.0'}");
     }
 }

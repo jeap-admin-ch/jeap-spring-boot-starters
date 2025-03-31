@@ -72,11 +72,14 @@
     </modules>
 
     <properties>
-        <springdoc-openapi.version>2.7.0</springdoc-openapi.version>
-        <logstash.version>7.2</logstash.version>
-        <wiremock.version>2.35.0</wiremock.version>
-        <java-cfenv-boot.version>2.4.2</java-cfenv-boot.version>
+        <springdoc-openapi.version>2.8.6</springdoc-openapi.version>
+        <logstash.version>8.0</logstash.version>
+        <wiremock.version>3.12.1</wiremock.version>
+        <java-cfenv-boot.version>3.4.0</java-cfenv-boot.version>
         <maven.javadoc.skip>false</maven.javadoc.skip>
+
+        <!-- some code is copied from a spring base classes to fix issues -->
+        <sonar.cpd.exclusions>**/FixedConfigDataContextRefresher.java,**/FixedLegacyContextRefresher.java</sonar.cpd.exclusions>
     </properties>
 
     <build>

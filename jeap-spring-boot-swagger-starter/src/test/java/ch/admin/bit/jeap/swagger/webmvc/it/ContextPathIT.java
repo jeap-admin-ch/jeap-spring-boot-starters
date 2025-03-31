@@ -58,7 +58,7 @@ class ContextPathIT {
         mockMvc.perform(get(OPEN_API_SPEC_URL).contextPath("/test"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType("application/json"))
-                .andExpect(jsonPath("$['openapi']").value("3.0.1"))
+                .andExpect(jsonPath("$['openapi']").value("3.1.0"))
                 .andExpect(jsonPath("$['servers'][0].url").value("http://localhost/test"));
     }
 

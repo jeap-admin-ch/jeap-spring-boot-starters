@@ -2,7 +2,11 @@ package ch.admin.bit.jeap.config.client;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.boot.*;
+import org.springframework.boot.BootstrapContext;
+import org.springframework.boot.BootstrapRegistry;
+import org.springframework.boot.ConfigurableBootstrapContext;
+import org.springframework.boot.DefaultBootstrapContext;
+import org.springframework.boot.SpringApplication;
 import org.springframework.boot.env.EnvironmentPostProcessor;
 import org.springframework.boot.logging.DeferredLogFactory;
 import org.springframework.boot.util.Instantiator;
@@ -63,14 +67,14 @@ class FixedConfigDataContextRefresher extends ConfigDataContextRefresher {
             parameters.add(BootstrapRegistry.class, bootstrapContext);
         });
 
-        for(EnvironmentPostProcessor postProcessor : instantiator.instantiate(classNames)) {
+        for (EnvironmentPostProcessor postProcessor : instantiator.instantiate(classNames)) {
             postProcessor.postProcessEnvironment(environment, this.application);
         }
 
         MutablePropertySources target = this.getContext().getEnvironment().getPropertySources();
         String targetName = null;
 
-        for(PropertySource<?> source : environment.getPropertySources()) {
+        for (PropertySource<?> source : environment.getPropertySources()) {
             String name = source.getName();
             if (target.contains(name)) {
                 targetName = name;

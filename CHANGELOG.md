@@ -10,6 +10,10 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Changed
 
 - Update parent from 5.6.0 to 5.7.0
+- Update springdoc-openapi from 2.7.0 to 2.8.6
+- Update logstash from 7.2 to 8.0
+- Update wiremock from 2.35.0 to 3.12.1, also change groupId from com.github.tomakehurst to org.wiremock
+- Update java-cfenv-boot from 2.4.2 to 3.4.0
 
 ## [17.24.1] - 2025-03-20
 

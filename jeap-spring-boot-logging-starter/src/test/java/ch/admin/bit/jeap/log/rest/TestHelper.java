@@ -44,7 +44,7 @@ class TestHelper {
         return input
                 //JSON Format 2020-05-29T12:47:17.653+02:00 or 2022-11-17T17:47:11.576Z (time with an offset or Zulu time)
                 //allowing millis without leading zeros and completely missing millis
-                .replaceAll("\"....-..-..T..:..:...{0,4}(Z|(\\+..:..))\"", "TIME")
+                .replaceAll("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{1,9}(Z|[+-]\\d{2}:\\d{2})", "TIME")
                 //dt
                 .replaceAll("\"dt\":[0-9]+,", "\"dt\":X,")
                 .replaceAll("dt=[0-9]+", "dt=X")

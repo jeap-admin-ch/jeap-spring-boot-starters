@@ -14,7 +14,7 @@ import java.util.Base64;
 @AutoConfigureWebTestClient
 class SecuredIT {
     private final static String SWAGGER_REDIRECT_URL = "/swagger-ui.html";
-    private final static String SWAGGER_UI_URL = "/webjars/swagger-ui/index.html";
+    private final static String SWAGGER_UI_URL = "/swagger-ui/index.html";
     private final static String SWAGGER_CONFIG_URL = "/api-docs/swagger-config";
     private final static String OPEN_API_SPEC_URL = "/api-docs/test";
     private final static String OAUTH_REDIRECT_URL = "http://localhost/webjars/swagger-ui/oauth2-redirect.html";
@@ -96,6 +96,6 @@ class SecuredIT {
                 .header("Authorization", "Basic " + ENCODER.encodeToString(("swagger:secret").getBytes(StandardCharsets.UTF_8)))
                 .exchange()
                 .expectStatus().isOk()
-                .expectBody().json("{'openapi':'3.0.1'}");
+                .expectBody().json("{'openapi':'3.1.0'}");
     }
 }
