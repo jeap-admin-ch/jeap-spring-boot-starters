@@ -33,7 +33,7 @@
     <parent>
         <artifactId>jeap-internal-spring-boot-parent</artifactId>
         <groupId>ch.admin.bit.jeap</groupId>
-        <version>5.7.1-feature-JEAP-5508-SNAPSHOT</version>
+        <version>5.7.1</version>
     </parent>
 
     <modules>
