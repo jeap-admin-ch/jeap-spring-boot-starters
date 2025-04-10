@@ -37,6 +37,16 @@ public class B2BGatewayConfigProperties implements AuthorizationServerConfigurat
      */
     private String claimSetConverterName;
 
+    /**
+     * Timeout in milliseconds for connecting to the JWK set URI
+     */
+    private int jwksConnectTimeoutInMillis = 15_000;
+
+    /**
+     * Timeout in milliseconds for reading the JWK set URI
+     */
+    private int jwksReadTimeoutInMillis = 15_000;
+
     AuthorizationServerConfigProperties asAuthorizationServerConfigProperties() {
         AuthorizationServerConfigProperties configProperties = new AuthorizationServerConfigProperties();
         configProperties.setIssuer(issuer);

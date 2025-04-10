@@ -113,19 +113,19 @@ public class MvcSecurityConfiguration {
     @Order(Ordered.LOWEST_PRECEDENCE) //  Allow for overriding
     @SuppressWarnings({"DefaultAnnotationParam", "OptionalUsedAsFieldOrParameterType"})
     public SecurityFilterChain oauth2SecurityWebFilterChain(HttpSecurity http,
-            JeapJwtDecoderFactory jeapJwtDecoderFactory,
-            Optional<JeapOauth2ResourceAuthenticationEntryPoint> jeapOauth2ResourceAuthenticationEntryPoint,
-            Optional<JeapOauth2ResourceAccessDeniedHandler> jeapOauth2ResourceAccessDeniedHandler,
-            @Value("${server.error.path:${error.path:/error}}") String errorPath) throws Exception {
+                                                            JeapJwtDecoderFactory jeapJwtDecoderFactory,
+                                                            Optional<JeapOauth2ResourceAuthenticationEntryPoint> jeapOauth2ResourceAuthenticationEntryPoint,
+                                                            Optional<JeapOauth2ResourceAccessDeniedHandler> jeapOauth2ResourceAccessDeniedHandler,
+                                                            @Value("${server.error.path:${error.path:/error}}") String errorPath) throws Exception {
 
         //All requests must be authenticated except internal error dispatches to the error page
-        http.authorizeHttpRequests( authorizeHttpRequests ->
+        http.authorizeHttpRequests(authorizeHttpRequests ->
                 authorizeHttpRequests.
                         requestMatchers(
                                 RequestMatchers.allOf(
                                         AntPathRequestMatcher.antMatcher(HttpMethod.GET, errorPath),
                                         new DispatcherTypeRequestMatcher(DispatcherType.ERROR))
-                                ).permitAll().
+                        ).permitAll().
                         anyRequest().fullyAuthenticated()
         );
 
@@ -137,19 +137,19 @@ public class MvcSecurityConfiguration {
                 csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()));
 
         //No session management is needed, we want stateless
-        http.sessionManagement( seessionManagement ->
-                seessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+        http.sessionManagement(sessionManagement ->
+                sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         //Treat endpoints as OAuth2 resources
         JwtDecoder jwtDecoder = jeapJwtDecoderFactory.createJwtDecoder();
         JeapAuthenticationConverter authenticationConverter = new JeapAuthenticationConverter(authoritiesResolver);
-        http.oauth2ResourceServer(oauth2ResourceServer ->  {
+        http.oauth2ResourceServer(oauth2ResourceServer -> {
             oauth2ResourceServer
                     .jwt(jwt -> jwt
                             .decoder(jwtDecoder).
                             jwtAuthenticationConverter(authenticationConverter));
-                    jeapOauth2ResourceAuthenticationEntryPoint.ifPresent(oauth2ResourceServer::authenticationEntryPoint);
-                    jeapOauth2ResourceAccessDeniedHandler.ifPresent(oauth2ResourceServer::accessDeniedHandler);
+            jeapOauth2ResourceAuthenticationEntryPoint.ifPresent(oauth2ResourceServer::authenticationEntryPoint);
+            jeapOauth2ResourceAccessDeniedHandler.ifPresent(oauth2ResourceServer::accessDeniedHandler);
         });
         return http.build();
     }

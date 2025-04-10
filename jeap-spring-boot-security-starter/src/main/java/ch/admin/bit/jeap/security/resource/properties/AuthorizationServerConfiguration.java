@@ -14,4 +14,7 @@ public interface AuthorizationServerConfiguration {
 
     Set<JeapAuthenticationContext> getAuthenticationContexts();
 
+    int getJwksConnectTimeoutInMillis();
+
+    int getJwksReadTimeoutInMillis();
 }
