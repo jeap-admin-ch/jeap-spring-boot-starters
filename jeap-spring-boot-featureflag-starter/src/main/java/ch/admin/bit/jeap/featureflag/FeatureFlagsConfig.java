@@ -33,7 +33,7 @@ public class FeatureFlagsConfig {
      */
     @Bean
     @RefreshScope
-    @SuppressWarnings("ResultOfMethodCallIgnored")
+    @SuppressWarnings("java:S899")
     public StateRepository stateRepository() throws IOException {
         StateRepository stateRepository;
         String featuresFile = togglzProperties.getFeaturesFile();
