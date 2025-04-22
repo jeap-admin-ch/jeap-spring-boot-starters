@@ -1,11 +1,14 @@
 package ch.admin.bit.jeap.security.resource.properties;
 
 import ch.admin.bit.jeap.security.resource.token.JeapAuthenticationContext;
+import jakarta.validation.Valid;
 import lombok.Data;
 import org.springframework.util.StringUtils;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
+import org.springframework.validation.annotation.Validated;
+
 import java.util.Set;
 
 import static ch.admin.bit.jeap.security.resource.token.JeapAuthenticationContext.SYS;
@@ -15,6 +18,7 @@ import static ch.admin.bit.jeap.security.resource.token.JeapAuthenticationContex
  * Configuration properties to configure the authorization server that the OAuth2 resource server will accept tokens from.
  */
 @Data
+@Validated
 public class AuthorizationServerConfigProperties implements AuthorizationServerConfiguration {
 
     private static final String JWK_SET_URI_SUBPATH = "/protocol/openid-connect/certs";
@@ -50,6 +54,12 @@ public class AuthorizationServerConfigProperties implements AuthorizationServerC
      * Timeout in milliseconds for reading the JWK set URI
      */
     private int jwksReadTimeoutInMillis = 15_000;
+
+    /**
+     * The introspection configuration related to this server
+     */
+    @Valid
+    private IntrospectionProperties introspection;
 
     public String getJwkSetUri() {
         return StringUtils.hasText(jwkSetUri) ? jwkSetUri : issuer + JWK_SET_URI_SUBPATH;

@@ -1,7 +1,10 @@
 package ch.admin.bit.jeap.security.resource.properties;
 
 import ch.admin.bit.jeap.security.resource.configuration.JeapOAuth2ResourceCondition;
+import jakarta.annotation.PostConstruct;
+import jakarta.validation.Valid;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -22,6 +25,7 @@ import java.util.List;
 @ConfigurationProperties("jeap.security.oauth2.resourceserver")
 @Validated
 @Data
+@Slf4j
 public class ResourceServerProperties {
 
     /**
@@ -41,10 +45,16 @@ public class ResourceServerProperties {
     private String systemName;
 
     /**
+     * The introspection mode.
+     */
+    private IntrospectionMode introspectionMode;
+
+    /**
      * Auth server configuration for the user and system authentication context.
      * Shortcut configuration option, left intact for backward compatibility.
      */
     @NestedConfigurationProperty
+    @Valid
     private AuthorizationServerConfigProperties authorizationServer;
 
     /**
@@ -52,11 +62,13 @@ public class ResourceServerProperties {
      * Shortcut configuration option, left intact for backward compatibility.
      */
     @NestedConfigurationProperty
+    @Valid
     private B2BGatewayConfigProperties b2BGateway;
 
     /**
      * Configurations of the auth servers to be trusted by this resource server.
      */
+    @Valid
     List<AuthorizationServerConfigProperties> authServers;
 
     public String getAudience() {
@@ -80,6 +92,35 @@ public class ResourceServerProperties {
             allAuthServerConfigs.addAll(authServers);
         }
         return allAuthServerConfigs;
+    }
+
+    @PostConstruct
+    @SuppressWarnings("java:S3776")
+    public void validate() {
+        log.info("Validating resource server properties for resource id {}", resourceId);
+        if (introspectionMode == null) {
+            for (AuthorizationServerConfigProperties config : getAllAuthServerConfigurations()) {
+                if (config.getIntrospection() != null) {
+                    throw new IllegalArgumentException(config.getIssuer() + ": introspection has not been activated but introspection configurations have been provided. Did you forget to activate introspection by setting an introspection mode?");
+                }
+            }
+
+        } else if (IntrospectionMode.NONE.equals(introspectionMode)) {
+            for (AuthorizationServerConfigProperties config : getAllAuthServerConfigurations()) {
+                if (config.getIntrospection() != null) {
+                    log.warn("{}: introspection disabled with introspection mode \"NONE\", but introspection configurations provided.", config.getIssuer());
+                }
+            }
+
+        } else {
+            for (AuthorizationServerConfigProperties config : getAllAuthServerConfigurations()) {
+                if (config.getIntrospection() == null) {
+                    throw new IllegalArgumentException(config.getIssuer() + ": introspection configuration must be defined when introspection mode is activated.");
+                }
+                config.getIntrospection().validate(config.getIssuer());
+            }
+        }
+
     }
 
 }

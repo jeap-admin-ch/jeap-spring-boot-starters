@@ -17,4 +17,6 @@ public interface AuthorizationServerConfiguration {
     int getJwksConnectTimeoutInMillis();
 
     int getJwksReadTimeoutInMillis();
+
+    IntrospectionProperties getIntrospection();
 }

@@ -1,10 +1,13 @@
 package ch.admin.bit.jeap.security.resource.properties;
 
 import ch.admin.bit.jeap.security.resource.token.JeapAuthenticationContext;
+import jakarta.validation.Valid;
 import lombok.Data;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
+import org.springframework.validation.annotation.Validated;
+
 import java.util.Set;
 
 import static ch.admin.bit.jeap.security.resource.token.JeapAuthenticationContext.B2B;
@@ -13,6 +16,7 @@ import static ch.admin.bit.jeap.security.resource.token.JeapAuthenticationContex
  * Configuration properties to configure the B2B gateway that the OAuth2 resource server will accept tokens from.
  */
 @Data
+@Validated
 public class B2BGatewayConfigProperties implements AuthorizationServerConfiguration {
     /**
      * Issuer of the token
@@ -47,12 +51,19 @@ public class B2BGatewayConfigProperties implements AuthorizationServerConfigurat
      */
     private int jwksReadTimeoutInMillis = 15_000;
 
+    /**
+     * The introspection configuration related to this server
+     */
+    @Valid
+    private IntrospectionProperties introspection;
+
     AuthorizationServerConfigProperties asAuthorizationServerConfigProperties() {
         AuthorizationServerConfigProperties configProperties = new AuthorizationServerConfigProperties();
         configProperties.setIssuer(issuer);
         configProperties.setJwkSetUri(jwkSetUri);
         configProperties.setAuthenticationContexts(Set.copyOf(authenticationContexts));
         configProperties.setClaimSetConverterName(claimSetConverterName);
+        configProperties.setIntrospection(introspection);
         return configProperties;
     }
 

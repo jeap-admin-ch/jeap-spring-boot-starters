@@ -1,0 +1,28 @@
+spring:
+  application:
+    name: "test-app"
+jeap:
+  security:
+    oauth2:
+      resourceserver:
+        resource-id: "test-resource"
+        system-name: "test-system"
+        authorization-server:
+          issuer: "https://keycloak/auth/realm"
+          introspection:
+            client-id: myId
+            client-secret: mySecret
+        b2b-gateway:
+          issuer: "https://b2b/auth"
+          jwk-set-uri: "https://b2b/.well-known/jwks.json"
+          introspection:
+            client-id: myB2bId
+            client-secret: myB2bSecret
+        auth-servers:
+          - issuer: "https://custom-uri/auth/realm"
+            claim-set-converter-name: "test-keycloak2-converter"
+            introspection:
+              client-id: myFirstId
+              client-secret: myFirstSecret
+              uri: https://custom-uri/introspection-uri/protocol/openid-connect/token/introspect
+        introspection-mode: always
