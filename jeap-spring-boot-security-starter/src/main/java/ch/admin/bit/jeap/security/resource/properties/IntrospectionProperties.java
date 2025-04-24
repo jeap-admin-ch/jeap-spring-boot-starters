@@ -30,6 +30,16 @@ public class IntrospectionProperties {
     @NotEmpty
     String clientSecret;
 
+    /**
+     * Connect timeout for a token introspection http request in milliseconds.
+     */
+    int connectTimeoutInMillis = 15000;
+
+    /**
+     * Read timeout for a token introspection http request in milliseconds.
+     */
+    int readTimeoutInMillis = 15000;
+
     public void validate(String issuerUri) {
         log.info("Validating introspection properties for uri {} and clientId {}", uri, clientId);
         if (this.uri == null || this.uri.isEmpty()) {

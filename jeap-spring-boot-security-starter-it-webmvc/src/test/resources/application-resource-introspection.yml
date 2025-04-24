@@ -1,0 +1,12 @@
+jeap:
+  security:
+    oauth2:
+      resourceserver:
+        authorization-server:
+          introspection:
+            # introspection uri is set by the tests
+            client-id: test-client-id
+            client-secret: test-client-secret
+            connectTimeoutInMillis: 1000
+            readTimeoutInMillis: 1000
+        introspection-mode: always

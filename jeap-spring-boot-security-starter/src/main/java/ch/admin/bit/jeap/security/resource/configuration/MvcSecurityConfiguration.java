@@ -1,6 +1,7 @@
 package ch.admin.bit.jeap.security.resource.configuration;
 
 import ch.admin.bit.jeap.security.resource.authentication.ServletSimpleAuthorization;
+import ch.admin.bit.jeap.security.resource.introspection.JeapJwtIntrospection;
 import ch.admin.bit.jeap.security.resource.log.LoggingBearerTokenAccessDeniedHandler;
 import ch.admin.bit.jeap.security.resource.log.LoggingBearerTokenAuthenticationEntryPoint;
 import ch.admin.bit.jeap.security.resource.log.UserAccessLoggingRequestFilter;
@@ -54,6 +55,7 @@ public class MvcSecurityConfiguration {
     private final Environment environment;
     private final AuthoritiesResolver authoritiesResolver;
     private final Optional<JeapMethodSecurityExpressionHandlerCustomizer> expressionHandlerCustomizer;
+    private final Optional<JeapJwtIntrospection> jeapJwtIntrospection; // Only present if introspection is configured
 
     // Custom {@link MethodSecurityExpressionHandler} to support additional checks in security expressions
     @Bean
@@ -80,7 +82,7 @@ public class MvcSecurityConfiguration {
 
     @Bean
     public JeapJwtDecoderFactory jeapJwtDecoderFactory() {
-        return new JeapJwtDecoderFactory(context, resourceServerProperties);
+        return new JeapJwtDecoderFactory(context, resourceServerProperties, jeapJwtIntrospection.orElse(null));
     }
 
     @Bean

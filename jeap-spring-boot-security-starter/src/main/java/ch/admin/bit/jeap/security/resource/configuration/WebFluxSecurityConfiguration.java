@@ -52,7 +52,7 @@ public class WebFluxSecurityConfiguration {
 
     @Bean
     public JeapJwtDecoderFactory jeapJwtDecoderFactory() {
-        return new JeapJwtDecoderFactory(context, resourceServerProperties);
+        return new JeapJwtDecoderFactory(context, resourceServerProperties, null);
     }
 
     @Bean

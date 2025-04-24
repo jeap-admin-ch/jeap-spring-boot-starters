@@ -3,6 +3,7 @@ package ch.admin.bit.jeap.security.it.mockserver;
 import ch.admin.bit.jeap.security.resource.token.JeapAuthenticationContext;
 import ch.admin.bit.jeap.security.test.jws.JwsBuilder;
 import ch.admin.bit.jeap.security.test.jws.RSAKeyUtils;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.matching.ContentPattern;
@@ -11,37 +12,45 @@ import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jwt.JWT;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
+import lombok.Getter;
+import lombok.SneakyThrows;
 
 import java.text.ParseException;
 import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.Date;
-import java.util.UUID;
+import java.util.*;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 
 public class OAuth2MockServer {
 
-    private final int port;
+    private static final String DEFAULT_JWKS_PATH = "/protocol/openid-connect/certs";
+    private static final String DEFAULT_CONFIG_PATH = "/.well-known/openid-configuration";
+    private static final String DEFAULT_TOKEN_PATH = "/token";
+    private static final String DEFAULT_INTROSPECTION_PATH = "/token/introspect";
+    private static final String CLIENT_ID = "test-client-id";
+    private static final String CLIENT_SECRET = "test-client-secret";
+
     private final String basePath;
     private final WireMockServer wireMockServer;
     private final String configPath;
     private final String tokenPath;
     private final String jwksPath;
+    private final String introspectionPath;
+    @Getter
     private final RSAKey key;
-    private final String issuer;
 
+    // user port = 0 for random port
     public OAuth2MockServer(final int port, final String basePath) {
-        this.port = port;
         this.basePath = basePath;
         this.wireMockServer = new WireMockServer(wireMockConfig().port(port));
-        this.configPath = basePath + "/.well-known/openid-configuration";
-        this.tokenPath = basePath + "/token";
-        this.jwksPath = basePath + "/protocol/openid-connect/certs";
+        this.configPath = basePath + DEFAULT_CONFIG_PATH;
+        this.tokenPath = basePath + DEFAULT_TOKEN_PATH;
+        this.jwksPath = basePath + DEFAULT_JWKS_PATH;
+        this.introspectionPath = basePath + DEFAULT_INTROSPECTION_PATH;
         this.key = RSAKeyUtils.createRsaKeyPair();
-        this.issuer = "http://localhost:" + this.port + basePath;
     }
 
     public void start() {
@@ -60,12 +69,16 @@ public class OAuth2MockServer {
         stubConfigRequest();
     }
 
-    public String getIssuer() {
-        return issuer;
+    public String getBaseUrl() {
+        return wireMockServer.baseUrl();
     }
 
-    public RSAKey getKey() {
-        return key;
+    public String getIssuer() {
+        return getBaseUrl() + basePath;
+    }
+
+    public String getIntrospectionUri() {
+        return getIssuer() + DEFAULT_INTROSPECTION_PATH;
     }
 
     /**
@@ -87,6 +100,35 @@ public class OAuth2MockServer {
 
     public void stubTokenRequestWithToken(JWT token) {
         stubFor(post(tokenPath).willReturn(okJson(getOAuthMockServerTokenBody(token))));
+    }
+
+    @SneakyThrows
+    public void stubTokenIntrospectionRequest(JWT token, boolean tokenActive, Map<String, Object> additionalClaims) {
+        Map<String, Object> introspectionAttributes = new HashMap<>(token.getJWTClaimsSet().getClaims());
+        introspectionAttributes.put("active", tokenActive);
+        introspectionAttributes.put("introspected", "only-on-introspection");
+        Optional.ofNullable(additionalClaims).ifPresent(introspectionAttributes::putAll);
+        String introspectionResponse = new ObjectMapper().writeValueAsString(introspectionAttributes);
+        stubFor(post(introspectionPath)
+                .withBasicAuth(CLIENT_ID, CLIENT_SECRET)
+                .withRequestBody(containing("token=" + token.serialize()))
+                .willReturn(okJson(introspectionResponse)));
+    }
+
+    @SneakyThrows
+    public void stubTokenIntrospectionRequestWithDelayedResponse(JWT token, int delayInMilliseconds) {
+        Map<String, Object> introspectionAttributes = new HashMap<>(token.getJWTClaimsSet().getClaims());
+        introspectionAttributes.put("active", true);
+        String introspectionResponse = new ObjectMapper().writeValueAsString(introspectionAttributes);
+        stubFor(post(introspectionPath)
+                .withBasicAuth(CLIENT_ID, CLIENT_SECRET)
+                .withRequestBody(containing("token=" + token.serialize()))
+                .willReturn(okJson(introspectionResponse).withFixedDelay(delayInMilliseconds))
+        );
+    }
+
+    public void stubTokenIntrospectionErrorResponseRequest() {
+        stubFor(post(introspectionPath).willReturn(status(400).withBody("{\"error\": \"invalid_request\"}")));
     }
 
     private void stubConfigRequest() {
@@ -116,6 +158,10 @@ public class OAuth2MockServer {
         verify(postRequestedFor(urlEqualTo(tokenPath)).withRequestBody(contentPattern));
     }
 
+    public void verifyTokenIntrospectionRequest(int times) {
+        verify(exactly(times), postRequestedFor(urlEqualTo(introspectionPath)));
+    }
+
     private String getOAuthMockServerJwksBody() {
         return new JWKSet(key).toString(); // does not include private key
     }
@@ -138,15 +184,15 @@ public class OAuth2MockServer {
     }
 
     private String getOAuthMockServerConfigBody() {
-        final String portAndBasePath = port + basePath;
+        final String issuer = getIssuer();
         return "{\n" +
-                "  \"issuer\": \"http://localhost:" + portAndBasePath + "\",\n" +
-                "  \"authorization_endpoint\": \"http://localhost:" + portAndBasePath + "/authorize\",\n" +
-                "  \"token_endpoint\": \"http://localhost:" + portAndBasePath + "/token\",\n" +
-                "  \"userinfo_endpoint\": \"http://localhost:" + portAndBasePath + "/userinfo\",\n" +
-                "  \"end_session_endpoint\": \"http://localhost:" + portAndBasePath + "/logout\",\n" +
-                "  \"jwks_uri\": \"http://localhost:" + portAndBasePath + "/.well-known/jwks.json\",\n" +
-                "  \"introspection_endpoint\": \"http://localhost:" + portAndBasePath + "/protocol/openid-connect/token/introspect\",\n" +
+                "  \"issuer\": \"" + issuer + "\",\n" +
+                "  \"authorization_endpoint\": \"" + issuer + "/authorize\",\n" +
+                "  \"token_endpoint\": \"" + issuer + DEFAULT_TOKEN_PATH + "\",\n" +
+                "  \"userinfo_endpoint\": \"" + issuer + "/userinfo\",\n" +
+                "  \"end_session_endpoint\": \"" + issuer + "/logout\",\n" +
+                "  \"jwks_uri\": \"" + issuer + DEFAULT_JWKS_PATH + "\",\n" +
+                "  \"introspection_endpoint\": \"" + getIntrospectionUri() + "\",\n" +
                 "  \"subject_types_supported\": [ \"public\", \"pairwise\" ]\n" +
                 "}";
     }
