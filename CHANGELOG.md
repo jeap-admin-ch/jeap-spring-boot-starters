@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [17.28.0] - 2025-04-30
+
+### Changed
+
+- Upgraded jeap-internal-spring-boot-parent from 5.7.0 to 5.8.0 (spring boot 3.4.5)
+
 ## [17.27.0] - 2025-04-22
 
 ### Changed
