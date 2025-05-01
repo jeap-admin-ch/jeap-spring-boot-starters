@@ -14,6 +14,13 @@
     <name>jeap-spring-boot-security-starter-it</name>
     <description>Support classes for performing integration tests of jeap-spring-boot-security-starter</description>
 
+    <properties>
+        <!-- Exclude this module from SonarQube coverage checks as the module only contains base and support classes used
+             in the separate security starter integration test modules for the webmvc and webflux stack i.e.,
+             source code in this project is tested in the ..starter-it-webmvc and ..starter-it-webflux projects. -->
+        <sonar.coverage.exclusions>**/*</sonar.coverage.exclusions>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.springframework</groupId>
