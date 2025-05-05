@@ -92,6 +92,7 @@ public class ActuatorSecurity {
 
         private AuthenticationManager createServletActuatorAuthManager(AuthenticationManagerBuilder auth) throws Exception {
             auth.inMemoryAuthentication()
+                    .passwordEncoder(NoUpgradeEncodingDelegatingPasswordEncoder.createInstance())
                     .withUser(prometheusConfig.getUser()).password(prometheusConfig.getPassword()).roles(PROMETHEUS_ROLE).and()
                     .withUser(actuatorConfig.getUser()).password(actuatorConfig.getPassword()).roles(ACTUATOR_ROLE);
             return auth.build();
