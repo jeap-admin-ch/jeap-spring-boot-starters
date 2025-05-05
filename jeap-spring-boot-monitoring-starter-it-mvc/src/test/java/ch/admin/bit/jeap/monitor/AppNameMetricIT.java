@@ -20,7 +20,7 @@ class AppNameMetricIT {
     void shouldExposeAppNameMetric() {
         RestAssured.given()
                 .port(localManagementPort)
-                .auth().basic("prometheus", "test")
+                .auth().basic("prometheus", "thisisthepasswordusedtoaccesstheprometheusendpointsforthejeapmonitoringstarter")
                 .get("/jme-management-test/actuator/prometheus")
                 .then().assertThat()
                 .statusCode(200)

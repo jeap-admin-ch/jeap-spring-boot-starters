@@ -29,7 +29,7 @@ class HealthMetricsAutoConfigExcludedIT {
     void itShouldNotInvokeHealthIndicatorIfHealthMetricsConfigIsExcluded() {
         RestAssured.given()
                 .port(localManagementPort)
-                .auth().basic("prometheus", "test")
+                .auth().basic("prometheus", "thisisthepasswordusedtoaccesstheprometheusendpointsforthejeapmonitoringstarter")
                 .get("/jme-management-test/actuator/prometheus")
                 .then().assertThat()
                 .statusCode(200);
