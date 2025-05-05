@@ -9,7 +9,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
-- Avoid password re-encoding for actuator/prometheus endpoints.
+- Avoid password re-encoding for actuator/prometheus endpoints. The previous behaviour would lead to failures on startup
+when a long plaintext was used as password for the prometheus/actuator endpoint due to the logic of the 
+DelegatingPasswordEncoder in combination with https://github.com/spring-projects/spring-security/issues/16951
 
 ## [17.28.0] - 2025-04-30
 
