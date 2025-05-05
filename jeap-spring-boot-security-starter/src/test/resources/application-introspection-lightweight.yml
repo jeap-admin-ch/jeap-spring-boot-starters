@@ -1,0 +1,32 @@
+spring:
+  application:
+    name: "test-app"
+jeap:
+  security:
+    oauth2:
+      resourceserver:
+        resource-id: "test-resource"
+        system-name: "test-system"
+        authorization-server:
+          issuer: "https://keycloak/auth/realm/introspection-ok"
+          introspection:
+            client-id: myAuthId
+            client-secret: myAuthSecret
+        b2b-gateway:
+          issuer: "https://b2b/auth/introspection-token-not-active"
+          jwk-set-uri: "https://b2b/.well-known/jwks.json"
+          introspection:
+            client-id: myB2bId
+            client-secret: myB2bSecret
+        auth-servers:
+          - issuer: "https://custom-uri/auth/realm/introspection-exception"
+            introspection:
+              client-id: myOtherId
+              client-secret: myOtherSecret
+              uri: https://custom-uri/introspection-uri/protocol/openid-connect/token/introspect
+          - issuer: "https://custom-uri/auth/realm/introspection-other-exception"
+            introspection:
+              client-id: myOtherId
+              client-secret: myOtherSecret
+              uri: https://custom-uri/introspection-uri/protocol/openid-connect/token/introspect
+        introspection-mode: LIGHTWEIGHT

@@ -1,5 +1,6 @@
 package ch.admin.bit.jeap.security.resource.validation;
 
+import ch.admin.bit.jeap.security.resource.introspection.JeapJwtIntrospection;
 import ch.admin.bit.jeap.security.resource.properties.AuthorizationServerConfiguration;
 import ch.admin.bit.jeap.security.resource.properties.ResourceServerProperties;
 import ch.admin.bit.jeap.security.resource.validation.IssuerJwtDecoder.IssuerJwtDecoderBuilder;
@@ -28,6 +29,7 @@ public class JeapJwtDecoderFactory {
 
     private final ApplicationContext applicationContext;
     private final ResourceServerProperties resourceServerProperties;
+    private final JeapJwtIntrospection jeapJwtIntrospection;
 
     /**
      * Create a JWT decoder that accepts tokens from the configured authorization servers.
@@ -41,7 +43,8 @@ public class JeapJwtDecoderFactory {
             var decoder = createDecoder(authConfig, resourceServerProperties.getAudience(), decoderCreator);
             issuerJwtDecoderBuilder.issuerDecoder(authConfig.getIssuer(), decoder);
         });
-        return issuerJwtDecoderBuilder.build();
+        JwtDecoder issuerJwtDecoder = issuerJwtDecoderBuilder.build();
+        return addIntrospectionIfConfigured(issuerJwtDecoder);
     }
 
     /**
@@ -86,6 +89,14 @@ public class JeapJwtDecoderFactory {
             }
         } else {
             return MappedJwtClaimSetConverter.withDefaults(Collections.emptyMap());
+        }
+    }
+
+    private JwtDecoder addIntrospectionIfConfigured(JwtDecoder jwtDecoder) {
+        if (jeapJwtIntrospection != null) {
+            return new IntrospectingJwtDecoder(jwtDecoder, jeapJwtIntrospection);
+        } else {
+            return jwtDecoder;
         }
     }
 
