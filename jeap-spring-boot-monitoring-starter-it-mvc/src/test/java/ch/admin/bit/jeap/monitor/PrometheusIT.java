@@ -32,7 +32,7 @@ class PrometheusIT {
     void shouldReturnPlaintextIfRequested() {
         RestAssured.given()
                 .port(localManagementPort)
-                .auth().basic("prometheus", "test")
+                .auth().basic("prometheus", "thisisthepasswordusedtoaccesstheprometheusendpointsforthejeapmonitoringstarter")
                 .headers("Accept", "text/plain")
                 .get("/jme-management-test/actuator/prometheus")
                 .then().assertThat()
@@ -45,7 +45,7 @@ class PrometheusIT {
     void shouldReturnOpenmetricsIfRequested() {
         RestAssured.given()
                 .port(localManagementPort)
-                .auth().basic("prometheus", "test")
+                .auth().basic("prometheus", "thisisthepasswordusedtoaccesstheprometheusendpointsforthejeapmonitoringstarter")
                 .headers("Accept", "application/openmetrics-text")
                 .get("/jme-management-test/actuator/prometheus")
                 .then().assertThat()

@@ -2,7 +2,7 @@ jeap:
   monitor:
     prometheus:
       user: prometheus
-      password: "{noop}test"
+      password: "{noop}thisisthepasswordusedtoaccesstheprometheusendpointsforthejeapmonitoringstarter"
     actuator:
       user: actuator
       password: "{noop}test"

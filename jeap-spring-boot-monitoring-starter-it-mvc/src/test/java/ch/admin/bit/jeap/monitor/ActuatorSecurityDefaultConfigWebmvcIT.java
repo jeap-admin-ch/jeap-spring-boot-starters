@@ -106,6 +106,6 @@ class ActuatorSecurityDefaultConfigWebmvcIT {
 
     private RequestSpecification requestWithPrometheusRole() {
         return requestWithoutRoles()
-                .auth().basic("prometheus", "test");
+                .auth().basic("prometheus", "thisisthepasswordusedtoaccesstheprometheusendpointsforthejeapmonitoringstarter");
     }
 }

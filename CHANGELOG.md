@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [17.29.1] - 2025-05-06
+
+### Changed
+
+- Avoid password re-encoding for actuator/prometheus endpoints. The previous behaviour would lead to failures on startup
+  when a long plaintext was used as password for the prometheus/actuator endpoint due to the logic of the
+  DelegatingPasswordEncoder in combination with https://github.com/spring-projects/spring-security/issues/16951
 
 ## [17.29.0] - 2025-05-01
 
