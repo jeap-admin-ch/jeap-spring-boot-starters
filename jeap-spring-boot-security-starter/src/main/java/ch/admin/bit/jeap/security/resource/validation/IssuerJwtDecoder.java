@@ -3,6 +3,7 @@ package ch.admin.bit.jeap.security.resource.validation;
 import lombok.Builder;
 import lombok.Singular;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.oauth2.jwt.BadJwtException;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 
@@ -28,7 +29,7 @@ class IssuerJwtDecoder implements JwtDecoder {
 
     @Override
     public Jwt decode(final String token) {
-        final String issuer = RawJwtTokenParser.extractIssuer(token);
+        final String issuer = extractIssuer(token);
         final JwtDecoder decoder = issuerDecoderMap.get(issuer);
         if (decoder != null) {
             log.debug("Decoding a token from issuer '{}'.", issuer);
@@ -37,6 +38,14 @@ class IssuerJwtDecoder implements JwtDecoder {
             return jwt;
         } else {
             throw new JeapTokenValidationException("Unsupported issuer '" + issuer + "'. There is no JwtDecoder configured for it.");
+        }
+    }
+
+    private String extractIssuer(String token) {
+        try {
+            return RawJwtTokenParser.extractIssuer(token);
+        } catch (Exception e) {
+            throw new BadJwtException("Token is not a valid JWT or its iss claim is not parseable as String.", e);
         }
     }
 

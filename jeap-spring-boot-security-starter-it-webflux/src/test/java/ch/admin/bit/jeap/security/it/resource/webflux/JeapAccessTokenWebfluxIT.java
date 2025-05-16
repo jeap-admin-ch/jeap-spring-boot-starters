@@ -2,7 +2,6 @@ package ch.admin.bit.jeap.security.it.resource.webflux;
 
 import ch.admin.bit.jeap.security.it.resource.AbstractJeapAccessTokenIT;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -22,6 +21,16 @@ class JeapAccessTokenWebfluxIT extends AbstractJeapAccessTokenIT {
 	@Test
 	protected void testGetAuth_whenAuthServerJeapTokenWithBpRoleAuthRead_thenAccessGrantedAndRolesCorrect() {
 		super.testGetAuth_whenAuthServerJeapTokenWithBpRoleAuthRead_thenAccessGrantedAndRolesCorrect();
+	}
+
+	@Test
+	protected void testGetAuth_whenNoIssuerInToken_thenUnauthorized() {
+		super.testGetAuth_whenNoIssuerInToken_thenUnauthorized();
+	}
+
+	@Test
+	protected void testGetAuth_whenTokenNotAJwt_thenUnauthorized() {
+		super.testGetAuth_whenTokenNotAJwt_thenUnauthorized();
 	}
 
 }

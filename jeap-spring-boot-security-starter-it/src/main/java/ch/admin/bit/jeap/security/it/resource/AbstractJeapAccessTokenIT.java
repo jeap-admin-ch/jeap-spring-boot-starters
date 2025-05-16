@@ -1,6 +1,7 @@
 package ch.admin.bit.jeap.security.it.resource;
 
 import ch.admin.bit.jeap.security.resource.token.JeapAuthenticationContext;
+import ch.admin.bit.jeap.security.test.jws.JwsBuilder;
 import org.springframework.http.HttpStatus;
 
 import static ch.admin.bit.jeap.security.it.resource.TestRoles.*;
@@ -63,6 +64,29 @@ public class AbstractJeapAccessTokenIT extends AccessTokenITBase {
 				body("bproles." + PARTNER_ID, containsInAnyOrder(SEMANTIC_AUTH_READ_ROLE, SEMANTIC_OTHER_READ_ROLE)).
 				body("userroles", empty()).
 				body("ctx", equalTo(JeapAuthenticationContext.USER.name()));
+	}
+
+	protected void testGetAuth_whenNoIssuerInToken_thenUnauthorized() {
+		final JwsBuilder jwsBuilder = jwsBuilderFactory.createValidForFixedLongPeriodBuilder(SUBJECT, JeapAuthenticationContext.USER);
+		final String tokenWithoutIssuer = jwsBuilder.withIssuer(null).build().serialize();
+		given().
+				spec(semanticAuthPathSpec).
+				auth().oauth2(tokenWithoutIssuer).
+		when().
+				get().
+		then().
+				statusCode(HttpStatus.UNAUTHORIZED.value());
+	}
+
+	protected void testGetAuth_whenTokenNotAJwt_thenUnauthorized() {
+		final String token = "not.a.jwt";
+		given().
+				spec(semanticAuthPathSpec).
+				auth().oauth2(token).
+		when().
+				get().
+		then().
+				statusCode(HttpStatus.UNAUTHORIZED.value());
 	}
 
 	private String createJeapTokenWithUserInfoForUserRoles(JeapAuthenticationContext context, String... roles) {

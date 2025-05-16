@@ -23,4 +23,14 @@ class JeapAccessTokenWebmvcIT extends AbstractJeapAccessTokenIT {
 		super.testGetAuth_whenAuthServerJeapTokenWithBpRoleAuthRead_thenAccessGrantedAndRolesCorrect();
 	}
 
+	@Test
+	protected void testGetAuth_whenNoIssuerInToken_thenUnauthorized() {
+		super.testGetAuth_whenNoIssuerInToken_thenUnauthorized();
+	}
+
+	@Test
+	protected void testGetAuth_whenTokenNotAJwt_thenUnauthorized() {
+		super.testGetAuth_whenTokenNotAJwt_thenUnauthorized();
+	}
+
 }
