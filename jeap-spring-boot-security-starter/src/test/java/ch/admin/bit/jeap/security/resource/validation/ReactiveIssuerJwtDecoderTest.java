@@ -5,6 +5,7 @@ import com.nimbusds.jwt.PlainJWT;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.springframework.security.oauth2.jwt.BadJwtException;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder;
 import reactor.core.publisher.Mono;
@@ -69,6 +70,16 @@ public class ReactiveIssuerJwtDecoderTest {
 
         assertThat(jwtIssuerA).isEqualTo(JWT_ISSUER_A);
         assertThat(jwtIssuerB).isEqualTo(JWT_ISSUER_B);
+    }
+
+    @Test
+    void test_whenTokenNotAJwt_thenThrowsBadJwtException() {
+        final ReactiveIssuerJwtDecoder decoder = ReactiveIssuerJwtDecoder.builder().
+                issuerDecoder(ISSUER_A, DECODER_ISSUER_A).
+                build();
+
+        assertThatThrownBy(() -> decoder.decode("not.a.jwt").block()).
+                isInstanceOf(BadJwtException.class);
     }
 
     private static String createTokenIssuedByIssuer(String issuer) {
