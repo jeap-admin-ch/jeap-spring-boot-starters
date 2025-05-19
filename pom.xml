@@ -28,7 +28,7 @@
     <packaging>pom</packaging>
 
     <artifactId>jeap-spring-boot-starters</artifactId>
-    <version>17.29.2-SNAPSHOT</version>
+    <version>17.30.0-SNAPSHOT</version>
 
     <parent>
         <artifactId>jeap-internal-spring-boot-parent</artifactId>
@@ -38,7 +38,6 @@
 
     <modules>
         <module>jeap-spring-boot-application-starter</module>
-        <module>jeap-spring-boot-config-aws-starter</module>
         <module>jeap-spring-boot-postgresql-aws-starter</module>
         <module>jeap-spring-boot-rest-request-tracing</module>
         <module>jeap-spring-boot-logging-starter</module>
@@ -47,8 +46,6 @@
         <module>jeap-spring-boot-security-starter-test</module>
         <module>jeap-spring-boot-config-starter</module>
         <module>jeap-spring-boot-tx</module>
-        <module>jeap-spring-boot-db-migration-starter</module>
-        <module>jeap-spring-boot-db-migration-starter-it</module>
         <module>jeap-spring-boot-web-config-starter</module>
         <module>jeap-spring-boot-web-config-starter-it-servlet</module>
         <module>jeap-spring-boot-web-config-starter-it-webflux</module>
@@ -66,9 +63,6 @@
         <module>jeap-spring-boot-config-starter-it</module>
         <module>jeap-spring-boot-cloud-autoconfig-starter</module>
         <module>jeap-spring-boot-featureflag-starter</module>
-        <module>jeap-spring-boot-tls-starter</module>
-        <module>jeap-spring-boot-tls-starter-it-webmvc</module>
-        <module>jeap-spring-boot-tls-starter-it-webflux</module>
     </modules>
 
     <properties>

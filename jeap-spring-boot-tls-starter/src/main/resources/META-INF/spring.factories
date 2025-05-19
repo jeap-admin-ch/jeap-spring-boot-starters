@@ -1,3 +1,0 @@
-org.springframework.boot.env.EnvironmentPostProcessor=\
-  ch.admin.bit.jeap.tls.EnableTlsEnvPostprocessor
-
