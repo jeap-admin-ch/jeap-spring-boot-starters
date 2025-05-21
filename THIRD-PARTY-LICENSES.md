@@ -10,7 +10,6 @@ Apache License Version 2.0
 
  * jeap-spring-boot-cloud-autoconfig-starter - [ch.admin.bit.jeap:jeap-spring-boot-cloud-autoconfig-starter](https://github.com/jeap-admin-ch/jeap-spring-boot-starters/tree/main/jeap-spring-boot-cloud-autoconfig-starter)
  * jeap-spring-boot-config-starter - [ch.admin.bit.jeap:jeap-spring-boot-config-starter](https://github.com/jeap-admin-ch/jeap-spring-boot-starters/tree/main/jeap-spring-boot-config-starter)
- * jeap-spring-boot-db-starter - [ch.admin.bit.jeap:jeap-spring-boot-db-migration-starter](https://github.com/jeap-admin-ch/jeap-spring-boot-starters/tree/main/jeap-spring-boot-db-migration-starter)
  * jeap-spring-boot-featureflag-starter - [ch.admin.bit.jeap:jeap-spring-boot-featureflag-starter](https://github.com/jeap-admin-ch/jeap-spring-boot-starters/tree/main/jeap-spring-boot-featureflag-starter)
  * jeap-spring-boot-logging-starter - [ch.admin.bit.jeap:jeap-spring-boot-logging-starter](https://github.com/jeap-admin-ch/jeap-spring-boot-starters/tree/main/jeap-spring-boot-logging-starter)
  * jeap-spring-boot-monitoring-starter - [ch.admin.bit.jeap:jeap-spring-boot-monitoring-starter](https://github.com/jeap-admin-ch/jeap-spring-boot-starters/tree/main/jeap-spring-boot-monitoring-starter)
@@ -19,7 +18,6 @@ Apache License Version 2.0
  * jeap-spring-boot-security-starter-it - [ch.admin.bit.jeap:jeap-spring-boot-security-starter-it](https://github.com/jeap-admin-ch/jeap-spring-boot-starters/tree/main/jeap-spring-boot-security-starter-it)
  * jeap-spring-boot-security-starter-test - [ch.admin.bit.jeap:jeap-spring-boot-security-starter-test](https://github.com/jeap-admin-ch/jeap-spring-boot-starters/tree/main/jeap-spring-boot-security-starter-test)
  * jeap-spring-boot-swagger - [ch.admin.bit.jeap:jeap-spring-boot-swagger](https://github.com/jeap-admin-ch/jeap-spring-boot-starters/tree/main/jeap-spring-boot-swagger)
- * jeap-spring-boot-tls-starter - [ch.admin.bit.jeap:jeap-spring-boot-tls-starter](https://github.com/jeap-admin-ch/jeap-spring-boot-starters/tree/main/jeap-spring-boot-tls-starter)
  * jeap-spring-boot-tx - [ch.admin.bit.jeap:jeap-spring-boot-tx](https://github.com/jeap-admin-ch/jeap-spring-boot-starters/tree/main/jeap-spring-boot-tx)
  * jeap-spring-boot-web-config-starter - [ch.admin.bit.jeap:jeap-spring-boot-web-config-starter](https://github.com/jeap-admin-ch/jeap-spring-boot-starters/tree/main/jeap-spring-boot-web-config-starter)
  * java-util - [com.cedarsoftware:java-util](https://github.com/jdereg/java-util)
@@ -28,7 +26,6 @@ Apache License Version 2.0
  * Jackson-annotations - [com.fasterxml.jackson.core:jackson-annotations](https://github.com/FasterXML/jackson)
  * Jackson-core - [com.fasterxml.jackson.core:jackson-core](https://github.com/FasterXML/jackson-core)
  * jackson-databind - [com.fasterxml.jackson.core:jackson-databind](https://github.com/FasterXML/jackson)
- * Jackson-dataformat-TOML - [com.fasterxml.jackson.dataformat:jackson-dataformat-toml](https://github.com/FasterXML/jackson-dataformats-text)
  * Jackson-dataformat-YAML - [com.fasterxml.jackson.dataformat:jackson-dataformat-yaml](https://github.com/FasterXML/jackson-dataformats-text)
  * Jackson datatype: jdk8 - [com.fasterxml.jackson.datatype:jackson-datatype-jdk8](https://github.com/FasterXML/jackson-modules-java8/jackson-datatype-jdk8)
  * Jackson datatype: Joda - [com.fasterxml.jackson.datatype:jackson-datatype-joda](https://github.com/FasterXML/jackson-datatype-joda)
@@ -152,8 +149,6 @@ Apache License Version 2.0
  * AssertJ Core - [org.assertj:assertj-core](https://assertj.github.io/doc/#assertj-core)
  * Awaitility - [org.awaitility:awaitility](http://awaitility.org)
  * TagSoup - [org.ccil.cowan.tagsoup:tagsoup](http://home.ccil.org/~cowan/XML/tagsoup/)
- * flyway-core - [org.flywaydb:flyway-core](https://flywaydb.org/flyway-core)
- * flyway-database-postgresql - [org.flywaydb:flyway-database-postgresql](https://flywaydb.org/flyway-database-postgresql)
  * Hibernate Commons Annotations - [org.hibernate.common:hibernate-commons-annotations](http://hibernate.org)
  * Hibernate Validator Engine - [org.hibernate.validator:hibernate-validator](http://hibernate.org/validator/hibernate-validator)
  * JBoss Logging 3 - [org.jboss.logging:jboss-logging](http://www.jboss.org)
@@ -252,12 +247,9 @@ Apache License Version 2.0
  * org.xmlunit:xmlunit-core - [org.xmlunit:xmlunit-core](https://www.xmlunit.org/)
  * SnakeYAML - [org.yaml:snakeyaml](https://bitbucket.org/snakeyaml/snakeyaml)
  * AWS Java SDK :: Annotations - [software.amazon.awssdk:annotations](https://aws.amazon.com/sdkforjava/core/annotations)
- * AWS Java SDK :: Services :: AppConfig - [software.amazon.awssdk:appconfig](https://aws.amazon.com/sdkforjava)
- * AWS Java SDK :: Services :: App Config Data - [software.amazon.awssdk:appconfigdata](https://aws.amazon.com/sdkforjava)
  * AWS Java SDK :: Arns - [software.amazon.awssdk:arns](https://aws.amazon.com/sdkforjava)
  * AWS Java SDK :: Auth - [software.amazon.awssdk:auth](https://aws.amazon.com/sdkforjava)
  * AWS Java SDK :: AWS Core - [software.amazon.awssdk:aws-core](https://aws.amazon.com/sdkforjava)
- * AWS Java SDK :: Core :: Protocols :: AWS Json Protocol - [software.amazon.awssdk:aws-json-protocol](https://aws.amazon.com/sdkforjava)
  * AWS Java SDK :: Core :: Protocols :: AWS Query Protocol - [software.amazon.awssdk:aws-query-protocol](https://aws.amazon.com/sdkforjava)
  * AWS Java SDK :: Core :: Protocols :: AWS Xml Protocol - [software.amazon.awssdk:aws-xml-protocol](https://aws.amazon.com/sdkforjava)
  * AWS Java SDK :: Checksums - [software.amazon.awssdk:checksums](https://aws.amazon.com/sdkforjava)
@@ -281,7 +273,6 @@ Apache License Version 2.0
  * AWS Java SDK :: Retries API - [software.amazon.awssdk:retries-spi](https://aws.amazon.com/sdkforjava/core/retries-spi)
  * AWS Java SDK :: Services :: Amazon S3 - [software.amazon.awssdk:s3](https://aws.amazon.com/sdkforjava)
  * AWS Java SDK :: SDK Core - [software.amazon.awssdk:sdk-core](https://aws.amazon.com/sdkforjava)
- * AWS Java SDK :: Services :: AWS Secrets Manager - [software.amazon.awssdk:secretsmanager](https://aws.amazon.com/sdkforjava)
  * AWS Java SDK :: Services :: AWS STS - [software.amazon.awssdk:sts](https://aws.amazon.com/sdkforjava)
  * AWS Java SDK :: Third Party :: Jackson-core - [software.amazon.awssdk:third-party-jackson-core](https://aws.amazon.com/sdkforjava)
  * AWS Java SDK :: HTTP Clients :: URL Connection - [software.amazon.awssdk:url-connection-client](https://aws.amazon.com/sdkforjava/http-clients/url-connection-client)
@@ -309,9 +300,7 @@ BSD License 3
 Bouncy Castle Licence
 -------------------------------
 
- * Bouncy Castle PKIX, CMS, EAC, TSP, PKCS, OCSP, CMP, and CRMF APIs - [org.bouncycastle:bcpkix-jdk18on](https://www.bouncycastle.org/download/bouncy-castle-java/)
  * Bouncy Castle Provider - [org.bouncycastle:bcprov-jdk18on](https://www.bouncycastle.org/download/bouncy-castle-java/)
- * Bouncy Castle ASN.1 Extension and Utility APIs - [org.bouncycastle:bcutil-jdk18on](https://www.bouncycastle.org/download/bouncy-castle-java/)
 
 Eclipse Distribution License - v 1.0
 -------------------------------
@@ -384,12 +373,7 @@ MIT License
  * Duct Tape - [org.rnorth.duct-tape:duct-tape](https://github.com/rnorth/duct-tape)
  * JUL to SLF4J bridge - [org.slf4j:jul-to-slf4j](http://www.slf4j.org)
  * SLF4J API Module - [org.slf4j:slf4j-api](http://www.slf4j.org)
- * Testcontainers :: Database-Commons - [org.testcontainers:database-commons](https://java.testcontainers.org)
- * Testcontainers :: JDBC - [org.testcontainers:jdbc](https://java.testcontainers.org)
  * Testcontainers :: JUnit Jupiter Extension - [org.testcontainers:junit-jupiter](https://testcontainers.org)
- * Testcontainers :: JUnit Jupiter Extension - [org.testcontainers:junit-jupiter](https://java.testcontainers.org)
- * Testcontainers :: Localstack - [org.testcontainers:localstack](https://java.testcontainers.org)
- * Testcontainers :: JDBC :: PostgreSQL - [org.testcontainers:postgresql](https://java.testcontainers.org)
  * Testcontainers Core - [org.testcontainers:testcontainers](https://java.testcontainers.org)
  * Testcontainers :: Vault - [org.testcontainers:vault](https://testcontainers.org)
  * webjars-locator-lite - [org.webjars:webjars-locator-lite](https://webjars.org)
