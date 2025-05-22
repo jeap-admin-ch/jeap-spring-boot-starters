@@ -34,7 +34,7 @@ public class ResourceServerProperties {
     private String resourceId;
 
     /**
-     * Name of the application, used if  no resource was defined
+     * Name of the application, used if no resource was defined
      */
     @Value("${spring.application.name}")
     private String applicationName;
@@ -45,9 +45,11 @@ public class ResourceServerProperties {
     private String systemName;
 
     /**
-     * The introspection mode.
+     * Introspection configuration on the resource level.
      */
-    private IntrospectionMode introspectionMode;
+    @NestedConfigurationProperty
+    @Valid
+    private IntrospectionResourceProperties introspection;
 
     /**
      * Auth server configuration for the user and system authentication context.
@@ -98,6 +100,7 @@ public class ResourceServerProperties {
     @SuppressWarnings("java:S3776")
     public void validate() {
         log.info("Validating resource server properties for resource id {}", resourceId);
+        IntrospectionMode introspectionMode = introspection != null ? introspection.getMode() : null;
         if (introspectionMode == null) {
             for (AuthorizationServerConfigProperties config : getAllAuthServerConfigurations()) {
                 if (config.getIntrospection() != null) {

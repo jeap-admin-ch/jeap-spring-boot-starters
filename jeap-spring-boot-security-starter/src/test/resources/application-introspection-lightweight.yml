@@ -7,6 +7,8 @@ jeap:
       resourceserver:
         resource-id: "test-resource"
         system-name: "test-system"
+        introspection:
+          mode: LIGHTWEIGHT
         authorization-server:
           issuer: "https://keycloak/auth/realm/introspection-ok"
           introspection:
@@ -29,4 +31,7 @@ jeap:
               client-id: myOtherId
               client-secret: myOtherSecret
               uri: https://custom-uri/introspection-uri/protocol/openid-connect/token/introspect
-        introspection-mode: LIGHTWEIGHT
+          - issuer: "https://other-b2b/auth/introspection-disabled"
+            authentication-contexts: b2b
+            introspection:
+              mode: none

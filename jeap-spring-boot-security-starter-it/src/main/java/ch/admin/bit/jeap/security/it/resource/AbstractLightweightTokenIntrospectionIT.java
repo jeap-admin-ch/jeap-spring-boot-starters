@@ -10,7 +10,7 @@ import java.util.Map;
 import static org.hamcrest.Matchers.equalTo;
 
 
-@TestPropertySource(properties = {"jeap.security.oauth2.resourceserver.introspection-mode=lightweight"})
+@TestPropertySource(properties = {"jeap.security.oauth2.resourceserver.introspection.mode=lightweight"})
 public class AbstractLightweightTokenIntrospectionIT extends TokenIntrospectionITBase {
 
     protected static final String ROLES_PRUNED_CHARS_CLAIM_NAME = "roles_pruned_chars";

@@ -2,6 +2,8 @@ jeap:
   security:
     oauth2:
       resourceserver:
+        introspection:
+          mode: always
         authorization-server:
           introspection:
             # introspection uri is set by the tests
@@ -9,4 +11,3 @@ jeap:
             client-secret: test-client-secret
             connectTimeoutInMillis: 1000
             readTimeoutInMillis: 1000
-        introspection-mode: always

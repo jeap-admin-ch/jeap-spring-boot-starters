@@ -6,6 +6,7 @@ import lombok.Data;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
+import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.validation.annotation.Validated;
 
 import java.util.Set;
@@ -55,6 +56,7 @@ public class B2BGatewayConfigProperties implements AuthorizationServerConfigurat
      * The introspection configuration related to this server
      */
     @Valid
+    @NestedConfigurationProperty
     private IntrospectionProperties introspection;
 
     AuthorizationServerConfigProperties asAuthorizationServerConfigProperties() {

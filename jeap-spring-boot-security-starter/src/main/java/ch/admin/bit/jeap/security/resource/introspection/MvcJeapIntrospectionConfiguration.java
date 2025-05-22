@@ -1,8 +1,6 @@
 package ch.admin.bit.jeap.security.resource.introspection;
 
-import ch.admin.bit.jeap.security.resource.properties.AuthorizationServerConfiguration;
-import ch.admin.bit.jeap.security.resource.properties.IntrospectionProperties;
-import ch.admin.bit.jeap.security.resource.properties.ResourceServerProperties;
+import ch.admin.bit.jeap.security.resource.properties.*;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -29,16 +27,18 @@ class MvcJeapIntrospectionConfiguration {
     JeapJwtIntrospector jeapJwtIntrospector(JeapTokenIntrospectorFactory factory, ResourceServerProperties resourceServerProperties) {
         Map<String, JeapTokenIntrospector> issuerTokenIntrospectors =
                 resourceServerProperties.getAllAuthServerConfigurations().stream()
-                        .filter(authServerConfig -> authServerConfig.getIntrospection() != null)
+                        .filter(authServerConfig ->
+                                authServerConfig.getIntrospection() != null &&
+                                    authServerConfig.getIntrospection().getMode() != IntrospectionMode.NONE)
                         .map(this::toJeapTokenIntrospectorConfiguration)
                         .collect(Collectors.toMap(JeapTokenIntrospectorConfiguration::issuer, factory::create));
         return new JeapJwtIntrospector(issuerTokenIntrospectors);
     }
 
     @Bean
-    @ConditionalOnExpression("!'CUSTOM'.equalsIgnoreCase('${jeap.security.resourceserver.introspection-mode:}')")
+    @ConditionalOnExpression("!'CUSTOM'.equalsIgnoreCase('${jeap.security.resourceserver.introspection.mode:}')")
     JeapJwtIntrospectionCondition jeapJwtIntrospectionCondition(ResourceServerProperties resourceServerProperties) {
-        return switch (resourceServerProperties.getIntrospectionMode()) {
+        return switch (resourceServerProperties.getIntrospection().getMode()) {
             case ALWAYS -> new AlwaysTokenIntrospectionCondition();
             case LIGHTWEIGHT -> new LightweightTokenIntrospectionCondition();
             default -> new NeverTokenIntrospectionCondition();

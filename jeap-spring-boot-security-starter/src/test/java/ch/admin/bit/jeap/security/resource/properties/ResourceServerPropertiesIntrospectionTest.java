@@ -14,6 +14,7 @@ import org.springframework.test.context.ActiveProfiles;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ActiveProfiles("introspection")
@@ -31,28 +32,34 @@ class ResourceServerPropertiesIntrospectionTest {
         B2BGatewayConfigProperties b2bGateway = resourceServerProperties.getB2BGateway();
         List<AuthorizationServerConfigProperties> authServers = resourceServerProperties.getAuthServers();
 
-        assertThat(resourceServerProperties.getIntrospectionMode()).isEqualTo(IntrospectionMode.ALWAYS);
+        assertThat(resourceServerProperties.getIntrospection().getMode()).isEqualTo(IntrospectionMode.ALWAYS);
 
         assertThat(authServer.getIntrospection().getClientId()).isEqualTo("myId");
         assertThat(authServer.getIntrospection().getClientSecret()).isEqualTo("mySecret");
         assertThat(authServer.getIntrospection().getUri()).isEqualTo("https://keycloak/auth/realm/protocol/openid-connect/token/introspect");
+        assertThat(authServer.getIntrospection().getMode()).isNull();
 
         assertThat(b2bGateway.getIntrospection().getClientId()).isEqualTo("myB2bId");
         assertThat(b2bGateway.getIntrospection().getClientSecret()).isEqualTo("myB2bSecret");
         assertThat(b2bGateway.getIntrospection().getUri()).isEqualTo("https://b2b/auth/protocol/openid-connect/token/introspect");
+        assertThat(b2bGateway.getIntrospection().getMode()).isNull();
 
-        assertThat(authServers).hasSize(1);
+        assertThat(authServers).hasSize(2);
         AuthorizationServerConfigProperties authServersFirst = authServers.getFirst();
         assertThat(authServersFirst.getIntrospection().getClientId()).isEqualTo("myFirstId");
         assertThat(authServersFirst.getIntrospection().getClientSecret()).isEqualTo("myFirstSecret");
         assertThat(authServersFirst.getIntrospection().getUri()).isEqualTo("https://custom-uri/introspection-uri/protocol/openid-connect/token/introspect");
+        assertThat(authServersFirst.getIntrospection().getMode()).isNull();
+
+        AuthorizationServerConfigProperties authServersSecond = authServers.get(1);
+        assertThat(authServersSecond.getIntrospection().getMode()).isEqualTo(IntrospectionMode.NONE);
     }
 
     @ParameterizedTest
     @EnumSource(value = IntrospectionMode.class, names = {"NONE"}, mode = EnumSource.Mode.EXCLUDE)
     void loadIntrospectionProperties_introspectionActivated_introspectionNotDefined_throwsException(IntrospectionMode introspectionMode) {
         ResourceServerProperties props = new ResourceServerProperties();
-        props.setIntrospectionMode(introspectionMode);
+        setIntrospectionMode(props, introspectionMode);
         AuthorizationServerConfigProperties authorizationServerConfigProperties = new AuthorizationServerConfigProperties();
         authorizationServerConfigProperties.setIssuer("issuer");
         props.setAuthorizationServer(authorizationServerConfigProperties);
@@ -82,7 +89,7 @@ class ResourceServerPropertiesIntrospectionTest {
     @Test
     void loadIntrospectionProperties_introspectionModeNone_introspectionDefined_generateWarning(CapturedOutput capturedOutput) {
         ResourceServerProperties props = new ResourceServerProperties();
-        props.setIntrospectionMode(IntrospectionMode.NONE);
+        setIntrospectionMode(props, IntrospectionMode.NONE);
         AuthorizationServerConfigProperties authorizationServerConfigProperties = new AuthorizationServerConfigProperties();
         authorizationServerConfigProperties.setIssuer("issuer");
         IntrospectionProperties introspectionProperties = new IntrospectionProperties();
@@ -97,7 +104,7 @@ class ResourceServerPropertiesIntrospectionTest {
     @Test
     void loadIntrospectionProperties_introspectionUriConfigured() {
         ResourceServerProperties props = new ResourceServerProperties();
-        props.setIntrospectionMode(IntrospectionMode.ALWAYS);
+        setIntrospectionMode(props, IntrospectionMode.ALWAYS);
         props.setAuthorizationServer(getAuthorizationServerConfigProperties("my-uri"));
         props.validate();
         assertThat(props.getAuthorizationServer().getIntrospection().getUri()).isEqualTo("my-uri");
@@ -106,21 +113,68 @@ class ResourceServerPropertiesIntrospectionTest {
     @Test
     void loadIntrospectionProperties_introspectionUriNotConfigured_derivedFromIssuerUri() {
         ResourceServerProperties props = new ResourceServerProperties();
-        props.setIntrospectionMode(IntrospectionMode.ALWAYS);
+        setIntrospectionMode(props, IntrospectionMode.ALWAYS);
         props.setAuthorizationServer(getAuthorizationServerConfigProperties(null));
         props.validate();
         assertThat(props.getAuthorizationServer().getIntrospection().getUri()).isEqualTo("issuer/protocol/openid-connect/token/introspect");
     }
 
+    @Test
+    void loadIntrospectionProperties_IntrospectionPropertiesWithJustModeNone_ValidateSuccessfully() {
+        ResourceServerProperties props = new ResourceServerProperties();
+        setIntrospectionMode(props, IntrospectionMode.ALWAYS);
+        props.setAuthorizationServer(getAuthorizationServerConfigProperties(IntrospectionMode.NONE, null, null, null));
+        props.validate();
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = IntrospectionMode.class, names = {"NONE"}, mode = EnumSource.Mode.EXCLUDE)
+    void loadIntrospectionProperties_IntrospectionPropertiesWithModeDifferentFromNone_ThrowException(IntrospectionMode introspectionMode) {
+        ResourceServerProperties props = new ResourceServerProperties();
+        setIntrospectionMode(props, IntrospectionMode.ALWAYS);
+        props.setAuthorizationServer(getAuthorizationServerConfigProperties(introspectionMode, "client-id", "client-secret", "some-uri"));
+        assertThatThrownBy(props::validate).hasMessageStartingWith(
+                "Configuring an introspection mode other than 'NONE' is not supported on the authorization server level.");
+    }
+
+    @Test
+    void loadIntrospectionProperties_IntrospectionPropertiesWithoutClientId_ThrowException() {
+        ResourceServerProperties props = new ResourceServerProperties();
+        setIntrospectionMode(props, IntrospectionMode.ALWAYS);
+        props.setAuthorizationServer(getAuthorizationServerConfigProperties(null, null, "some-secret", null));
+        assertThatThrownBy(props::validate).hasMessage("client-id must be provided");
+    }
+
+    @Test
+    void loadIntrospectionProperties_IntrospectionPropertiesWithoutClientSecretId_ThrowException() {
+        ResourceServerProperties props = new ResourceServerProperties();
+        setIntrospectionMode(props, IntrospectionMode.ALWAYS);
+        props.setAuthorizationServer(getAuthorizationServerConfigProperties(null, "some-client-id", null, null));
+        assertThatThrownBy(props::validate).hasMessage("client-secret must be provided");
+    }
+
     private static AuthorizationServerConfigProperties getAuthorizationServerConfigProperties(String introspectionUri) {
+        return getAuthorizationServerConfigProperties(null, "myId", "mySecret", introspectionUri);
+    }
+
+    private static AuthorizationServerConfigProperties getAuthorizationServerConfigProperties(IntrospectionMode introspectionMode,
+                                                                                              String clientId, String clientSecret,
+                                                                                              String introspectionUri) {
         IntrospectionProperties introspectionProperties = new IntrospectionProperties();
-        introspectionProperties.setClientId("myId");
-        introspectionProperties.setClientSecret("mySecret");
+        introspectionProperties.setMode(introspectionMode);
+        introspectionProperties.setClientId(clientId);
+        introspectionProperties.setClientSecret(clientSecret);
         introspectionProperties.setUri(introspectionUri);
         AuthorizationServerConfigProperties authorizationServerConfigProperties = new AuthorizationServerConfigProperties();
         authorizationServerConfigProperties.setIssuer("issuer");
         authorizationServerConfigProperties.setIntrospection(introspectionProperties);
         return authorizationServerConfigProperties;
+    }
+
+    private static void setIntrospectionMode(ResourceServerProperties props, IntrospectionMode introspectionMode) {
+        IntrospectionResourceProperties introspectionResourceProperties = new IntrospectionResourceProperties();
+        props.setIntrospection(introspectionResourceProperties);
+        introspectionResourceProperties.setMode(introspectionMode);
     }
 
 }

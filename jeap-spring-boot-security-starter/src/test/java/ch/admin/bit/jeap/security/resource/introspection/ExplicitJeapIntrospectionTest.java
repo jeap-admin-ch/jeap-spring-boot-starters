@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 @ActiveProfiles("introspection-lightweight") // 'lightweight' introspection-mode from profile is overridden with 'explicit' below
 @EnableConfigurationProperties(ResourceServerProperties.class)
 @SpringBootTest(classes = ExplicitJeapIntrospectionTest.MvcJeapIntrospectionConfigurationUnconditional.class,
-                properties = {"jeap.security.oauth2.resourceserver.introspection-mode=explicit"})
+                properties = {"jeap.security.oauth2.resourceserver.introspection.mode=explicit"})
 class ExplicitJeapIntrospectionTest {
 
     private static final String ISSUER_INTROSPECTION_OK = "https://keycloak/auth/realm/introspection-ok";

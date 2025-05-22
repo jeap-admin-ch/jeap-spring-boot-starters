@@ -18,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ActiveProfiles("introspection-lightweight") // 'lightweight' introspection-mode from profile is overridden with 'always' below
 @EnableConfigurationProperties(ResourceServerProperties.class)
 @SpringBootTest(classes = AlwaysJeapIntrospectionTest.MvcJeapIntrospectionConfigurationUnconditional.class,
-                properties = {"jeap.security.oauth2.resourceserver.introspection-mode=always"})
+                properties = {"jeap.security.oauth2.resourceserver.introspection.mode=always"})
 class AlwaysJeapIntrospectionTest {
 
     private static final String ISSUER_INTROSPECTION_OK = "https://keycloak/auth/realm/introspection-ok";

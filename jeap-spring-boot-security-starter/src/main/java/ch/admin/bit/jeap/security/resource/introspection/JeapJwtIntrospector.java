@@ -48,7 +48,7 @@ class JeapJwtIntrospector {
         final String issuer = jwt.getIssuer().toString();
         JeapTokenIntrospector tokenIntrospector = issuerTokenIntrospectors.get(issuer);
         if (tokenIntrospector == null) {
-            throw new JeapIntrospectionException("No token introspector configured for the issuer: " + issuer);
+            throw new JeapIntrospectionUnknownIssuerException(issuer, "No token introspector configured for the issuer.");
         }
         return tokenIntrospector;
     }

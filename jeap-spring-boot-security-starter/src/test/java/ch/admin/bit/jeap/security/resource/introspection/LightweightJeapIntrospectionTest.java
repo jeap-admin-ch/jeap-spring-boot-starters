@@ -28,6 +28,7 @@ class LightweightJeapIntrospectionTest {
     private static final String ISSUER_INTROSPECTION_EXCEPTION = "https://custom-uri/auth/realm/introspection-exception";
     private static final String ISSUER_INTROSPECTION_OTHER_EXCEPTION = "https://custom-uri/auth/realm/introspection-other-exception";
     private static final String ISSUER_INTROSPECTION_OK = "https://keycloak/auth/realm/introspection-ok";
+    private static final String ISSUER_INTROSPECTION_DISABLED = "https://other-b2b/auth/introspection-disabled";
 
     @Autowired
     private JeapJwtIntrospection jwtIntrospection;
@@ -38,6 +39,7 @@ class LightweightJeapIntrospectionTest {
         assertThat(jwtIntrospection.isValid(createLightweightJwt(ISSUER_INTROSPECTION_TOKEN_NOT_ACTIVE))).isFalse();
         assertThat(jwtIntrospection.isValid(createLightweightJwt(ISSUER_INTROSPECTION_EXCEPTION))).isFalse();
         assertThat(jwtIntrospection.isValid(createLightweightJwt(ISSUER_INTROSPECTION_OTHER_EXCEPTION))).isFalse();
+        assertThat(jwtIntrospection.isValid(createLightweightJwt(ISSUER_INTROSPECTION_DISABLED))).isFalse();
     }
 
     @Test
@@ -94,6 +96,13 @@ class LightweightJeapIntrospectionTest {
                 isInstanceOf(JeapIntrospectionException.class);
     }
 
+    @Test
+    void testIntrospectIfNeeded_WhenIntrospectionDisabledForIssuer_ThenThrowsJeapIntrospectionUnknownIssuerException() {
+        final Jwt jwtIntrospectionDisabled = createLightweightJwt(ISSUER_INTROSPECTION_DISABLED);
+        assertThatThrownBy(() -> jwtIntrospection.introspectIfNeeded(jwtIntrospectionDisabled)).
+                isInstanceOf(JeapIntrospectionUnknownIssuerException.class);
+    }
+
     private Jwt createLightweightJwt(String issuer) {
         return createJwt(issuer, true);
     }
@@ -140,6 +149,7 @@ class LightweightJeapIntrospectionTest {
                 case ISSUER_INTROSPECTION_EXCEPTION -> TestJeapTokenIntrospectorFactory::introspectIntrospectionException;
                 case ISSUER_INTROSPECTION_OTHER_EXCEPTION -> TestJeapTokenIntrospectorFactory::introspectOtherException;
                 case ISSUER_INTROSPECTION_OK -> TestJeapTokenIntrospectorFactory::introspectAttributes;
+                case ISSUER_INTROSPECTION_DISABLED -> TestJeapTokenIntrospectorFactory::introspectDisabledException;
                 default -> throw new IllegalArgumentException("Unknown issuer: " + config.issuer());
             };
         }
@@ -163,6 +173,11 @@ class LightweightJeapIntrospectionTest {
                     "additional-claim-1", "additional-value-1",
                     "additional-claim-2", "additional-value-2");
         }
+
+        private static Map<String, Object> introspectDisabledException(String token) {
+            throw new IllegalStateException("Introspection is disabled");
+        }
+
     }
 
 }

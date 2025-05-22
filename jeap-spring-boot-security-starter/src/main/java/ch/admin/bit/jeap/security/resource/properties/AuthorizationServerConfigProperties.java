@@ -3,6 +3,7 @@ package ch.admin.bit.jeap.security.resource.properties;
 import ch.admin.bit.jeap.security.resource.token.JeapAuthenticationContext;
 import jakarta.validation.Valid;
 import lombok.Data;
+import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.util.StringUtils;
 
 import jakarta.validation.constraints.NotBlank;
@@ -59,6 +60,7 @@ public class AuthorizationServerConfigProperties implements AuthorizationServerC
      * The introspection configuration related to this server
      */
     @Valid
+    @NestedConfigurationProperty
     private IntrospectionProperties introspection;
 
     public String getJwkSetUri() {

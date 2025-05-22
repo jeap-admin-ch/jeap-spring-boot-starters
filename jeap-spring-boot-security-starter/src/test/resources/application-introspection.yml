@@ -7,6 +7,8 @@ jeap:
       resourceserver:
         resource-id: "test-resource"
         system-name: "test-system"
+        introspection:
+          mode: always
         authorization-server:
           issuer: "https://keycloak/auth/realm"
           introspection:
@@ -25,4 +27,6 @@ jeap:
               client-id: myFirstId
               client-secret: myFirstSecret
               uri: https://custom-uri/introspection-uri/protocol/openid-connect/token/introspect
-        introspection-mode: always
+          - issuer: "https://other-custom-uri/auth/realm"
+            introspection:
+              mode: none

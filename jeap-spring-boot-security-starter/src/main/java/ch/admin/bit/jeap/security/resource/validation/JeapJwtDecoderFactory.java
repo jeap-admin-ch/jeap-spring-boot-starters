@@ -1,8 +1,7 @@
 package ch.admin.bit.jeap.security.resource.validation;
 
 import ch.admin.bit.jeap.security.resource.introspection.JeapJwtIntrospection;
-import ch.admin.bit.jeap.security.resource.properties.AuthorizationServerConfiguration;
-import ch.admin.bit.jeap.security.resource.properties.ResourceServerProperties;
+import ch.admin.bit.jeap.security.resource.properties.*;
 import ch.admin.bit.jeap.security.resource.validation.IssuerJwtDecoder.IssuerJwtDecoderBuilder;
 import ch.admin.bit.jeap.security.resource.validation.ReactiveIssuerJwtDecoder.ReactiveIssuerJwtDecoderBuilder;
 import io.netty.channel.ChannelOption;
@@ -41,10 +40,10 @@ public class JeapJwtDecoderFactory {
         DecoderCreator<JwtDecoder> decoderCreator = DecoderCreator::createServletDecoder;
         resourceServerProperties.getAllAuthServerConfigurations().forEach(authConfig -> {
             var decoder = createDecoder(authConfig, resourceServerProperties.getAudience(), decoderCreator);
+            decoder = addIntrospectionIfConfigured(decoder, authConfig);
             issuerJwtDecoderBuilder.issuerDecoder(authConfig.getIssuer(), decoder);
         });
-        JwtDecoder issuerJwtDecoder = issuerJwtDecoderBuilder.build();
-        return addIntrospectionIfConfigured(issuerJwtDecoder);
+        return issuerJwtDecoderBuilder.build();
     }
 
     /**
@@ -92,12 +91,19 @@ public class JeapJwtDecoderFactory {
         }
     }
 
-    private JwtDecoder addIntrospectionIfConfigured(JwtDecoder jwtDecoder) {
-        if (jeapJwtIntrospection != null) {
-            return new IntrospectingJwtDecoder(jwtDecoder, jeapJwtIntrospection);
-        } else {
+    private JwtDecoder addIntrospectionIfConfigured(JwtDecoder jwtDecoder, AuthorizationServerConfigProperties authServerConfig) {
+        if (jeapJwtIntrospection == null) {
+            // No introspection configured on the resource server level
             return jwtDecoder;
         }
+        IntrospectionProperties introspectionProperties = authServerConfig.getIntrospection();
+        IntrospectionMode introspectionMode = introspectionProperties != null ? introspectionProperties.getMode() : null;
+        if (introspectionMode == IntrospectionMode.NONE){
+            // Introspection disabled on the auth server level
+            return jwtDecoder;
+        }
+        // Add introspection to the decoder
+        return new IntrospectingJwtDecoder(jwtDecoder, jeapJwtIntrospection);
     }
 
     interface DecoderCreator<T> {

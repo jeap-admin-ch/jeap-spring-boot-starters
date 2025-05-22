@@ -9,7 +9,7 @@ import org.springframework.core.type.AnnotatedTypeMetadata;
  */
 public class JeapTokenIntrospectionEnabled implements Condition {
 
-    private static final String RESOURCE_SERVER_INTROSPECTION_MODE_PROPERTY = "jeap.security.oauth2.resourceserver.introspection-mode";
+    private static final String RESOURCE_SERVER_INTROSPECTION_MODE_PROPERTY = "jeap.security.oauth2.resourceserver.introspection.mode";
 
     @Override
     public boolean matches(ConditionContext conditionContext, AnnotatedTypeMetadata annotatedTypeMetadata) {
