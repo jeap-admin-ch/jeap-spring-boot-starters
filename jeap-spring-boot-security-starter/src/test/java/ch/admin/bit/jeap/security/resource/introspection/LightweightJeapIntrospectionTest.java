@@ -1,6 +1,10 @@
 package ch.admin.bit.jeap.security.resource.introspection;
 
 import ch.admin.bit.jeap.security.resource.properties.ResourceServerProperties;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import lombok.RequiredArgsConstructor;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -15,8 +19,7 @@ import org.springframework.test.context.ActiveProfiles;
 import java.util.Map;
 
 import static ch.admin.bit.jeap.security.resource.introspection.LightweightTokenIntrospectionCondition.ROLES_PRUNED_CHARS_CLAIM;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.*;
 
 @Import({LightweightJeapIntrospectionTest.TestConfig.class})
 @ActiveProfiles("introspection-lightweight")
@@ -30,8 +33,25 @@ class LightweightJeapIntrospectionTest {
     private static final String ISSUER_INTROSPECTION_OK = "https://keycloak/auth/realm/introspection-ok";
     private static final String ISSUER_INTROSPECTION_DISABLED = "https://other-b2b/auth/introspection-disabled";
 
+    private static final String METRIC_CONDITIONAL_INTROSPECTIONS = "jeap.security.token.introspection.conditional.introspections";
+    private static final String METRIC_VALIDITY_CHECKS = "jeap.security.token.introspection.validity.checks";
+    private static final String METRIC_INTROSPECTION_REQUESTS = "jeap.security.token.introspection.endpoint.requests";
+    private static final String TAG_ISSUER = "issuer";
+    private static final String TAG_ACTIVE = "active";
+    private static final String TAG_INTROSPECTED = "introspected";
+
     @Autowired
     private JeapJwtIntrospection jwtIntrospection;
+
+    @Autowired
+    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
+    private SimpleMeterRegistry meterRegistry;
+
+    @BeforeEach
+    void init() {
+        // Reset the metrics before each test to ensure that we start with a clean slate
+        meterRegistry.clear();
+    }
 
     @Test
     void testIsValid() {
@@ -40,6 +60,28 @@ class LightweightJeapIntrospectionTest {
         assertThat(jwtIntrospection.isValid(createLightweightJwt(ISSUER_INTROSPECTION_EXCEPTION))).isFalse();
         assertThat(jwtIntrospection.isValid(createLightweightJwt(ISSUER_INTROSPECTION_OTHER_EXCEPTION))).isFalse();
         assertThat(jwtIntrospection.isValid(createLightweightJwt(ISSUER_INTROSPECTION_DISABLED))).isFalse();
+
+        // Check that the validity checks have been recorded in the metrics
+        assertThat(meterRegistry.counter(METRIC_VALIDITY_CHECKS, TAG_ISSUER, ISSUER_INTROSPECTION_OK, TAG_ACTIVE, "true" ).count()).
+                isEqualTo(1.0);
+        assertThat(meterRegistry.counter(METRIC_VALIDITY_CHECKS, TAG_ISSUER, ISSUER_INTROSPECTION_TOKEN_NOT_ACTIVE, TAG_ACTIVE, "false" ).count()).
+                isEqualTo(1.0);
+        assertThat(meterRegistry.counter(METRIC_VALIDITY_CHECKS, TAG_ISSUER, ISSUER_INTROSPECTION_EXCEPTION, TAG_ACTIVE, "false" ).count()).
+                isEqualTo(1.0);
+        assertThat(meterRegistry.counter(METRIC_VALIDITY_CHECKS, TAG_ISSUER, ISSUER_INTROSPECTION_OTHER_EXCEPTION, TAG_ACTIVE, "false" ).count()).
+                isEqualTo(1.0);
+        assertThat(meterRegistry.counter(METRIC_VALIDITY_CHECKS, TAG_ISSUER, ISSUER_INTROSPECTION_DISABLED, TAG_ACTIVE, "false" ).count()).
+                isEqualTo(1.0);
+
+        // Check that the introspection requests haven been recorded in the metrics
+        assertThat(meterRegistry.timer(METRIC_INTROSPECTION_REQUESTS, TAG_ISSUER, ISSUER_INTROSPECTION_OK, TAG_ACTIVE, "true" ).count()).
+                isEqualTo(1L);
+        assertThat(meterRegistry.timer(METRIC_INTROSPECTION_REQUESTS, TAG_ISSUER, ISSUER_INTROSPECTION_TOKEN_NOT_ACTIVE, TAG_ACTIVE, "false" ).count()).
+                isEqualTo(1L);
+        assertThat(meterRegistry.timer(METRIC_INTROSPECTION_REQUESTS, TAG_ISSUER, ISSUER_INTROSPECTION_EXCEPTION, TAG_ACTIVE, "unknown" ).count()).
+                isEqualTo(1L);
+        assertThat(meterRegistry.timer(METRIC_INTROSPECTION_REQUESTS, TAG_ISSUER, ISSUER_INTROSPECTION_OTHER_EXCEPTION, TAG_ACTIVE, "unknown" ).count()).
+                isEqualTo(1L);
     }
 
     @Test
@@ -50,6 +92,10 @@ class LightweightJeapIntrospectionTest {
         assertThat(introspectedJwt.getClaimAsBoolean("active")).isTrue();
         assertThat(introspectedJwt.getClaimAsString("additional-claim-1")).isEqualTo("additional-value-1");
         assertThat(introspectedJwt.getClaimAsString("additional-claim-2")).isEqualTo("additional-value-2");
+        assertThat(meterRegistry.counter(METRIC_CONDITIONAL_INTROSPECTIONS, TAG_ISSUER, ISSUER_INTROSPECTION_OK, TAG_ACTIVE, "true", TAG_INTROSPECTED, "true" ).count()).
+                isEqualTo(1.0);
+        assertThat(meterRegistry.timer(METRIC_INTROSPECTION_REQUESTS, TAG_ISSUER, ISSUER_INTROSPECTION_OK, TAG_ACTIVE, "true" ).count()).
+                isEqualTo(1L);
     }
 
     @Test
@@ -73,6 +119,8 @@ class LightweightJeapIntrospectionTest {
         assertThat(introspectedJwt.getClaimAsBoolean("active")).isNull();
         assertThat(introspectedJwt.getClaimAsString("additional-claim-1")).isNull();
         assertThat(introspectedJwt.getClaimAsString("additional-claim-2")).isNull();
+        assertThat(meterRegistry.counter(METRIC_CONDITIONAL_INTROSPECTIONS, TAG_ISSUER, ISSUER_INTROSPECTION_OK, TAG_ACTIVE, "unknown", TAG_INTROSPECTED, "false" ).count()).
+                isEqualTo(1.0);
     }
 
     @Test
@@ -80,6 +128,10 @@ class LightweightJeapIntrospectionTest {
         final Jwt jwtInvalidTokenException = createLightweightJwt(ISSUER_INTROSPECTION_TOKEN_NOT_ACTIVE);
         assertThatThrownBy(() -> jwtIntrospection.introspectIfNeeded(jwtInvalidTokenException)).
                 isInstanceOf(JeapIntrospectionInvalidTokenException.class);
+        assertThat(meterRegistry.counter(METRIC_CONDITIONAL_INTROSPECTIONS, TAG_ISSUER, ISSUER_INTROSPECTION_TOKEN_NOT_ACTIVE, TAG_ACTIVE, "false", TAG_INTROSPECTED, "true" ).count()).
+                isEqualTo(1.0);
+        assertThat(meterRegistry.timer(METRIC_INTROSPECTION_REQUESTS, TAG_ISSUER, ISSUER_INTROSPECTION_TOKEN_NOT_ACTIVE, TAG_ACTIVE, "false" ).count()).
+                isEqualTo(1L);
     }
 
     @Test
@@ -87,6 +139,10 @@ class LightweightJeapIntrospectionTest {
         final Jwt jwtIntrospectionException = createLightweightJwt(ISSUER_INTROSPECTION_EXCEPTION);
         assertThatThrownBy(() -> jwtIntrospection.introspectIfNeeded(jwtIntrospectionException)).
                 isInstanceOf(JeapIntrospectionException.class);
+        assertThat(meterRegistry.counter(METRIC_CONDITIONAL_INTROSPECTIONS, TAG_ISSUER, ISSUER_INTROSPECTION_EXCEPTION, TAG_ACTIVE, "unknown", TAG_INTROSPECTED, "true" ).count()).
+                isEqualTo(1.0);
+        assertThat(meterRegistry.timer(METRIC_INTROSPECTION_REQUESTS, TAG_ISSUER, ISSUER_INTROSPECTION_EXCEPTION, TAG_ACTIVE, "unknown" ).count()).
+                isEqualTo(1L);
     }
 
     @Test
@@ -94,6 +150,10 @@ class LightweightJeapIntrospectionTest {
         final Jwt jwtOtherException = createLightweightJwt(ISSUER_INTROSPECTION_OTHER_EXCEPTION);
         assertThatThrownBy(() -> jwtIntrospection.introspectIfNeeded(jwtOtherException)).
                 isInstanceOf(JeapIntrospectionException.class);
+        assertThat(meterRegistry.counter(METRIC_CONDITIONAL_INTROSPECTIONS, TAG_ISSUER, ISSUER_INTROSPECTION_OTHER_EXCEPTION, TAG_ACTIVE, "unknown", TAG_INTROSPECTED, "true" ).count()).
+                isEqualTo(1.0);
+        assertThat(meterRegistry.timer(METRIC_INTROSPECTION_REQUESTS, TAG_ISSUER, ISSUER_INTROSPECTION_OTHER_EXCEPTION, TAG_ACTIVE, "unknown" ).count()).
+                isEqualTo(1L);
     }
 
     @Test
@@ -134,17 +194,27 @@ class LightweightJeapIntrospectionTest {
 
     @TestConfiguration
     static class TestConfig {
-        @Bean
         // Provide a custom JeapTokenIntrospectorFactory to simulate different introspection results
-        JeapTokenIntrospectorFactory jeapTokenIntrospectorFactory() {
-            return new TestJeapTokenIntrospectorFactory();
+        @Bean
+        JeapTokenIntrospectorFactory jeapTokenIntrospectorFactory(JeapTokenIntrospectionMetrics metrics) {
+            return new TestJeapTokenIntrospectorFactory(metrics);
+        }
+
+        // Provide a meter registry for metrics collection to test the introspection metrics
+        @Bean
+        MeterRegistry meterRegistry() {
+            return new SimpleMeterRegistry();
         }
     }
 
+    @RequiredArgsConstructor
     private static class TestJeapTokenIntrospectorFactory implements JeapTokenIntrospectorFactory {
+
+        private final JeapTokenIntrospectionMetrics metrics;
+
         @Override
         public JeapTokenIntrospector create(JeapTokenIntrospectorConfiguration config) {
-            return switch (config.issuer()) {
+            JeapTokenIntrospector introspector = switch (config.issuer()) {
                 case ISSUER_INTROSPECTION_TOKEN_NOT_ACTIVE -> TestJeapTokenIntrospectorFactory::introspectInvalidTokenException;
                 case ISSUER_INTROSPECTION_EXCEPTION -> TestJeapTokenIntrospectorFactory::introspectIntrospectionException;
                 case ISSUER_INTROSPECTION_OTHER_EXCEPTION -> TestJeapTokenIntrospectorFactory::introspectOtherException;
@@ -152,6 +222,7 @@ class LightweightJeapIntrospectionTest {
                 case ISSUER_INTROSPECTION_DISABLED -> TestJeapTokenIntrospectorFactory::introspectDisabledException;
                 default -> throw new IllegalArgumentException("Unknown issuer: " + config.issuer());
             };
+            return metrics.timeTokenIntrospectionRequests(introspector, config.issuer());
         }
 
         private static Map<String, Object> introspectInvalidTokenException(String token) {

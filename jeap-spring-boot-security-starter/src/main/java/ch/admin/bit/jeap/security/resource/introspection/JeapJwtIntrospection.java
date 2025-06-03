@@ -6,6 +6,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -13,6 +14,8 @@ public class JeapJwtIntrospection {
 
     private final JeapJwtIntrospector jwtIntrospector;
     private final JeapJwtIntrospectionCondition introspectionCondition;
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+    private final Optional<JeapTokenIntrospectionMetrics> jeapTokenIntrospectionMetrics;
 
     /**
      * Introspect a JWT if needed and enrich it with the attributes returned by the introspection.
@@ -24,8 +27,23 @@ public class JeapJwtIntrospection {
      */
     public Jwt introspectIfNeeded(Jwt jwt) throws JeapIntrospectionInvalidTokenException, JeapIntrospectionException {
         if (introspectionCondition.needsIntrospection(jwt)) {
-            return introspectAndEnrich(jwt);
+            try {
+                Jwt enrichedJwt = introspectAndEnrich(jwt);
+                jeapTokenIntrospectionMetrics.ifPresent( metrics ->
+                        metrics.recordConditionalTokenIntrospection(jwt, true, true));
+                return enrichedJwt;
+            } catch (JeapIntrospectionInvalidTokenException e) {
+                jeapTokenIntrospectionMetrics.ifPresent( metrics ->
+                        metrics.recordConditionalTokenIntrospection(jwt, true, false));
+                throw e;
+            } catch (Exception e) {
+                jeapTokenIntrospectionMetrics.ifPresent(metrics ->
+                        metrics.recordConditionalTokenIntrospection(jwt, true, null));
+                throw e;
+            }
         } else {
+            jeapTokenIntrospectionMetrics.ifPresent( metrics ->
+                    metrics.recordConditionalTokenIntrospection(jwt, false, null));
             return jwt;
         }
     }
@@ -40,12 +58,18 @@ public class JeapJwtIntrospection {
         try {
             jwtIntrospector.introspect(jwt);
             // If no exception is thrown, the token is valid
+            jeapTokenIntrospectionMetrics.ifPresent(metrics ->
+                    metrics.recordValidityCheck(jwt, true));
             return true;
         } catch (JeapIntrospectionInvalidTokenException e) {
             log.error("Introspection found an invalid token from issuer '{}' for subject '{}'.", jwt.getIssuer(), jwt.getSubject(), e);
+            jeapTokenIntrospectionMetrics.ifPresent(metrics ->
+                    metrics.recordValidityCheck(jwt, false));
             return false;
         } catch (Exception e) {
             log.error("Declaring a token from issuer '{}' for subject '{}' to be invalid as its introspection failed.", jwt.getIssuer(), jwt.getSubject(), e);
+            jeapTokenIntrospectionMetrics.ifPresent(metrics ->
+                    metrics.recordValidityCheck(jwt, false));
             return false;
         }
     }

@@ -1,15 +1,15 @@
 package ch.admin.bit.jeap.security.resource.introspection;
 
 import ch.admin.bit.jeap.security.resource.properties.*;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
+import org.springframework.boot.autoconfigure.condition.*;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 
 import java.time.Duration;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @AutoConfiguration
@@ -18,9 +18,15 @@ import java.util.stream.Collectors;
 class MvcJeapIntrospectionConfiguration {
 
     @Bean
+    @ConditionalOnClass(MeterRegistry.class)
+    JeapTokenIntrospectionMetrics jeapTokenIntrospectionMetrics(Optional<MeterRegistry> meterRegistry) {
+        return new JeapTokenIntrospectionMetrics(meterRegistry);
+    }
+
+    @Bean
     @ConditionalOnMissingBean(JeapTokenIntrospectorFactory.class)
-    JeapTokenIntrospectorFactory jeapTokenIntrospectorFactory() {
-        return new DefaultJeapTokenIntrospectorFactory();
+    JeapTokenIntrospectorFactory jeapTokenIntrospectorFactory(Optional<JeapTokenIntrospectionMetrics> jeapTokenIntrospectionMetrics) {
+        return new DefaultJeapTokenIntrospectorFactory(jeapTokenIntrospectionMetrics);
     }
 
     @Bean
@@ -46,8 +52,10 @@ class MvcJeapIntrospectionConfiguration {
     }
 
     @Bean
-    JeapJwtIntrospection jeapJwtIntrospection(JeapJwtIntrospector jwtIntrospector, JeapJwtIntrospectionCondition introspectionCondition) {
-        return new JeapJwtIntrospection(jwtIntrospector, introspectionCondition);
+    JeapJwtIntrospection jeapJwtIntrospection(JeapJwtIntrospector jwtIntrospector,
+                                              JeapJwtIntrospectionCondition introspectionCondition,
+                                              Optional<JeapTokenIntrospectionMetrics> jeapTokenIntrospectionMetrics) {
+        return new JeapJwtIntrospection(jwtIntrospector, introspectionCondition, jeapTokenIntrospectionMetrics);
     }
 
     private JeapTokenIntrospectorConfiguration toJeapTokenIntrospectorConfiguration(AuthorizationServerConfiguration authorizationServerConfiguration) {

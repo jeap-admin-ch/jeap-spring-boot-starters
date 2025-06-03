@@ -28,7 +28,7 @@
     <packaging>pom</packaging>
 
     <artifactId>jeap-spring-boot-starters</artifactId>
-    <version>17.32.0-SNAPSHOT</version>
+    <version>17.33.0-SNAPSHOT</version>
 
     <parent>
         <artifactId>jeap-internal-spring-boot-parent</artifactId>
