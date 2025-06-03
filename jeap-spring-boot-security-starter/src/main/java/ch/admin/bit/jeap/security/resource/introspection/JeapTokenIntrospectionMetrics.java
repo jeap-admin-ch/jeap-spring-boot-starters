@@ -44,16 +44,16 @@ class JeapTokenIntrospectionMetrics {
     JeapTokenIntrospector timeTokenIntrospectionRequests(JeapTokenIntrospector tokenIntrospector, String issuer) {
         if (meterRegistry.isPresent()) {
             return (String token) -> {
-                Timer.Sample timer = Timer.start(meterRegistry.get());
+                Timer.Sample sample = Timer.start(meterRegistry.get());
                 try {
                     Map<String, Object> attributes = tokenIntrospector.introspect(token);
-                    stopIntrospectionRequestTimer(timer, issuer, true);
+                    stopIntrospectionRequestTimer(sample, issuer, true);
                     return attributes;
                 } catch (JeapIntrospectionInvalidTokenException tie) {
-                    stopIntrospectionRequestTimer(timer, issuer, false);
+                    stopIntrospectionRequestTimer(sample, issuer, false);
                     throw tie;
                 } catch (Exception e) {
-                    stopIntrospectionRequestTimer(timer, issuer, null);
+                    stopIntrospectionRequestTimer(sample, issuer, null);
                     throw e;
                 }
             };
@@ -62,12 +62,14 @@ class JeapTokenIntrospectionMetrics {
         }
     }
 
-    private void stopIntrospectionRequestTimer(Timer.Sample timer, String issuer, Boolean active) {
-        meterRegistry.ifPresent( registry ->
-            timer.stop(registry.timer(METRIC_INTROSPECTION_REQUESTS,
-                TAG_ISSUER, issuer,
-                TAG_ACTIVE, active != null ? active.toString() : VALUE_UNKNOWN))
-        );
+    private void stopIntrospectionRequestTimer(Timer.Sample sample, String issuer, Boolean active) {
+        meterRegistry.ifPresent( registry -> {
+            Timer timer = Timer.builder(METRIC_INTROSPECTION_REQUESTS)
+                                .tags(TAG_ISSUER, issuer, TAG_ACTIVE, active != null ? active.toString() : VALUE_UNKNOWN)
+                                .publishPercentiles(0.5, 0.75, 0.9, 0.99)
+                                .register(registry);
+            sample.stop(timer);
+        });
     }
 
     private static String getIssuer(Jwt jwt) {
