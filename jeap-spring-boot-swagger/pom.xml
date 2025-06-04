@@ -11,7 +11,7 @@
 
     <artifactId>jeap-spring-boot-swagger</artifactId>
 
-    <dependencies>
+    <name>${project.groupId}:${project.artifactId}</name><dependencies>
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-common</artifactId>

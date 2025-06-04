@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>jeap-spring-boot-web-config-starter</artifactId>
-    <name>jeap-spring-boot-web-config-starter</name>
+    <name>${project.groupId}:${project.artifactId}</name>
     <description>
         jeap starter for auto-configuration of web endpoints (HTTP headers for security/caching, ...). Supports both
         reactive and servlet environments.

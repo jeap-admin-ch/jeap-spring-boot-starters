@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>jeap-spring-boot-postgresql-aws-starter</artifactId>
-    <description>jeap starter for AWS RDS (PostgreSQL) database usage</description>
+    <name>${project.groupId}:${project.artifactId}</name><description>jeap starter for AWS RDS (PostgreSQL) database usage</description>
 
     <dependencies>
         <dependency>

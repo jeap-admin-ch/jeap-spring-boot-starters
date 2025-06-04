@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>jeap-spring-boot-security-starter-it</artifactId>
-    <name>jeap-spring-boot-security-starter-it</name>
+    <name>${project.groupId}:${project.artifactId}</name>
     <description>Support classes for performing integration tests of jeap-spring-boot-security-starter</description>
 
     <properties>

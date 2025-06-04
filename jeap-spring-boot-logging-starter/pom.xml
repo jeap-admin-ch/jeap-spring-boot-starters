@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>jeap-spring-boot-logging-starter</artifactId>
-    <name>jeap-spring-boot-logging-starter</name>
+    <name>${project.groupId}:${project.artifactId}</name>
     <description>jeap starter for Spring Boot applications with distributed logging.</description>
 
     <properties>

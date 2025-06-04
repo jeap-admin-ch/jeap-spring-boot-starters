@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>jeap-spring-boot-rest-request-tracing</artifactId>
-    <name>jeap-spring-boot-rest-request-tracing</name>
+    <name>${project.groupId}:${project.artifactId}</name>
     <description>REST request tracing</description>
 
     <dependencies>

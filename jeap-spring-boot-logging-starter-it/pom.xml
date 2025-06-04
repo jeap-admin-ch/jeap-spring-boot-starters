@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>jeap-spring-boot-logging-starter-it</artifactId>
-    <name>jeap-spring-boot-logging-starter-it</name>
+    <name>${project.groupId}:${project.artifactId}</name>
     <description>Integration Tests for the syslog appender in jeap-spring-boot-logging-starter</description>
 
     <dependencies>

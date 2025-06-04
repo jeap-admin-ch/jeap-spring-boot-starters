@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>jeap-spring-boot-web-config-starter-it-webflux</artifactId>
-    <name>jeap-spring-boot-web-config-starter-it-webflux</name>
+    <name>${project.groupId}:${project.artifactId}</name>
     <description>Integration tests of jeap-spring-boot-web-config-starter for the WebFlux stack.</description>
 
     <dependencies>

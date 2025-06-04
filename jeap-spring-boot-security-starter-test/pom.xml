@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>jeap-spring-boot-security-starter-test</artifactId>
-    <name>jeap-spring-boot-security-starter-test</name>
+    <name>${project.groupId}:${project.artifactId}</name>
     <description>Support for testing jeap-spring-boot-security-starter related aspects.</description>
 
     <properties>

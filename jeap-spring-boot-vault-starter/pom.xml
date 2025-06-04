@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>jeap-spring-boot-vault-starter</artifactId>
-    <name>jeap-spring-boot-vault-starter</name>
+    <name>${project.groupId}:${project.artifactId}</name>
     <description>jeap starter for Hashicorp Vault integration.</description>
 
     <dependencies>

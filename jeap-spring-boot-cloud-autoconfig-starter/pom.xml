@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>jeap-spring-boot-cloud-autoconfig-starter</artifactId>
-    <name>jeap-spring-boot-cloud-autoconfig-starter</name>
+    <name>${project.groupId}:${project.artifactId}</name>
     <description>jeap starter for cloud auto configuration (i.e. bound datasources)</description>
 
     <dependencies>
@@ -25,7 +25,7 @@
             <artifactId>java-cfenv-boot</artifactId>
             <version>${java-cfenv-boot.version}</version>
             <exclusions>
-                <!-- Avoid versions from java-cfenv-boot / java-cfenv-jdbc leaking into starters -->
+                
                 <exclusion>
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot</artifactId>

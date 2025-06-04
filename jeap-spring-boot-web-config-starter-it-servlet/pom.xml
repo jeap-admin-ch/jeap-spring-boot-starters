@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>jeap-spring-boot-web-config-starter-it-servlet</artifactId>
-    <name>jeap-spring-boot-web-config-starter-it-servlet</name>
+    <name>${project.groupId}:${project.artifactId}</name>
     <description>Integration tests of jeap-spring-boot-web-config-starter for the servlet stack.</description>
 
     <dependencies>

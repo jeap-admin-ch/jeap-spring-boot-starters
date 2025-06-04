@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>jeap-spring-boot-security-starter</artifactId>
-    <name>jeap-spring-boot-security-starter</name>
+    <name>${project.groupId}:${project.artifactId}</name>
     <description>jeap starter for secure REST-API and access secured REST-APIs.</description>
 
     <dependencies>
