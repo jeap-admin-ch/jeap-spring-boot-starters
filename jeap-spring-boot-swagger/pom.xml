@@ -10,8 +10,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>jeap-spring-boot-swagger</artifactId>
+    <name>${project.groupId}:${project.artifactId}</name>
 
-    <name>${project.groupId}:${project.artifactId}</name><dependencies>
+    <dependencies>
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-common</artifactId>

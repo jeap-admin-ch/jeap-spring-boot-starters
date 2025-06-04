@@ -11,8 +11,9 @@
     </parent>
 
     <artifactId>jeap-spring-boot-monitoring-starter-it-mvc</artifactId>
+    <name>${project.groupId}:${project.artifactId}</name>
 
-    <name>${project.groupId}:${project.artifactId}</name><dependencies>
+    <dependencies>
         <dependency>
             <groupId>ch.admin.bit.jeap</groupId>
             <artifactId>jeap-spring-boot-monitoring-starter</artifactId>

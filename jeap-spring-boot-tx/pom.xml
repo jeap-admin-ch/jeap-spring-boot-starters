@@ -11,8 +11,9 @@
     </parent>
 
     <artifactId>jeap-spring-boot-tx</artifactId>
+    <name>${project.groupId}:${project.artifactId}</name>
 
-    <name>${project.groupId}:${project.artifactId}</name><dependencies>
+    <dependencies>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-tx</artifactId>

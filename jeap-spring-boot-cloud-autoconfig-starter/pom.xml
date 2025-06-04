@@ -25,7 +25,7 @@
             <artifactId>java-cfenv-boot</artifactId>
             <version>${java-cfenv-boot.version}</version>
             <exclusions>
-                
+                <!-- Avoid versions from java-cfenv-boot / java-cfenv-jdbc leaking into starters -->
                 <exclusion>
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot</artifactId>
