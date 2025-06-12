@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [17.35.0] - 2025-06-12
+
+### Changed
+
+- security-starter-test: removed spring-security-rsa dependency as its functionality is now included in spring-security
+
 ## [17.34.0] - 2025-06-04
 
 ### Changed

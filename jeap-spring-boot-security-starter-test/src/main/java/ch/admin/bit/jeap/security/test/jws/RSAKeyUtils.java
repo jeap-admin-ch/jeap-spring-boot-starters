@@ -4,7 +4,7 @@ import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.gen.RSAKeyGenerator;
 import org.springframework.core.io.Resource;
-import org.springframework.security.rsa.crypto.KeyStoreKeyFactory;
+import org.springframework.security.crypto.encrypt.KeyStoreKeyFactory;
 
 import java.security.*;
 import java.security.interfaces.RSAPrivateKey;
@@ -21,7 +21,6 @@ public class RSAKeyUtils {
 
     /***
      * Read an RSA key pair from a key store into a RSAKey JWK instance.
-     *
      * To create such a key pair the following keytool command can be used (adjust validity, alias, store name etc. as needed):
      * keytool -genkeypair -keysize 2048 -validity 20000 -keyalg RSA -alias default-test-key -storetype pkcs12 -keystore default-rsa-test-key-pair.p12
      *

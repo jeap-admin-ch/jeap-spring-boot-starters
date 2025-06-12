@@ -29,7 +29,7 @@
 
     <artifactId>jeap-spring-boot-starters</artifactId>
     <name>${project.groupId}:${project.artifactId}</name>
-    <version>17.34.0-SNAPSHOT</version>
+    <version>17.35.0-SNAPSHOT</version>
 
     <parent>
         <artifactId>jeap-internal-spring-boot-parent</artifactId>
