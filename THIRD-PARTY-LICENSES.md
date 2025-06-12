@@ -230,7 +230,6 @@ Apache License Version 2.0
  * spring-security-oauth2-core - [org.springframework.security:spring-security-oauth2-core](https://spring.io/projects/spring-security)
  * spring-security-oauth2-jose - [org.springframework.security:spring-security-oauth2-jose](https://spring.io/projects/spring-security)
  * spring-security-oauth2-resource-server - [org.springframework.security:spring-security-oauth2-resource-server](https://spring.io/projects/spring-security)
- * spring-security-rsa - [org.springframework.security:spring-security-rsa](http://github.com/spring-projects/spring-security-oauth)
  * spring-security-test - [org.springframework.security:spring-security-test](https://spring.io/projects/spring-security)
  * spring-security-web - [org.springframework.security:spring-security-web](https://spring.io/projects/spring-security)
  * Spring Vault Core - [org.springframework.vault:spring-vault-core](https://projects.spring.io/spring-vault/spring-vault-core/)
