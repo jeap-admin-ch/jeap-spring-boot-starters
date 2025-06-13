@@ -29,12 +29,12 @@
 
     <artifactId>jeap-spring-boot-starters</artifactId>
     <name>${project.groupId}:${project.artifactId}</name>
-    <version>17.35.0-SNAPSHOT</version>
+    <version>17.36.0-SNAPSHOT</version>
 
     <parent>
         <artifactId>jeap-internal-spring-boot-parent</artifactId>
         <groupId>ch.admin.bit.jeap</groupId>
-        <version>5.9.0</version>
+        <version>5.10.0</version>
     </parent>
 
     <modules>
