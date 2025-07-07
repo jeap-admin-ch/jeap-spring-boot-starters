@@ -7,15 +7,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.PropertySource;
-import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
-import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 
 import javax.sql.DataSource;
 import java.util.HashMap;
@@ -24,7 +22,7 @@ import java.util.Map;
 import static org.springframework.util.StringUtils.hasText;
 
 @Slf4j
-@AutoConfiguration
+@AutoConfiguration(before = DataSourceAutoConfiguration.class)
 @ConditionalOnProperty(name = "jeap.postgresql.aws.enabled", havingValue = "true")
 @PropertySource(value = {"classpath:jeap-postgresql-aws.properties"})
 public class JeapPostgreSQLAWSDataSourceAutoConfig {
