@@ -6,8 +6,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -23,6 +29,16 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ServletRequestSecurityTracerTest {
+
+    @Target(ElementType.METHOD)
+    @Retention(RetentionPolicy.RUNTIME)
+    @ParameterizedTest()
+    @ValueSource(booleans = {true, false})
+    @interface BooleanValuesParametrizedTest {
+    }
+
+    private static final String BEST_MATCHING_PATTERN_ATTRIBUTE_NAME = "org.springframework.web.servlet.HandlerMapping.bestMatchingPattern";
+    private static final String CONTEXT = "/test-context";
 
     @Mock
     RestSecurityResponseListener restSecurityResponseListener;
@@ -43,33 +59,45 @@ class ServletRequestSecurityTracerTest {
         servletRequestSecurityTracer = new ServletRequestSecurityTracer(tracerConfiguration, Optional.of(restSecurityResponseListener));
     }
 
-    @Test
-    void doFilterInternal_requestShouldBeTraced_restSecurityResponseListenerCalled() {
-        doFilterInternal("/api/foo/bar", 200, true);
+    @BooleanValuesParametrizedTest
+    void doFilterInternal_requestShouldBeTraced_restSecurityResponseListenerCalled(boolean isRestRequest) {
+        doFilterInternal("/api/foo/bar", isRestRequest, 200, true);
     }
 
-    @Test
-    void doFilterInternal_actuatorRequestShouldNotBeTraced_restSecurityResponseListenerNotCalled() {
-        doFilterInternal("/actuator/info", 200, false);
+    @BooleanValuesParametrizedTest
+    void doFilterInternal_actuatorRequestShouldNotBeTraced_restSecurityResponseListenerNotCalled(boolean isRestRequest) {
+        doFilterInternal("/actuator/info", isRestRequest, 200, false);
     }
 
-    @Test
-    void doFilterInternal_forbiddenRequestShouldNotBeTraced_restSecurityResponseListenerNotCalled() {
-        doFilterInternal("/api/info", 403, false);
+    @BooleanValuesParametrizedTest
+    void doFilterInternal_forbiddenRequestShouldNotBeTraced_restSecurityResponseListenerNotCalled(boolean isRestRequest) {
+        doFilterInternal("/api/info", isRestRequest, 403, false);
     }
 
-    @Test
-    void doFilterInternal_unauthorizedRequestShouldNotBeTraced_restSecurityResponseListenerNotCalled() {
-        doFilterInternal("/api/info", 401, false);
+    @BooleanValuesParametrizedTest
+    void doFilterInternal_unauthorizedRequestShouldNotBeTraced_restSecurityResponseListenerNotCalled(boolean isRestRequest) {
+        doFilterInternal("/api/info", isRestRequest, 401, false);
+    }
+
+    @BooleanValuesParametrizedTest
+    void doFilterInternal_missingRequestUri_restSecurityResponseListenerNotCalled(boolean isRestRequest) {
+        doFilterInternal(null, isRestRequest, 200, false);
     }
 
     @SneakyThrows
-    private void doFilterInternal(String requestUriPattern, int statusCode, boolean traceRequest) {
+    private void doFilterInternal(String requestUriPattern, boolean isRestRequest, int statusCode, boolean traceRequest) {
         String method = "POST";
         HttpServletRequest requestMock = mock(HttpServletRequest.class);
         HttpServletResponse responseMock = mock(HttpServletResponse.class);
         when(requestMock.getMethod()).thenReturn(method);
-        when(requestMock.getAttribute("org.springframework.web.servlet.HandlerMapping.bestMatchingPattern")).thenReturn(requestUriPattern);
+        if (isRestRequest && (requestUriPattern != null)) {
+            when(requestMock.getAttribute(BEST_MATCHING_PATTERN_ATTRIBUTE_NAME)).thenReturn(requestUriPattern);
+        } else {
+            when(requestMock.getAttribute(BEST_MATCHING_PATTERN_ATTRIBUTE_NAME)).thenReturn(null);
+            when(requestMock.getContextPath()).thenReturn(CONTEXT);
+            String requestPath = (requestUriPattern != null ? CONTEXT + requestUriPattern : null);
+            when(requestMock.getRequestURI()).thenReturn(requestPath);
+        }
         when(responseMock.getStatus()).thenReturn(statusCode);
         servletRequestSecurityTracer.doFilterInternal(requestMock, responseMock, mock(FilterChain.class));
 
