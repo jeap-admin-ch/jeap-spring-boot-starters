@@ -1,0 +1,41 @@
+publiccodeYmlVersion: 0.4.0
+name: jeap-spring-boot-starters
+applicationSuite: jEAP
+url: "https://github.com/jeap-admin-ch/jeap-spring-boot-starters.git"
+landingURL: "https://github.com/jeap-admin-ch/jeap"
+platforms:
+  - web
+categories:
+  - application-development
+developmentStatus: stable
+softwareType: library
+description:
+  en:
+    localisedName: jeap-spring-boot-starters
+    shortDescription: Spring Boot starters that pre-configure and standardise logging, monitoring, security and other cross-cutting concerns for jEAP-based apps
+    longDescription: >
+      jEAP Spring Boot Starters provide ready-to-use defaults and auto-configs
+      so developers can focus on business logic instead of infrastructure.
+      Each starter addresses a specific concern: logging, feature flags,
+      monitoring, security, configuration and more.
+    features:
+      - Logging configuration incl. structured JSON logging for multiple runtime platforms
+      - Spring security integration with semantic role-based access control
+      - Observability using Prometheus/Micrometer
+      - Spring Config Server integration for externalized configuration
+      - Support for feature flags
+      - Object Storage starter for S3-compatible storage integration
+      - API documentation using Swagger UI and OpenAPI
+      - Postgres connection handling for AWS RDS
+      - Web security header pre-configuration
+legal:
+  license: Apache-2.0
+maintenance:
+  type: internal
+  contacts:
+    - name: Federal Office of Information Technology, Systems and Telecommunication FOITT
+      email: jeap-community@bit.admin.ch
+localisation:
+  localisationReady: false
+  availableLanguages:
+    - en
