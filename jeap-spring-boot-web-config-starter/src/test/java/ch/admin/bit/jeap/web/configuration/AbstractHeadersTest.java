@@ -92,7 +92,7 @@ class AbstractHeadersTest {
     @BeforeEach
     void setUp() {
         Collection<String> additionalSources = Set.of("http://test/cut/me/off");
-        headers = new AbstractHeaders<>(HttpHeaderFilterPostProcessor.NO_OP, additionalSources, null) {
+        headers = new AbstractHeaders<>(HttpHeaderFilterPostProcessor.NO_OP, additionalSources, null, null) {
             @Override
             protected void setHeadersMapToResponse(Map<String, String> target, Map<String, String> headers) {
                 target.putAll(headers);
@@ -107,7 +107,7 @@ class AbstractHeadersTest {
                 headers.put("Custom-Header", "test");
             }
         };
-        AbstractHeaders<Map<String, String>> headers = new AbstractHeaders<>(postProcessor, Set.of(), null) {
+        AbstractHeaders<Map<String, String>> headers = new AbstractHeaders<>(postProcessor, Set.of(), null, null) {
             @Override
             protected void setHeadersMapToResponse(Map<String, String> target, Map<String, String> headers) {
                 target.putAll(headers);

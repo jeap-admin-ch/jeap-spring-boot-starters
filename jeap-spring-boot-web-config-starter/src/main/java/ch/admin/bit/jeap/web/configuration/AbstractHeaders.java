@@ -30,14 +30,17 @@ public abstract class AbstractHeaders<RESPONSE> {
 
     private final HttpHeaderFilterPostProcessor postProcessor;
     private final String cspHeaderValue;
+    private final String featurePolicyHeaderValue;
 
     /**
      * @param additionalContentSources If given (nullable), is added to the list of allowed frame/connect sources in the Content-Security-Policy header
      * @param contentSecurityPolicy
+     * @param featurePolicy if given, then overrides the default value of the feature-policy header
      */
-    protected AbstractHeaders(HttpHeaderFilterPostProcessor postProcessor, Collection<String> additionalContentSources, String contentSecurityPolicy) {
+    protected AbstractHeaders(HttpHeaderFilterPostProcessor postProcessor, Collection<String> additionalContentSources, String contentSecurityPolicy, String featurePolicy) {
         this.postProcessor = postProcessor;
         this.cspHeaderValue = createCspHeaderValue(additionalContentSources, contentSecurityPolicy);
+        this.featurePolicyHeaderValue = createFeaturePolicyHeaderValue(featurePolicy);
     }
 
     protected abstract void setHeadersMapToResponse(RESPONSE response, Map<String, String> headers);
@@ -63,6 +66,13 @@ public abstract class AbstractHeaders<RESPONSE> {
                 "connect-src 'self'%s; " + // Identity provider URL is added as allowed API endpoint
                 "frame-src 'self'%s; " + // Identity provider URL is added as allowed iframe URL (i.e. for silent refresh of tokens)
                 "frame-ancestors 'self'", contentSourceValuePostfix, contentSourceValuePostfix);
+    }
+
+    private String createFeaturePolicyHeaderValue(String featurePolicy) {
+        if (featurePolicy != null && !featurePolicy.isBlank()) {
+            return featurePolicy;
+        }
+        return "microphone 'none'; payment 'none'; camera 'none'";
     }
 
     /**
@@ -102,7 +112,7 @@ public abstract class AbstractHeaders<RESPONSE> {
         // This header, usually known as HSTS, forces the use of HTTPS.
         headers.put(STRICT_TRANSPORT_SECURITY, "max-age=16070400; includeSubDomains");
         // This headers provides a mechanism to allow or deny the use of browser features
-        headers.put(FEATURE_POLICY, "microphone 'none'; payment 'none'; camera 'none'");
+        headers.put(FEATURE_POLICY, featurePolicyHeaderValue);
         // nosniff will prevent browsers from MIME-sniffing a response away from the declared content-type
         headers.put(X_CONTENT_TYPE_OPTIONS, "nosniff");
         // This header governs with referrer information will be included in the Referer header.

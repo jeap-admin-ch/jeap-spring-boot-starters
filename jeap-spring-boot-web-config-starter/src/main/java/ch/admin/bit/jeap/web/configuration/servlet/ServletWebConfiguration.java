@@ -18,7 +18,7 @@ public class ServletWebConfiguration {
     AddHeadersFilter httpResponseHeaderFilter(HeaderConfiguration config,
                                               Optional<HttpHeaderFilterPostProcessor> optionalPostProcessor) {
         HttpHeaderFilterPostProcessor postProcessor = optionalPostProcessor.orElse(HttpHeaderFilterPostProcessor.NO_OP);
-        ServletHeaders servletHeaders = new ServletHeaders(postProcessor, config.getAdditionalContentSources(), config.getContentSecurityPolicy());
+        ServletHeaders servletHeaders = new ServletHeaders(postProcessor, config.getAdditionalContentSources(), config.getContentSecurityPolicy(), config.getFeaturePolicy());
         return new AddHeadersFilter(config, servletHeaders);
     }
 

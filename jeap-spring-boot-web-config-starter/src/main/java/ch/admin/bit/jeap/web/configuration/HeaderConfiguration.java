@@ -28,6 +28,11 @@ public class HeaderConfiguration {
      * for the default value used.
      */
     private String contentSecurityPolicy = null;
+    /**
+     * Feature-Policy header value. If not set, see {@link ServletHeaders}
+     * for the default value used.
+     */
+    private String featurePolicy = null;
     private final Set<String> httpMethods = Set.of(
             HttpMethod.GET.name(),
             HttpMethod.HEAD.name());

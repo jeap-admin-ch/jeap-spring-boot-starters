@@ -12,9 +12,10 @@ public class ServletHeaders extends AbstractHeaders<HttpServletResponse> {
     /**
      * @param additionalContentSources If given (nullable), is added to the list of allowed connect/frame sources in the Content-Security-Policy header
      * @param contentSecurityPolicy
+     * @param featurePolicy if given, then overrides the default value of the feature-policy header
      */
-    ServletHeaders(HttpHeaderFilterPostProcessor postProcessor, Collection<String> additionalContentSources, String contentSecurityPolicy) {
-        super(postProcessor, additionalContentSources, contentSecurityPolicy);
+    ServletHeaders(HttpHeaderFilterPostProcessor postProcessor, Collection<String> additionalContentSources, String contentSecurityPolicy, String featurePolicy) {
+        super(postProcessor, additionalContentSources, contentSecurityPolicy,  featurePolicy);
     }
 
     @Override

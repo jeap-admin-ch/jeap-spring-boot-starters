@@ -16,7 +16,7 @@ public class WebfluxConfiguration {
     AddHeadersWebFilter addResponseHeaderWebFilter(HeaderConfiguration config,
                                                    Optional<HttpHeaderFilterPostProcessor> optionalPostProcessor) {
         HttpHeaderFilterPostProcessor postProcessor = optionalPostProcessor.orElse(HttpHeaderFilterPostProcessor.NO_OP);
-        WebfluxHeaders headers = new WebfluxHeaders(postProcessor, config.getAdditionalContentSources(), config.getContentSecurityPolicy());
+        WebfluxHeaders headers = new WebfluxHeaders(postProcessor, config.getAdditionalContentSources(), config.getContentSecurityPolicy(), config.getFeaturePolicy());
         return new AddHeadersWebFilter(config, headers);
     }
 }

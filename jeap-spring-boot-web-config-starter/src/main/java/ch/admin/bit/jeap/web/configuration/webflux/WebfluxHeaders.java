@@ -12,9 +12,10 @@ public class WebfluxHeaders extends AbstractHeaders<ServerHttpResponse> {
     /**
      * @param additionalContentSources If given (nullable), is added to the list of allowed sources in the Content-Security-Policy header
      * @param contentSecurityPolicy
+     * @param featurePolicy if given, then overrides the default value of the feature-policy header
      */
-    WebfluxHeaders(HttpHeaderFilterPostProcessor postProcessor, Collection<String> additionalContentSources, String contentSecurityPolicy) {
-        super(postProcessor, additionalContentSources, contentSecurityPolicy);
+    WebfluxHeaders(HttpHeaderFilterPostProcessor postProcessor, Collection<String> additionalContentSources, String contentSecurityPolicy, String featurePolicy) {
+        super(postProcessor, additionalContentSources, contentSecurityPolicy, featurePolicy);
     }
 
     @Override
