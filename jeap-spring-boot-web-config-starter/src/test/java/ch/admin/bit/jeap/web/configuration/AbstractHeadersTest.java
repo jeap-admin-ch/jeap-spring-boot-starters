@@ -89,10 +89,34 @@ class AbstractHeadersTest {
         assertEquals("test", responseStub.get("Custom-Header"));
     }
 
+    @Test
+    void addCustomCSPAndFeaturePolicyHeader() {
+        var customCSPHeader = "default-src 'self' *.admin.ch 'unsafe-inline';";
+        var customFeaturePolicy = "microphone 'none'; payment 'none';";
+        var headers = createHeadersInstanceWith(customCSPHeader, customFeaturePolicy);
+
+        Map<String, String> responseStub = new HashMap<>();
+        headers.addHeaders(responseStub, "GET", "/index.html");
+
+        assertEquals(customCSPHeader, responseStub.get("Content-Security-Policy"));
+        assertEquals(customFeaturePolicy, responseStub.get("Feature-Policy"));
+    }
+
     @BeforeEach
     void setUp() {
         Collection<String> additionalSources = Set.of("http://test/cut/me/off");
         headers = new AbstractHeaders<>(HttpHeaderFilterPostProcessor.NO_OP, additionalSources, null, null) {
+            @Override
+            protected void setHeadersMapToResponse(Map<String, String> target, Map<String, String> headers) {
+                target.putAll(headers);
+            }
+        };
+    }
+
+    private AbstractHeaders<Map<String, String>> createHeadersInstanceWith(String contentSecurityPolicy, String featurePolicy) {
+        Collection<String> additionalSources = Set.of("http://test/cut/me/off");
+
+        return new AbstractHeaders<>(HttpHeaderFilterPostProcessor.NO_OP, additionalSources, contentSecurityPolicy, featurePolicy) {
             @Override
             protected void setHeadersMapToResponse(Map<String, String> target, Map<String, String> headers) {
                 target.putAll(headers);
