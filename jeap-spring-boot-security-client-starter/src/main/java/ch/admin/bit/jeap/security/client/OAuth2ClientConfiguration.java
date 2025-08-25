@@ -2,41 +2,38 @@ package ch.admin.bit.jeap.security.client;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
-import org.springframework.boot.autoconfigure.security.oauth2.client.ClientsConfiguredCondition;
+import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientAutoConfiguration;
+import org.springframework.boot.autoconfigure.security.oauth2.client.reactive.ReactiveOAuth2ClientAutoConfiguration;
+import org.springframework.boot.autoconfigure.web.reactive.function.client.WebClientAutoConfiguration;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.Ordered;
-import org.springframework.core.annotation.Order;
 import org.springframework.security.oauth2.client.*;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.registration.ReactiveClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.reactive.function.client.ServerOAuth2AuthorizedClientExchangeFilterFunction;
 import org.springframework.security.oauth2.client.web.reactive.function.client.ServletOAuth2AuthorizedClientExchangeFilterFunction;
-import org.springframework.security.oauth2.server.resource.web.reactive.function.client.ServerBearerExchangeFilterFunction;
-import org.springframework.security.oauth2.server.resource.web.reactive.function.client.ServletBearerExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
 
 /**
  * This configuration makes a WebClient builder factory available that can create a WebClient.Builder instance
  * that builds WebClient instances that automatically add an OAuth2 access token as bearer to the WebClient exchanges.
- *
+ * <p>
  * This configuration supports both the WebMvc and the WebFlux stack.
  */
-
 @Slf4j
 @AutoConfiguration
-@ConditionalOnClass(WebClient.class)
+@ConditionalOnBean(WebClient.Builder.class)
+@AutoConfigureAfter({OAuth2ClientAutoConfiguration.class, ReactiveOAuth2ClientAutoConfiguration.class, WebClientAutoConfiguration.class})
 @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
 public class OAuth2ClientConfiguration {
 
     @Configuration
-    @Order(Ordered.LOWEST_PRECEDENCE -1) // to be executed before ServletWebClientForNoOAuthClientsConfiguration
-    @Conditional(ClientsConfiguredCondition.class)
-    @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
+    @ConditionalOnBean({ClientRegistrationRepository.class, OAuth2AuthorizedClientService.class})
+    @ConditionalOnMissingBean(JeapOAuth2WebclientBuilderFactory.class)
     public static class ServletWebClientForOAuthClientsConfiguration {
         @Bean
         public JeapOAuth2WebclientBuilderFactory jeapOAuth2WebclientBuilderFactory(WebClient.Builder builder, ClientRegistrationRepository clientRegistrationRepository, OAuth2AuthorizedClientService clientService) {
@@ -55,7 +52,7 @@ public class OAuth2ClientConfiguration {
     }
 
     @Configuration
-    @ConditionalOnMissingBean(JeapOAuth2WebclientBuilderFactory.class)
+    @ConditionalOnMissingBean({ClientRegistrationRepository.class, OAuth2AuthorizedClientService.class, JeapOAuth2WebclientBuilderFactory.class})
     @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
     public static class ServletWebClientForNoOAuthClientsConfiguration {
         @Bean
@@ -65,10 +62,9 @@ public class OAuth2ClientConfiguration {
     }
 
     @Configuration
-    @Order(Ordered.LOWEST_PRECEDENCE -1) // to be executed before ReactiveWebClientForNoOAuthClientsConfiguration
-    @Conditional(ClientsConfiguredCondition.class)
-    @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.REACTIVE)
-    public static class ReactivetWebClientForOAuthClientsConfiguration {
+    @ConditionalOnBean({ReactiveClientRegistrationRepository.class, ReactiveOAuth2AuthorizedClientService.class})
+    @ConditionalOnMissingBean(JeapOAuth2WebclientBuilderFactory.class)
+    public static class ReactiveWebClientForOAuthClientsConfiguration {
         @Bean
         public JeapOAuth2WebclientBuilderFactory jeapOAuth2WebclientBuilderFactory(WebClient.Builder builder, ReactiveClientRegistrationRepository clientRegistrationRepository, ReactiveOAuth2AuthorizedClientService clientService) {
             return new DefaultJeapOAuth2WebclientBuilderFactory(builder,
@@ -85,9 +81,9 @@ public class OAuth2ClientConfiguration {
     }
 
     @Configuration
-    @ConditionalOnMissingBean(JeapOAuth2WebclientBuilderFactory.class)
+    @ConditionalOnMissingBean({ReactiveClientRegistrationRepository.class, ReactiveOAuth2AuthorizedClientService.class, JeapOAuth2WebclientBuilderFactory.class})
     @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.REACTIVE)
-    public static class ReactivetWebClientForNoOAuthClientsConfiguration {
+    public static class ReactiveWebClientForNoOAuthClientsConfiguration {
         @Bean
         public JeapOAuth2WebclientBuilderFactory jeapOAuth2WebclientBuilderFactory(WebClient.Builder builder) {
             return new DefaultJeapOAuth2WebclientBuilderFactory(builder, new ServerBearerExchangeFilterFunction());

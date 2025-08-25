@@ -7,7 +7,7 @@
     <parent>
         <groupId>ch.admin.bit.jeap</groupId>
     	<artifactId>jeap-spring-boot-starters</artifactId>
-        <version>17.42.0-SNAPSHOT</version>
+        <version>17.43.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>jeap-spring-boot-security-starter-it</artifactId>
@@ -29,10 +29,12 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-webflux</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>io.projectreactor.netty</groupId>
             <artifactId>reactor-netty</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>

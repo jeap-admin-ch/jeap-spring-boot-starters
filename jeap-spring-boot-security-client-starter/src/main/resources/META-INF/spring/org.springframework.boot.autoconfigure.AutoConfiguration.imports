@@ -1,0 +1,3 @@
+ch.admin.bit.jeap.security.client.OAuth2ClientConfiguration
+ch.admin.bit.jeap.security.restclient.OAuth2RestClientConfiguration
+ch.admin.bit.jeap.security.client.OAuth2ClientRegistryPostprocessor

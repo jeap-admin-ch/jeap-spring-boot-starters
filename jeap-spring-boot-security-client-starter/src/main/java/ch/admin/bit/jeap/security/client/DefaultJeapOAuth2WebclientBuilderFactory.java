@@ -11,6 +11,7 @@ import java.util.Objects;
 
 import static org.springframework.security.oauth2.client.web.reactive.function.client.ServerOAuth2AuthorizedClientExchangeFilterFunction.clientRegistrationId;
 
+@SuppressWarnings("removal")
 public class DefaultJeapOAuth2WebclientBuilderFactory implements JeapOAuth2WebclientBuilderFactory {
 
     private final WebClient.Builder webClientBuilder;
@@ -65,7 +66,7 @@ public class DefaultJeapOAuth2WebclientBuilderFactory implements JeapOAuth2Webcl
             filter((request, next) -> next.exchange(ClientRequest.from(request).attributes(clientRegistrationId(clientRegistryId)).build())).
             // Use token from current authentication if available
             filter(bearerFromAuthenticationExchangeFilterFunction).
-            // Use token from configured OAuth2 client if there was no token available from the current authentication
+            // Use token from the configured OAuth2 client if there was no token available from the current authentication
             filter((request, next) -> {
                 if (!request.headers().containsKey(HttpHeaders.AUTHORIZATION)) {
                     return oauth2ClientExchangeFilterFunction.filter(request, next);

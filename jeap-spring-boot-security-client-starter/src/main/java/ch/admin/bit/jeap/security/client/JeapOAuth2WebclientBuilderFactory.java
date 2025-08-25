@@ -5,15 +5,15 @@ import org.springframework.web.reactive.function.client.WebClient;
 /**
  * Interface specification for a WebClient builder factory that can create WebClient.Builder instances that build
  * WebClient instances that automatically add an OAuth2 access token as bearer to WebClient exchanges.
- *
+ * <p>
  * There are different factory methods for creating WebClients with different possible sources for the access tokens.
- *
+ * <p>
  * One possibility is to configure the WebClient as an OAuth2 client for a given client registration and fetch access tokens
  * from an authorization server by means of the OAuth2 client credentials flow. The OAuth2 client configuration must be
  * provided using the standard spring boot security configuration properties (spring.security.oauth2.client.registration.*).
- *
+ * <p>
  * Another possibility is to configure the WebClient to carry over the access token from the incoming request it is executed in.
- *
+ * <p>
  * A third possibility is to combine the first two possibilities.
  */
 public interface JeapOAuth2WebclientBuilderFactory {
@@ -24,7 +24,7 @@ public interface JeapOAuth2WebclientBuilderFactory {
      *
      * @param clientRegistryId Identifier to select one of the configured OAuth2 client registry configurations.
      * @return A WebClient.Builder instance preconfigured to build WebClient instances that act as an OAuth2 client.
-     * @deprecated Due to ambiguous method naming, this method is deprecated in favour of createForClientRegistryId().
+     * @deprecated Due to ambiguous method naming, this method is deprecated in favor of createForClientRegistryId().
      */
     @Deprecated(since="11.5.1", forRemoval = true)
     WebClient.Builder createForClientId(String clientRegistryId);
@@ -46,7 +46,7 @@ public interface JeapOAuth2WebclientBuilderFactory {
      *
      * @param clientRegistryId Identifier to select one of the configured OAuth2 client registry configurations.
      * @return A WebClient.Builder instance preconfigured to build WebClient instances that augment exchanges with OAuth2 access tokens.
-     * @deprecated Due to ambiguous method naming, this method is deprecated in favour of
+     * @deprecated Due to ambiguous method naming, this method is deprecated in favor of
      * createForClientRegistryIdPreferringTokenFromIncomingRequest().
      */
     @Deprecated(since="11.5.1", forRemoval = true)

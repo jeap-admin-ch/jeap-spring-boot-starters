@@ -1,7 +1,6 @@
 package ch.admin.bit.jeap.security.it.resource;
 
 import ch.admin.bit.jeap.security.client.JeapOAuth2WebclientBuilderFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -28,11 +27,10 @@ public class OAuth2TestGateway {
 
     private final Map<WebClientTokenSource, WebClient> webClients = new HashMap<>();
 
-    public OAuth2TestGateway(JeapOAuth2WebclientBuilderFactory jeapOAuth2WebclientBuilderFactory, @Value("${server.port}") int serverPort) {
-        String resourceBaseUrl = "http://localhost:" + serverPort + BearerTokenResource.API_PATH;
-        webClients.put(CLIENT, jeapOAuth2WebclientBuilderFactory.createForClientId(WEBCLIENT_ID).baseUrl(resourceBaseUrl).build());
-        webClients.put(REQUEST, jeapOAuth2WebclientBuilderFactory.createForTokenFromIncomingRequest().baseUrl(resourceBaseUrl).build());
-        webClients.put(REQUEST_ELSE_CLIENT, jeapOAuth2WebclientBuilderFactory.createForClientIdPreferringTokenFromIncomingRequest(WEBCLIENT_ID).baseUrl(resourceBaseUrl).build());
+    public OAuth2TestGateway(JeapOAuth2WebclientBuilderFactory jeapOAuth2WebclientBuilderFactory, String targetResourceUrl) {
+        webClients.put(CLIENT, jeapOAuth2WebclientBuilderFactory.createForClientRegistryId(WEBCLIENT_ID).baseUrl(targetResourceUrl).build());
+        webClients.put(REQUEST, jeapOAuth2WebclientBuilderFactory.createForTokenFromIncomingRequest().baseUrl(targetResourceUrl).build());
+        webClients.put(REQUEST_ELSE_CLIENT, jeapOAuth2WebclientBuilderFactory.createForClientRegistryIdPreferringTokenFromIncomingRequest(WEBCLIENT_ID).baseUrl(targetResourceUrl).build());
     }
 
     @GetMapping(API_PATH)

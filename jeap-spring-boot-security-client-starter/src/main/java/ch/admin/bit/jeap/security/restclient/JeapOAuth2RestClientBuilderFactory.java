@@ -5,7 +5,7 @@ import org.springframework.web.client.RestClient;
 /**
  * <pre>
  * Interface specification for a RestClient builder factory that can create RestClient.Builder instances that build
- * RestClient instances that automatically add an OAuth2 access token as bearer to RestClient exchanges.
+ * RestClient instances that automatically add an OAuth2 access token as a bearer token to RestClient exchanges.
  *
  * There are different factory methods for creating RestClients with different possible sources for the access tokens.
  *
@@ -44,6 +44,7 @@ public interface JeapOAuth2RestClientBuilderFactory {
      * Creates a RestClient.Builder instance that is configured to build RestClient instances that augment every exchange
      * with the OAuth2 access token carried over from the current incoming request, i.e. a created RestClient instance 'reuses'
      * the OAuth2 access token of the incoming request it is executed in.
+     *
      * @return A RestClient.Builder instance preconfigured to build RestClient instances that augment exchanges with OAuth2 access tokens
      *         taken over from the current authentication context.
      */

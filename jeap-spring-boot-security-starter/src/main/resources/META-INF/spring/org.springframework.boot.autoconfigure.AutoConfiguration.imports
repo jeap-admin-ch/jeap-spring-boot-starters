@@ -1,11 +1,8 @@
-ch.admin.bit.jeap.security.client.OAuth2ClientConfiguration
-ch.admin.bit.jeap.security.client.OAuth2ClientRegistryPostprocessor
 ch.admin.bit.jeap.security.resource.properties.ResourceServerProperties
 ch.admin.bit.jeap.security.resource.configuration.DefaultDenyAllWebSecurityConfiguration
 ch.admin.bit.jeap.security.resource.configuration.MvcSecurityConfiguration
 ch.admin.bit.jeap.security.resource.configuration.WebFluxSecurityConfiguration
 ch.admin.bit.jeap.security.resource.token.TokenConfiguration
-ch.admin.bit.jeap.security.restclient.OAuth2RestClientConfiguration
 ch.admin.bit.jeap.security.user.JeapCurrentUserEndpointConfiguration
 ch.admin.bit.jeap.security.resource.introspection.MvcJeapIntrospectionConfiguration
 

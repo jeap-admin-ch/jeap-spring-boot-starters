@@ -1,7 +1,9 @@
 package ch.admin.bit.jeap.security.it.client.webmvc;
 
+import ch.admin.bit.jeap.security.client.JeapOAuth2WebclientBuilderFactory;
+import ch.admin.bit.jeap.security.it.bearertoken.BearerTokenTestExtension;
+import ch.admin.bit.jeap.security.it.bearertoken.BearerTokenUrl;
 import ch.admin.bit.jeap.security.it.mockserver.OAuth2MockServer;
-import ch.admin.bit.jeap.security.it.resource.BearerTokenResource;
 import ch.admin.bit.jeap.security.it.resource.OAuth2TestGateway;
 import ch.admin.bit.jeap.security.it.resource.OAuth2TestGateway.WebClientTokenSource;
 import ch.admin.bit.jeap.security.resource.token.JeapAuthenticationContext;
@@ -15,16 +17,20 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.context.annotation.Bean;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+
 
 import java.time.Duration;
 
@@ -35,7 +41,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
 @ActiveProfiles("client")
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
+@ExtendWith(BearerTokenTestExtension.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class OAuth2RestClientWebMvcIT {
 
     private static final int OAUTH_MOCK_SERVER_PORT = 9090;
@@ -57,21 +64,30 @@ class OAuth2RestClientWebMvcIT {
     @Mock
     private HttpSession httpSession;
 
+    private static String bearerTokenUrl;
+
+    @LocalServerPort
+    int serverPort;
+
+    @Autowired
+    JeapOAuth2RestClientBuilderFactory jeapOAuth2RestClientBuilderFactory;
+
     static {
         oauth2MockServer.start();
     }
 
+    @BeforeAll
+    static void init(@BearerTokenUrl String url) {
+        bearerTokenUrl = url;
+    }
+
     @BeforeEach
     void setup(){
+        oauth2MockServer.reset();
         when(attrs.getRequest()).thenReturn(servletRequest);
         when(servletRequest.getSession()).thenReturn(httpSession);
         when(attrs.getResponse()).thenReturn(servletResponse);
         RequestContextHolder.setRequestAttributes(attrs);
-    }
-
-    @AfterEach
-    void reset() {
-        oauth2MockServer.reset();
     }
 
     @AfterAll
@@ -79,11 +95,6 @@ class OAuth2RestClientWebMvcIT {
         oauth2MockServer.stop();
     }
 
-    @Value("${server.port}")
-    int serverPort;
-
-    @Autowired
-    JeapOAuth2RestClientBuilderFactory jeapOAuth2RestClientBuilderFactory;
 
     @Test
     void testCreateForClientId_WhenOutsideOfAnHttpRequest_ThenTokenFetchedForClient() {
@@ -236,7 +247,7 @@ class OAuth2RestClientWebMvcIT {
 
     private String callResource(RestClient restClient) {
         return restClient.get().
-                uri("http://localhost:" + serverPort + BearerTokenResource.API_PATH).
+                uri(bearerTokenUrl).
                 retrieve().
                 body(String.class);
     }
@@ -253,4 +264,13 @@ class OAuth2RestClientWebMvcIT {
     private JeapAuthenticationToken defaultAuthentication() {
         return  JeapAuthenticationTestTokenBuilder.create().withContext(JeapAuthenticationContext.SYS).build();
     }
+
+    @TestConfiguration
+    static class GatewayConfig {
+        @Bean
+        OAuth2TestGateway oAuth2TestGateway(JeapOAuth2WebclientBuilderFactory jeapOAuth2WebclientBuilderFactory) {
+            return new OAuth2TestGateway(jeapOAuth2WebclientBuilderFactory, bearerTokenUrl);
+        }
+    }
+
 }

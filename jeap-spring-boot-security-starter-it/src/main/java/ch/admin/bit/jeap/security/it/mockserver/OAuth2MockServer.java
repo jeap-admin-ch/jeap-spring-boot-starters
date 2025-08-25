@@ -5,7 +5,6 @@ import ch.admin.bit.jeap.security.test.jws.JwsBuilder;
 import ch.admin.bit.jeap.security.test.jws.RSAKeyUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.WireMockServer;
-import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.matching.ContentPattern;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
@@ -55,7 +54,6 @@ public class OAuth2MockServer {
 
     public void start() {
         wireMockServer.start();
-        WireMock.configureFor("localhost", wireMockServer.port());
         stubConfigRequest();
         stubJwksRequest();
     }
@@ -67,6 +65,7 @@ public class OAuth2MockServer {
     public void reset() {
         wireMockServer.resetAll();
         stubConfigRequest();
+        stubJwksRequest();
     }
 
     public String getBaseUrl() {
@@ -99,7 +98,7 @@ public class OAuth2MockServer {
     }
 
     public void stubTokenRequestWithToken(JWT token) {
-        stubFor(post(tokenPath).willReturn(okJson(getOAuthMockServerTokenBody(token))));
+        wireMockServer.stubFor(post(tokenPath).willReturn(okJson(getOAuthMockServerTokenBody(token))));
     }
 
     @SneakyThrows
@@ -109,7 +108,7 @@ public class OAuth2MockServer {
         introspectionAttributes.put("introspected", "only-on-introspection");
         Optional.ofNullable(additionalClaims).ifPresent(introspectionAttributes::putAll);
         String introspectionResponse = new ObjectMapper().writeValueAsString(introspectionAttributes);
-        stubFor(post(introspectionPath)
+        wireMockServer.stubFor(post(introspectionPath)
                 .withBasicAuth(CLIENT_ID, CLIENT_SECRET)
                 .withRequestBody(containing("token=" + token.serialize()))
                 .willReturn(okJson(introspectionResponse)));
@@ -120,7 +119,7 @@ public class OAuth2MockServer {
         Map<String, Object> introspectionAttributes = new HashMap<>(token.getJWTClaimsSet().getClaims());
         introspectionAttributes.put("active", true);
         String introspectionResponse = new ObjectMapper().writeValueAsString(introspectionAttributes);
-        stubFor(post(introspectionPath)
+        wireMockServer.stubFor(post(introspectionPath)
                 .withBasicAuth(CLIENT_ID, CLIENT_SECRET)
                 .withRequestBody(containing("token=" + token.serialize()))
                 .willReturn(okJson(introspectionResponse).withFixedDelay(delayInMilliseconds))
@@ -128,15 +127,15 @@ public class OAuth2MockServer {
     }
 
     public void stubTokenIntrospectionErrorResponseRequest() {
-        stubFor(post(introspectionPath).willReturn(status(400).withBody("{\"error\": \"invalid_request\"}")));
+        wireMockServer.stubFor(post(introspectionPath).willReturn(status(400).withBody("{\"error\": \"invalid_request\"}")));
     }
 
     private void stubConfigRequest() {
-        stubFor(get(configPath).willReturn(okJson(getOAuthMockServerConfigBody())));
+        wireMockServer.stubFor(get(configPath).willReturn(okJson(getOAuthMockServerConfigBody())));
     }
 
     private void stubJwksRequest() {
-        stubFor(get(jwksPath).willReturn(okJson(getOAuthMockServerJwksBody())));
+        wireMockServer.stubFor(get(jwksPath).willReturn(okJson(getOAuthMockServerJwksBody())));
     }
 
     public SignedJWT createToken(Duration tokenExpiresIn) {
@@ -151,15 +150,15 @@ public class OAuth2MockServer {
     }
 
     public void verifyTokenRequest(int times) {
-        verify(exactly(times), postRequestedFor(urlEqualTo(tokenPath)));
+        wireMockServer.verify(exactly(times), postRequestedFor(urlEqualTo(tokenPath)));
     }
 
     public void verifyTokenRequestBody(ContentPattern<?> contentPattern) {
-        verify(postRequestedFor(urlEqualTo(tokenPath)).withRequestBody(contentPattern));
+        wireMockServer.verify(postRequestedFor(urlEqualTo(tokenPath)).withRequestBody(contentPattern));
     }
 
     public void verifyTokenIntrospectionRequest(int times) {
-        verify(exactly(times), postRequestedFor(urlEqualTo(introspectionPath)));
+        wireMockServer.verify(exactly(times), postRequestedFor(urlEqualTo(introspectionPath)));
     }
 
     private String getOAuthMockServerJwksBody() {

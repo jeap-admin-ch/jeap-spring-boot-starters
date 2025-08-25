@@ -1,21 +1,22 @@
 package ch.admin.bit.jeap.security.it.client.webflux;
 
 import ch.admin.bit.jeap.security.client.JeapOAuth2WebclientBuilderFactory;
+import ch.admin.bit.jeap.security.it.bearertoken.BearerTokenTestExtension;
+import ch.admin.bit.jeap.security.it.bearertoken.BearerTokenUrl;
 import ch.admin.bit.jeap.security.it.mockserver.OAuth2MockServer;
-import ch.admin.bit.jeap.security.it.resource.BearerTokenResource;
 import ch.admin.bit.jeap.security.it.resource.OAuth2TestGateway;
 import ch.admin.bit.jeap.security.it.resource.OAuth2TestGateway.WebClientTokenSource;
 import ch.admin.bit.jeap.security.resource.token.JeapAuthenticationContext;
 import ch.admin.bit.jeap.security.resource.token.JeapAuthenticationToken;
 import ch.admin.bit.jeap.security.test.resource.JeapAuthenticationTestTokenBuilder;
 import com.nimbusds.jwt.JWT;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.context.annotation.Bean;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
@@ -29,7 +30,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @ActiveProfiles("client")
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
+@ExtendWith(BearerTokenTestExtension.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class OAuth2WebClientWebFluxIT {
 
     private static final int OAUTH_MOCK_SERVER_PORT = 9090;
@@ -39,12 +41,25 @@ public class OAuth2WebClientWebFluxIT {
 
     private static final OAuth2MockServer oauth2MockServer = new OAuth2MockServer(OAUTH_MOCK_SERVER_PORT, OAUTH_MOCK_SERVER_BASE_PATH);
 
+    private static String bearerTokenUrl;
+
+    @LocalServerPort
+    int serverPort;
+
+    @Autowired
+    JeapOAuth2WebclientBuilderFactory jeapOAuth2WebclientBuilderFactory;
+
     static {
         oauth2MockServer.start();
     }
 
-    @AfterEach
-    void reset() {
+    @BeforeAll
+    static void init(@BearerTokenUrl String url) {
+        bearerTokenUrl = url;
+    }
+
+    @BeforeEach
+    void setup() {
         oauth2MockServer.reset();
     }
 
@@ -52,12 +67,6 @@ public class OAuth2WebClientWebFluxIT {
     static void tearDown() {
         oauth2MockServer.stop();
     }
-
-    @Value("${server.port}")
-    int serverPort;
-
-    @Autowired
-    JeapOAuth2WebclientBuilderFactory jeapOAuth2WebclientBuilderFactory;
 
     @Test
     void testCreateForClientId_WhenOutsideOfAnHttpRequest_ThenTokenFetchedForClient() {
@@ -191,7 +200,7 @@ public class OAuth2WebClientWebFluxIT {
 
     private Mono<String> callResource(WebClient webClient) {
         return webClient.get().
-                uri("http://localhost:" + serverPort + BearerTokenResource.API_PATH).
+                uri(bearerTokenUrl).
                 retrieve().
                 bodyToMono(String.class);
     }
@@ -206,6 +215,14 @@ public class OAuth2WebClientWebFluxIT {
 
     private JeapAuthenticationToken defaultAuthentication() {
         return  JeapAuthenticationTestTokenBuilder.create().withContext(JeapAuthenticationContext.SYS).build();
+    }
+
+    @TestConfiguration
+    static class GatewayConfig {
+        @Bean
+        OAuth2TestGateway oAuth2TestGateway(JeapOAuth2WebclientBuilderFactory jeapOAuth2WebclientBuilderFactory) {
+            return new OAuth2TestGateway(jeapOAuth2WebclientBuilderFactory, bearerTokenUrl);
+        }
     }
 
 }

@@ -32,7 +32,7 @@
     <description>Spring Boot starters that pre-configure and standardise logging, monitoring, security and other
         cross-cutting concerns for jEAP-based apps.
     </description>
-    <version>17.42.0-SNAPSHOT</version>
+    <version>17.43.0-SNAPSHOT</version>
 
     <parent>
         <artifactId>jeap-internal-spring-boot-parent</artifactId>
@@ -46,6 +46,7 @@
         <module>jeap-spring-boot-rest-request-tracing</module>
         <module>jeap-spring-boot-logging-starter</module>
         <module>jeap-spring-boot-logging-starter-it</module>
+        <module>jeap-spring-boot-security-client-starter</module>
         <module>jeap-spring-boot-security-starter</module>
         <module>jeap-spring-boot-security-starter-test</module>
         <module>jeap-spring-boot-config-starter</module>
@@ -63,6 +64,8 @@
         <module>jeap-spring-boot-security-starter-it</module>
         <module>jeap-spring-boot-security-starter-it-webmvc</module>
         <module>jeap-spring-boot-security-starter-it-webflux</module>
+        <module>jeap-spring-boot-security-client-starter-it</module>
+        <module>jeap-spring-boot-security-client-starter-it-webflux</module>
         <module>jeap-spring-boot-vault-starter</module>
         <module>jeap-spring-boot-config-starter-it</module>
         <module>jeap-spring-boot-cloud-autoconfig-starter</module>
