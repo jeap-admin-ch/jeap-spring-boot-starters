@@ -5,10 +5,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.logging.DeferredLogFactory;
 import org.springframework.core.env.Environment;
-import org.springframework.core.env.MapPropertySource;
 import org.springframework.mock.env.MockEnvironment;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -41,19 +39,7 @@ class ClientConfigEnvPostProcessorsTest {
     }
 
     @Test
-    void test_WhenEnabledNotSetInBootStrapContext_ThenBaseAndDefaultsForEnabledSet() {
-        addBootstrapPropertySource(mockEnvironment);
-        addInterpolatedPropertyValues(mockEnvironment, ClientBaseConfigEnvPostProcessor.ENABLED_BASE_PROPERTIES);
-        addInterpolatedPropertyValues(mockEnvironment, ClientDefaultConfigEnvPostProcessor.ENABLED_DEFAULT_PROPERTIES);
-
-        runPostProcessors(mockEnvironment);
-
-        assertProperties(mockEnvironment, ClientBaseConfigEnvPostProcessor.ENABLED_BASE_PROPERTIES);
-        assertProperties(mockEnvironment, ClientDefaultConfigEnvPostProcessor.ENABLED_DEFAULT_PROPERTIES);
-    }
-
-    @Test
-    void test_WhenEnabledNotSetNotInBootStrapContext_ThenBaseAndDefaultsForEnabledSet() {
+    void test_WhenEnabledNotSet_ThenBaseAndDefaultsForEnabledSet() {
         addInterpolatedPropertyValues(mockEnvironment, ClientBaseConfigEnvPostProcessor.ENABLED_BASE_PROPERTIES);
         addInterpolatedPropertyValues(mockEnvironment, ClientDefaultConfigEnvPostProcessor.ENABLED_DEFAULT_PROPERTIES);
 
@@ -65,15 +51,9 @@ class ClientConfigEnvPostProcessorsTest {
 
 
     @Test
-    void test_WhenEnabledTrueInBootStrapContext_ThenBaseAndDefaultsForEnabledSet() {
+    void test_WhenEnabledTrue_ThenBaseForEnabledSetAndNoDefaultsSet() {
         mockEnvironment.withProperty("jeap.config.client.enabled", "true");
-        test_WhenEnabledNotSetInBootStrapContext_ThenBaseAndDefaultsForEnabledSet();
-    }
-
-    @Test
-    void test_WhenEnabledTrueNotInBootStrapContext_ThenBaseForEnabledSetAndNoDefaultsSet() {
-        mockEnvironment.withProperty("jeap.config.client.enabled", "true");
-        test_WhenEnabledNotSetNotInBootStrapContext_ThenBaseAndDefaultsForEnabledSet();
+        test_WhenEnabledNotSet_ThenBaseAndDefaultsForEnabledSet();
     }
 
     @Test
@@ -84,23 +64,6 @@ class ClientConfigEnvPostProcessorsTest {
         runPostProcessors(mockEnvironment);
 
         assertProperties(mockEnvironment, ClientBaseConfigEnvPostProcessor.DISABLED_PROPERTIES);
-    }
-
-    @Test
-    void test_WhenEnabledInBootStrapContextAndSomePropertiesSet_ThenDefaultsForEnabledOverridenByPropertiesSet() {
-        addBootstrapPropertySource(mockEnvironment);
-        Map<String, Object> expectedDefaultProperties = new HashMap<>(ClientDefaultConfigEnvPostProcessor.ENABLED_DEFAULT_PROPERTIES);
-        mockEnvironment.withProperty("spring.cloud.config.uri", "overridden-uri");
-        expectedDefaultProperties.remove("spring.cloud.config.uri");
-        mockEnvironment.withProperty("spring.cloud.config.fail-fast", "overridden-fail-fast");
-        expectedDefaultProperties.remove("spring.cloud.config.fail-fast");
-        addInterpolatedPropertyValues(mockEnvironment, expectedDefaultProperties);
-
-        runPostProcessors(mockEnvironment);
-
-        assertThat(mockEnvironment.getProperty("spring.cloud.config.uri")).isEqualTo("overridden-uri");
-        assertThat(mockEnvironment.getProperty("spring.cloud.config.fail-fast")).isEqualTo("overridden-fail-fast");
-        assertProperties(mockEnvironment, expectedDefaultProperties);
     }
 
     @Test
@@ -130,11 +93,6 @@ class ClientConfigEnvPostProcessorsTest {
                 }
             }
         });
-    }
-
-    private static void addBootstrapPropertySource(MockEnvironment mockEnvironment) {
-        mockEnvironment.getPropertySources().
-                addLast(new MapPropertySource("bootstrap", Map.of("bootstrap.dummy", "value")));
     }
 
     private static String getInterpolatedValue(String value) {

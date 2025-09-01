@@ -11,20 +11,20 @@ import org.springframework.core.env.Environment;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
+
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.ok;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DirtiesContext
-@ActiveProfiles({"local", "bootstrap"})
+@ActiveProfiles(profiles = "local")
 @SpringBootTest(classes = TestApplication.class)
-class BootstrapContextIT {
+class ClientConfigIT {
 
     private static final WireMockServer WIRE_MOCK = new WireMockServer(0); // random port
 
     @BeforeAll
     static void setup() {
-        System.setProperty("spring.cloud.bootstrap.enabled", "true");
         stubConfigServerResponse();
         WIRE_MOCK.start();
         String configServerMockUrl = "http://localhost:%s/config".formatted(WIRE_MOCK.port());
@@ -34,7 +34,6 @@ class BootstrapContextIT {
     @AfterAll
     static void teardown() {
         WIRE_MOCK.stop();
-        System.clearProperty("spring.cloud.bootstrap.enabled");
         System.clearProperty("spring.cloud.config.uri");
     }
 
@@ -42,19 +41,24 @@ class BootstrapContextIT {
     private Environment env;
 
     @Test
-    void test_WhenBootstrapContextActivated_thenReadBootstrapConfigFilesAndFetchConfigurationFromConfigServerSuccesfully() {
-        assertThat(env.getProperty("jme.test.application")).isEqualTo("bootstrap");
-        assertThat(env.getProperty("jme.test.bootstrap")).isEqualTo("bootstrap");
-        assertThat(env.getProperty("local-property")).isEqualTo("local-from-config-server");
-        assertThat(env.getProperty("general-property")).isEqualTo("general-from-config-server");
+    void testReadApplicationConfigFileAndFetchConfigurationFromConfigServerSuccesfully() {
+        assertThat(env.getProperty("jme.test.application")).isEqualTo("somevalue");
+        assertThat(env.getProperty("local-property","none")).isEqualTo("local-from-config-server");
+        assertThat(env.getProperty("general-property", "none")).isEqualTo("general-from-config-server");
     }
 
     private static void stubConfigServerResponse() {
-        final String configPath = "/config/test-app/local,bootstrap";
+        final String configPath = "/config/test-app/local";
         WIRE_MOCK.stubFor(get(configPath)
                         .willReturn(ok()
                                 .withHeader("Content-Type", "application/json")
                                 .withBodyFile("ConfigServerResponse.json"))
+        );
+        final String defaultPath = "/config/test-app/default";
+        WIRE_MOCK.stubFor(get(defaultPath)
+                .willReturn(ok()
+                        .withHeader("Content-Type", "application/json")
+                        .withBodyFile("ConfigServerDefaultResponse.json"))
         );
     }
 

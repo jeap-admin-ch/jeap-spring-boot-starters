@@ -1,5 +1,0 @@
-# Application name is used to look up secrets, i.e. at /jeap/jeap-spring-boot-vault-starter
-spring.application.name: jeap-spring-boot-vault-starter
-
-# Disable vault unless explicitly enabled
-spring.cloud.vault.enabled: false

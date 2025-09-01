@@ -29,8 +29,6 @@ import java.util.function.Supplier;
  * changes caused by the removal of config sources in the config server. The code of the method is duplicated from
  * ConfigDataContextRefresher and a small additional code part is added that removes config server property sources from the
  * client context if there is no longer a matching config server property source.
- *
- * @see FixedLegacyContextRefresher
  */
 class FixedConfigDataContextRefresher extends ConfigDataContextRefresher {
     private static final String CONFIGSERVER = "configserver:";

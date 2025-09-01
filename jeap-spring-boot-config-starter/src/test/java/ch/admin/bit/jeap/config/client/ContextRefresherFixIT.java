@@ -18,9 +18,9 @@ import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DirtiesContext
-@ActiveProfiles({"local", "nobootstrap"})
+@ActiveProfiles(profiles = "local")
 @SpringBootTest(classes = TestApplication.class)
-class NoBootstrapContextRefresherFixIT {
+class ContextRefresherFixIT {
 
     private static final WireMockServer WIRE_MOCK = new WireMockServer(0); // random port
 
@@ -46,7 +46,7 @@ class NoBootstrapContextRefresherFixIT {
     private Environment env;
 
     @Test
-    void test_WhenNoBootstrapContext_thenDynamicPropertySourceShouldBeClearedWhenSourceNoLongerPresent() {
+    void testDynamicPropertySourceShouldBeClearedWhenSourceNoLongerPresent() {
         assertThat(env.getProperty("some-other-dynamic-property")).isEqualTo("stays-put");
         String beforeRefresh = env.getProperty("some-property");
         assertThat(beforeRefresh).isEqualTo("dynamic");
@@ -68,7 +68,7 @@ class NoBootstrapContextRefresherFixIT {
 
         String scenario = "clear dynamic property";
         String clearedState = "dynamic property cleared";
-        String configPath = "/config/test-app/local,nobootstrap";
+        String configPath = "/config/test-app/local";
         WIRE_MOCK.stubFor(get(configPath)
                 .inScenario(scenario)
                 .whenScenarioStateIs(STARTED)

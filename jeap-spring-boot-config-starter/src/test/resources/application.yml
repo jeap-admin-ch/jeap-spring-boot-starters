@@ -1,4 +1,6 @@
 spring:
+  config:
+    import: "configserver:"
   cloud:
     bus:
       enabled: false
@@ -8,3 +10,6 @@ spring:
   application:
     name: test-app
 
+jme:
+  test:
+    application: "somevalue"

@@ -5,8 +5,8 @@ import ch.admin.bit.jeap.vault.config.conditions.OnVaultAndAppRoleCondition;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.context.annotation.Conditional;
-import org.springframework.context.annotation.Configuration;
 
 /**
  * Configuration class for logging Vault integration settings.
@@ -25,7 +25,7 @@ import org.springframework.context.annotation.Configuration;
  *
  * @see OnVaultAndAppRoleCondition
  */
-@Configuration
+@AutoConfiguration
 @Conditional(OnVaultAndAppRoleCondition.class)
 @Slf4j
 public class JeapVaultAppRoleConfigLogger {

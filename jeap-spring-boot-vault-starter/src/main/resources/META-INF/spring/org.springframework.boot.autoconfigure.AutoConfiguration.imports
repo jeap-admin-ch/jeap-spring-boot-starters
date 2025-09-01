@@ -1,0 +1,2 @@
+  ch.admin.bit.jeap.vault.config.JeapVaultAppRoleConfigLogger
+  ch.admin.bit.jeap.vault.config.JeapVaultKubernetesConfigLogger

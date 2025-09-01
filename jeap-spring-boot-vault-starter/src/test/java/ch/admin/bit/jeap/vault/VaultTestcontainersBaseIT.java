@@ -3,6 +3,7 @@ package ch.admin.bit.jeap.vault;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.testcontainers.containers.Container.ExecResult;
@@ -33,10 +34,9 @@ class VaultTestcontainersBaseIT {
         assertEquals("vault-secret-value", vaultTestConfiguration.getTestSecret());
     }
 
+    @BeforeAll
     @SneakyThrows
-    static void init(boolean bootstrapEnabled)  {
-        log.info("Enabling bootstrap context: {}", bootstrapEnabled);
-        System.setProperty("spring.cloud.bootstrap.enabled", Boolean.toString(bootstrapEnabled));
+    static void init()  {
         String vaultUrl = "http://" + vaultContainer.getHost() + ":" + vaultContainer.getFirstMappedPort();
         log.info("Vault address: {}", vaultUrl);
         System.setProperty("jeap.vault.url", vaultUrl);
@@ -48,7 +48,6 @@ class VaultTestcontainersBaseIT {
 
     @AfterAll
     static void reset() {
-        System.clearProperty("spring.cloud.bootstrap.enabled");
         System.clearProperty("jeap.vault.url");
     }
 }

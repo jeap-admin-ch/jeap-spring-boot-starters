@@ -1,7 +1,3 @@
-org.springframework.cloud.bootstrap.BootstrapConfiguration=\
-  ch.admin.bit.jeap.vault.config.JeapVaultAppRoleConfigLogger, \
-  ch.admin.bit.jeap.vault.config.JeapVaultKubernetesConfigLogger
-
 org.springframework.boot.env.EnvironmentPostProcessor=\
   ch.admin.bit.jeap.vault.VaultBasePropertiesEnvPostProcessor,\
   ch.admin.bit.jeap.vault.VaultDefaultPropertiesEnvPostProcessor,\

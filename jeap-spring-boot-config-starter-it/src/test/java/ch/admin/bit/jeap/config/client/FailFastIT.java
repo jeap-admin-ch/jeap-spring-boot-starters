@@ -19,23 +19,7 @@ class FailFastIT {
 
     @Test
     @DirtiesContext
-    void test_WhenConfigServerNotAccessibleInBootstrapContext_thenFailFastWithExceptionDuringStartup() {
-        try {
-            System.setProperty("spring.cloud.bootstrap.enabled", "true");
-            // No properties like e.g. config server url defined
-            Map<String, Object> propertiesMap = Map.of();
-
-            assertThatThrownBy( () -> ConfigClientTestInstance.main(propertiesMap)).
-                    hasMessage("Could not locate PropertySource and the fail fast property is set, failing");
-        }
-        finally {
-            System.clearProperty("spring.cloud.bootstrap.enabled");
-        }
-    }
-
-    @Test
-    @DirtiesContext
-    void test_WhenConfigServerNotAccessibleForConfigImportMechanism_thenFailFastWithExceptionDuringStartup() {
+    void test_WhenConfigServerNotAccessible_thenFailFastWithExceptionDuringStartup() {
         assertThat(System.getProperty("spring.cloud.bootstrap.enabled", "false")).isEqualToIgnoringCase("false");
         // activate config server import but do not define needed properties like e.g. the config server url
         Map<String, Object> propertiesMap = Map.of("spring.config.import", "configserver:");
@@ -46,7 +30,7 @@ class FailFastIT {
 
     @Test
     @DirtiesContext
-    void test_WhenConfigServerNotAccessibleForConfigImportMechanismAndFailFastFalseAndConfigOptional_thenStartupOk() {
+    void test_WhenConfigServerNotAccessibleAndFailFastFalseAndConfigOptional_thenStartupOk() {
         assertThat(System.getProperty("spring.cloud.bootstrap.enabled", "false")).isEqualToIgnoringCase("false");
         // activate config server import optional
         Map<String, Object> propertiesMap = Map.of("spring.config.import", "optional:configserver:",
@@ -60,7 +44,7 @@ class FailFastIT {
 
     @Test
     @DirtiesContext
-    void test_WhenConfigServerNotAccessibleForConfigImportMechanismAndFailFastFalseAndConfigNotOptional_thenFailFastWithExceptionDuringStartup() {
+    void test_WhenConfigServerNotAccessibleAndFailFastFalseAndConfigNotOptional_thenFailFastWithExceptionDuringStartup() {
         assertThat(System.getProperty("spring.cloud.bootstrap.enabled", "false")).isEqualToIgnoringCase("false");
         // activate config server import optional
         Map<String, Object> propertiesMap = Map.of("spring.config.import", "configserver:",
