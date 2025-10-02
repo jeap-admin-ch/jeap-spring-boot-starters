@@ -73,10 +73,10 @@
     </modules>
 
     <properties>
-        <springdoc-openapi.version>2.8.9</springdoc-openapi.version>
+        <springdoc-openapi.version>2.8.13</springdoc-openapi.version>
         <logstash.version>8.1</logstash.version>
         <wiremock.version>3.13.1</wiremock.version>
-        <java-cfenv-boot.version>3.4.0</java-cfenv-boot.version>
+        <java-cfenv-boot.version>3.5.0</java-cfenv-boot.version>
         <maven.javadoc.skip>false</maven.javadoc.skip>
 
         <!-- some code is copied from a spring base classes to fix issues -->
