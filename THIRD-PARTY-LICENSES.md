@@ -277,6 +277,7 @@ Apache License Version 2.0
  * AWS Java SDK :: Third Party :: Jackson-core - [software.amazon.awssdk:third-party-jackson-core](https://aws.amazon.com/sdkforjava)
  * AWS Java SDK :: HTTP Clients :: URL Connection - [software.amazon.awssdk:url-connection-client](https://aws.amazon.com/sdkforjava/http-clients/url-connection-client)
  * AWS Java SDK :: Utilities - [software.amazon.awssdk:utils](https://aws.amazon.com/sdkforjava/utils)
+ * AWS Java SDK :: Utils Lite - [software.amazon.awssdk:utils-lite](https://aws.amazon.com/sdkforjava)
  * AWS Event Stream - [software.amazon.eventstream:eventstream](https://github.com/awslabs/aws-eventstream-java)
  * AWS Advanced JDBC Wrapper - [software.amazon.jdbc:aws-advanced-jdbc-wrapper](https://github.com/awslabs/aws-advanced-jdbc-wrapper)
 
