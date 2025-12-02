@@ -5,8 +5,6 @@ public class JeapLogConfigurationContextListener extends AbstractContextListener
     static final String JEAP_LOGGING_PLATFORM = "jeapLoggingPlatform";
     static final String CLOUDWATCH_PLATFORM_VALUE = "cloudwatch";
     static final String RHOS_PLATFORM_VALUE = "rhos";
-    static final String LOGRELAY_PROFILE = "logrelayProfile";
-    static final String CLOUD_PROFILE = "cloudProfile";
     static final String ROLLING_LOG_FILE_PROFILE = "rollingLogFileProfile";
     static final String ADMIN_ENABLED = "adminEnabled";
     static final String ADMIN_URL = "adminUrl";
@@ -14,8 +12,6 @@ public class JeapLogConfigurationContextListener extends AbstractContextListener
 
     static final String CLOUDWATCH_APPENDER = "cloudwatch";
     static final String RHOS_APPENDER = "rhos";
-    static final String LOGRELAY_APPENDER = "logrelay";
-    static final String CONSOLEJSON_APPENDER = "consolejson";
     static final String CONSOLETEXT_APPENDER = "consoletext";
     static final String ROLLINGFILE_APPENDER = "rollingfile";
 
@@ -25,15 +21,8 @@ public class JeapLogConfigurationContextListener extends AbstractContextListener
             context.putProperty(CLOUDWATCH_APPENDER, TRUE);
         } else if (isRhos()) {
             context.putProperty(RHOS_APPENDER, TRUE);
-        }
-        else {
-            if (isLogrelay()) {
-                context.putProperty(LOGRELAY_APPENDER, TRUE);
-            } else if (isCloud()) {
-                context.putProperty(CONSOLEJSON_APPENDER, TRUE);
-            } else {
-                context.putProperty(CONSOLETEXT_APPENDER, TRUE);
-            }
+        } else {
+            context.putProperty(CONSOLETEXT_APPENDER, TRUE);
         }
 
         if (isTrue(ADMIN_ENABLED) || (hasAdminUrl() && !adminDisabled()) || isTrue(ROLLING_LOG_FILE_PROFILE)) {
@@ -49,17 +38,9 @@ public class JeapLogConfigurationContextListener extends AbstractContextListener
         return isWantedPlatform(RHOS_PLATFORM_VALUE);
     }
 
-    private boolean isCloud() {
-        return isTrue(CLOUD_PROFILE);
-    }
-
     private boolean adminDisabled() {
         String value = context.getProperty(ADMIN_ENABLED);
         return "false".equalsIgnoreCase(value);
-    }
-
-    private boolean isLogrelay() {
-        return isTrue(LOGRELAY_PROFILE);
     }
 
     private boolean hasAdminUrl() {

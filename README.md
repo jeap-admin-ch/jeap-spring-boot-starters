@@ -5,9 +5,7 @@ applications.
 
 The starters include the following projects
 * __jeap-spring-boot-application-starter__: Frontend route handling, DB pooling defaults. Includes the 
-  jeap-spring-boot-logging-starter and the jeap-spring-boot-cloud-autoconfig-starter.
-* __jeap-spring-boot-cloud-autoconfig-starter__: Auto-activate "cloud" profile on CloudFoundry
-* __jeap-spring-boot-config-starter__: Spring configuration server client
+  jeap-spring-boot-logging-starter.
 * __jeap-spring-boot-featureflag-starter__: Feature flag support based on configuration properties and togglz
 * __jeap-spring-boot-logging-starter__: Formats logs to include tracing information and use a structured json format
 * __jeap-spring-boot-monitoring-starter__: Monitoring using prometheus / micrometer

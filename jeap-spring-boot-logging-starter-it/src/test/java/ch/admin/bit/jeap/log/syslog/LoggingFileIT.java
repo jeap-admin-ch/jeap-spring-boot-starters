@@ -17,18 +17,18 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Slf4j
 @AutoConfigureObservability
-@ActiveProfiles("cloud")
+@ActiveProfiles("aws")
 @TestPropertySource(properties = {
         "spring.boot.admin.client.url=http://localhost",
         "spring.application.name=test"
 })
-public class LoggingFileIT extends SyslogIntegrationTestBase {
+public class LoggingFileIT extends LogIntegrationTestBase {
 
     private static final Path LOGFILE_PATH = Path.of("log.log");
 
     @Test
     @StdIo
-    void when_adminUrlIsSetInCloudProfile_then_shouldLogToFileAndStdoutForSpringBootAdminLogActuator(StdOut stdOut) throws IOException {
+    void when_adminUrlIsSetInAwsrofile_then_shouldLogToFileAndStdoutForSpringBootAdminLogActuator(StdOut stdOut) throws IOException {
         String logMessage = "Some message logged using cloud profile to console and file";
         log.info(logMessage);
 

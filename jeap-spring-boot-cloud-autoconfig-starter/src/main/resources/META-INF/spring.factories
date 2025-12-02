@@ -1,2 +1,0 @@
-org.springframework.context.ApplicationListener=\
-ch.admin.bit.jeap.starter.cloudfoundry.CloudProfileApplicationListener

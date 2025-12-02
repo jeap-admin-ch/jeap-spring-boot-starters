@@ -24,7 +24,7 @@ import java.util.regex.Pattern;
 @ConditionalOnWebApplication
 public class TracerConfiguration {
     /**
-     * A list of headers that shall not be logged, e.g. headers from CF
+     * A list of headers that shall not be logged
      * All headers matching any of this prefixes is ignored from logging
      */
     @Builder.Default

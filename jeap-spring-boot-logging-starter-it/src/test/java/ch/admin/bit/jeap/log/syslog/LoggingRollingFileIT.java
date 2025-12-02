@@ -16,14 +16,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Slf4j
 @AutoConfigureObservability
-@ActiveProfiles({"cloud", "rollingLogFile"})
-public class LoggingRollingFileIT extends SyslogIntegrationTestBase {
+@ActiveProfiles({"aws", "rollingLogFile"})
+public class LoggingRollingFileIT extends LogIntegrationTestBase {
 
     private static final Path LOGFILE_PATH = Path.of("log.log");
 
     @Test
     @StdIo
-    void when_rollingfileIsSetInCloudProfile_then_shouldLogToFileAndStdout(StdOut stdOut) throws IOException {
+    void when_rollingfileIsSetInAwsProfile_then_shouldLogToFileAndStdout(StdOut stdOut) throws IOException {
         String logMessage = "Some message logged using cloud profile to console and file";
         log.info(logMessage);
 

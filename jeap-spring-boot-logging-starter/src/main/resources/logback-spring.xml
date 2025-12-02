@@ -28,19 +28,9 @@
             <include resource="jeap/logging/logback-rhos.xml"/>
         </then>
     </if>
-    <if condition='property("logrelay").equals("true")'>
-        <then>
-            <include resource="jeap/logging/logback-logrelay.xml"/>
-        </then>
-    </if>
     <if condition='property("consoletext").equals("true")'>
         <then>
             <include resource="jeap/logging/logback-consoletext.xml"/>
-        </then>
-    </if>
-    <if condition='property("consolejson").equals("true")'>
-        <then>
-            <include resource="jeap/logging/logback-consolejson.xml"/>
         </then>
     </if>
     <if condition='property("rollingfile").equals("true")'>

@@ -15,15 +15,15 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 
 @Slf4j
 @AutoConfigureObservability
-@ActiveProfiles("cloud")
-public class LoggingNoRollingFileIT extends SyslogIntegrationTestBase {
+@ActiveProfiles("aws")
+public class LoggingNoRollingFileIT extends LogIntegrationTestBase {
 
     private static final Path LOGFILE_PATH = Path.of("log.log");
 
     @Test
     @StdIo
-    void when_rollingfileIsSetToFalseInCloudProfile_then_shouldLogToFileAndStdout(StdOut stdOut) throws IOException {
-        String logMessage = "Some message logged using cloud profile to console and not to the file";
+    void when_rollingfileIsSetToFalseInAwsProfile_then_shouldLogToFileAndStdout(StdOut stdOut) throws IOException {
+        String logMessage = "Some message logged using aws profile to console and not to the file";
         log.info(logMessage);
 
         awaitAndAssertOneLogEntryOnStdOutContaining(logMessage, stdOut);

@@ -34,9 +34,7 @@ class JeapLogConfigurationContextListenerTest {
     private void assertOnlyActiveAppender(String activeAppender) {
         Set<String> disabledAppenders = new HashSet<>(Set.of(
                 CLOUDWATCH_APPENDER,
-                CONSOLEJSON_APPENDER,
                 CONSOLETEXT_APPENDER,
-                LOGRELAY_APPENDER,
                 ROLLINGFILE_APPENDER));
         disabledAppenders.remove(activeAppender);
 
@@ -48,57 +46,12 @@ class JeapLogConfigurationContextListenerTest {
     }
 
     @Test
-    void cloudProfileActive_shouldLogToConsoleAsJson() {
-        context.putProperty(CLOUD_PROFILE, TRUE);
-
-        listener.start();
-
-        assertOnlyActiveAppender(CONSOLEJSON_APPENDER);
-    }
-
-    @Test
     void cloudwatchPlatform_shouldLogToConsoleAsJsonForCloudwatch() {
         context.putProperty(JEAP_LOGGING_PLATFORM, CLOUDWATCH_PLATFORM_VALUE);
 
         listener.start();
 
         assertOnlyActiveAppender(CLOUDWATCH_APPENDER);
-    }
-
-    @ParameterizedTest
-    @CsvSource({
-            "cloudProfile, true",
-            "logrelayProfile, true"})
-    void cloudwatchPlatform_shouldLogToConsoleAsJsonForCloudwatch_regardlessOfOtherProfiles(String key, String value) {
-        context.putProperty(JEAP_LOGGING_PLATFORM, CLOUDWATCH_PLATFORM_VALUE);
-        context.putProperty(key, value);
-
-        listener.start();
-
-        assertOnlyActiveAppender(CLOUDWATCH_APPENDER);
-    }
-
-    @Test
-    void logRelayProfileActive_shouldLogToLogrelay() {
-        context.putProperty(LOGRELAY_PROFILE, TRUE);
-
-        listener.start();
-
-        assertOnlyActiveAppender(LOGRELAY_APPENDER);
-    }
-
-    @ParameterizedTest
-    @CsvSource({
-            "cloudProfile, true",
-            "logrelayProfile, true"})
-    void rollingLogFileProfileActive_shouldAlsoLogToLogfile(String key, String value) {
-        context.putProperty(ROLLING_LOG_FILE_PROFILE, TRUE);
-        context.putProperty(key, value);
-
-        listener.start();
-
-        assertThat(context.getProperty(ROLLINGFILE_APPENDER))
-                .isEqualTo(TRUE);
     }
 
     @ParameterizedTest

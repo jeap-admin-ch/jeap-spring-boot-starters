@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Slf4j
 @AutoConfigureObservability
-public class LoggingNoProfileIT extends SyslogIntegrationTestBase {
+public class LoggingNoProfileIT extends LogIntegrationTestBase {
 
     @Test
     @StdIo
