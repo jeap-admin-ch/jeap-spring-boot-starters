@@ -1,7 +1,7 @@
 publiccodeYmlVersion: 0.4.0
 name: jeap-spring-boot-starters
-softwareVersion: 19.1.0
-releaseDate: 2025-12-04
+softwareVersion: 19.2.0
+releaseDate: 2025-12-08
 applicationSuite: jEAP
 url: "https://github.com/jeap-admin-ch/jeap-spring-boot-starters.git"
 landingURL: "https://github.com/jeap-admin-ch/jeap"
