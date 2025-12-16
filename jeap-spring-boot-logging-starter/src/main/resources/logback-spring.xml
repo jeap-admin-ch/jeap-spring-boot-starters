@@ -18,22 +18,26 @@
         <LogMessage>Found no committed offset for partition</LogMessage>
     </turboFilter>
 
-    <if condition='property("cloudwatch").equals("true")'>
+    <condition class="ch.admin.bit.jeap.log.logback.conditions.CloudwatchPropertyCondition"/>
+    <if>
         <then>
             <include resource="jeap/logging/logback-cloudwatch.xml"/>
         </then>
     </if>
-    <if condition='property("rhos").equals("true")'>
+    <condition class="ch.admin.bit.jeap.log.logback.conditions.RhosPropertyCondition"/>
+    <if>
         <then>
             <include resource="jeap/logging/logback-rhos.xml"/>
         </then>
     </if>
-    <if condition='property("consoletext").equals("true")'>
+    <condition class="ch.admin.bit.jeap.log.logback.conditions.ConsoleTextPropertyCondition"/>
+    <if>
         <then>
             <include resource="jeap/logging/logback-consoletext.xml"/>
         </then>
     </if>
-    <if condition='property("rollingfile").equals("true")'>
+    <condition class="ch.admin.bit.jeap.log.logback.conditions.RollingfilePropertyCondition"/>
+    <if>
         <then>
             <include resource="jeap/logging/logback-rollingfile.xml"/>
             <root level="INFO">
