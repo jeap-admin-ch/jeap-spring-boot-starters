@@ -10,6 +10,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Changed
 
 - Update parent from 5.16.8 to 5.17.0
+- updated springdoc-openapi from 2.8.13 to 2.8.15
+- updated wiremock from 3.13.1 to 3.13.2
 
 ## [19.8.0] - 2026-01-07
 
