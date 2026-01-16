@@ -42,6 +42,7 @@ class HealthContributorPrometheusMetricsEnabledIT {
 
         assertThat(metrics).contains("health_indicator_status{component=\"db\"} 1.0");
         assertThat(metrics).contains("health_indicator_status{component=\"ldap\"} 0.0");
+        assertThat(metrics).contains("health_indicator_status{component=\"diskSpace\"}");
     }
 
     @Test
