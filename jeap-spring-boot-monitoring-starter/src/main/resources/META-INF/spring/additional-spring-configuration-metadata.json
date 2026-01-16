@@ -5,6 +5,12 @@
       "description": "How often the health indicator is queried to produce the state of the 'health' metric. Set to -1 to disable the health metric.",
       "defaultValue": 120,
       "type": "java.lang.Integer"
+    },
+    {
+      "name": "jeap.health.metric.contributor-metrics.enabled",
+      "description": "Enable or disable the export of individual health contributor statuses as separate metrics.",
+      "defaultValue": false,
+      "type": "java.lang.Boolean"
     }
   ]
 }
