@@ -20,7 +20,6 @@ public abstract class AbstractHeaders<RESPONSE> {
     public static final String STRICT_TRANSPORT_SECURITY = "Strict-Transport-Security";
     public static final String X_CONTENT_TYPE_OPTIONS = "X-Content-Type-Options";
     public static final String X_FRAME_OPTIONS = "X-Frame-Options";
-    public static final String X_XSS_PROTECTION = "X-XSS-Protection";
 
     /**
      * Pattern to extract the source part of a url (scheme, host and port, excluding any paths
@@ -121,8 +120,6 @@ public abstract class AbstractHeaders<RESPONSE> {
         // Headers superseeded by CSP, for backwards compatibility
         // This header prevents the rendering within a frame, iframe or object. This prevents a website of being embedded into another one.
         headers.put(X_FRAME_OPTIONS, "sameorigin");
-        // This header prevents XSS (cross site scripting) attacks.
-        headers.put(X_XSS_PROTECTION, "1; mode=block");
     }
 
     private void addCachingHeaders(Map<String, String> headers, String path) {

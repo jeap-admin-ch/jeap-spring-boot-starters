@@ -76,7 +76,6 @@ class AbstractHeadersTest {
         assertEquals("microphone 'none'; payment 'none'; camera 'none'", responseStub.get("Feature-Policy"));
         assertEquals("nosniff", responseStub.get("X-Content-Type-Options"));
         assertEquals("sameorigin", responseStub.get("X-Frame-Options"));
-        assertEquals("1; mode=block", responseStub.get("X-XSS-Protection"));
     }
 
     @Test
