@@ -12,8 +12,8 @@ import org.springframework.web.servlet.ModelAndView;
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
-@SpringBootTest(classes = RelativeRedirectsEnvPostProcessorTest.TestApp.class, webEnvironment = RANDOM_PORT)
-class RelativeRedirectsEnvPostProcessorTest {
+@SpringBootTest(classes = ReverseProxyPropertiesEnvPostProcessorTest.TestApp.class, webEnvironment = RANDOM_PORT)
+class ReverseProxyPropertiesEnvPostProcessorTest {
 
     @LocalServerPort
     int localServerPort;
