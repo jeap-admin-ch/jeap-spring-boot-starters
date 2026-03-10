@@ -1,5 +1,0 @@
-jeap:
-  security:
-    oauth2:
-      resourceserver:
-        system-name: null

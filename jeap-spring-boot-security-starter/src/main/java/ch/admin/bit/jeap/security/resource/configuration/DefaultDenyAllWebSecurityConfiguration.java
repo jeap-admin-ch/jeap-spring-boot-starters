@@ -11,12 +11,8 @@ import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
-import org.springframework.security.config.web.server.ServerHttpSecurity;
-import org.springframework.security.web.authentication.HttpStatusEntryPoint;
-import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.server.authentication.HttpStatusServerEntryPoint;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 
 /**
  * If the security starter has been added as a dependency but the OAuth2 secured web configuration has not been
@@ -25,7 +21,7 @@ import org.springframework.security.web.server.authentication.HttpStatusServerEn
  */
 
 @Slf4j
-@AutoConfiguration(after = {MvcSecurityConfiguration.class, WebFluxSecurityConfiguration.class})
+@AutoConfiguration(after = {MvcSecurityConfiguration.class})
 @SuppressWarnings({"DefaultAnnotationParam"})
 public class DefaultDenyAllWebSecurityConfiguration {
     private static final String DENY_ALL_MESSAGE = "jeap-spring-boot-security-starter did not activate OAuth2 resource security " +
@@ -45,27 +41,9 @@ public class DefaultDenyAllWebSecurityConfiguration {
             http.
                     authorizeHttpRequests(authorizeHttpRequests ->
                             authorizeHttpRequests.anyRequest().denyAll()).
-                    exceptionHandling(exceptionHandling->
+                    exceptionHandling(exceptionHandling ->
                             exceptionHandling.authenticationEntryPoint((new HttpStatusEntryPoint(HttpStatus.FORBIDDEN))));
             return http.build();
         }
     }
-
-    @Configuration
-    @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.REACTIVE)
-    @ConditionalOnMissingBean(WebFluxSecurityConfiguration.class)
-    @EnableWebFluxSecurity
-    public static class WebFluxDenyAllWebSecurityConfiguration {
-        @Bean
-        @Order(Ordered.LOWEST_PRECEDENCE)  //  Allow for overriding
-        public SecurityWebFilterChain denyAllSecurityWebFilterChain(ServerHttpSecurity http) {
-            log.debug(DENY_ALL_MESSAGE);
-            http.authorizeExchange(exchanges ->
-                        exchanges.anyExchange().denyAll()).
-                exceptionHandling(exceptionHandling ->
-                        exceptionHandling.authenticationEntryPoint(new HttpStatusServerEntryPoint(HttpStatus.FORBIDDEN)));
-            return http.build();
-        }
-    }
-
 }

@@ -11,19 +11,12 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UserDetailsRepositoryReactiveAuthenticationManager;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfiguration;
-import org.springframework.security.config.web.server.ServerHttpSecurity;
-import org.springframework.security.core.userdetails.MapReactiveUserDetailsService;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.server.SecurityWebFilterChain;
-import org.springframework.security.web.server.util.matcher.OrServerWebExchangeMatcher;
-import org.springframework.security.web.server.util.matcher.PathPatternParserServerWebExchangeMatcher;
-import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatcher;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
@@ -55,15 +48,15 @@ class SwaggerWebSecurityConfig {
             //Depending on swagger status set different config
             switch (swaggerProperties.getStatus()) {
                 case OPEN:
-                    http.authorizeHttpRequests().anyRequest().permitAll();
+                    http.authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
                     break;
                 case SECURED:
-                    http.authorizeHttpRequests().anyRequest().hasRole(SWAGGER_ROLE);
-                    http.httpBasic();
+                    http.authorizeHttpRequests(auth -> auth.anyRequest().hasRole(SWAGGER_ROLE));
+                    http.httpBasic(Customizer.withDefaults());
                     http.authenticationManager(createSwaggerAuth(http.getSharedObject(AuthenticationManagerBuilder.class)));
                     break;
                 case DISABLED:
-                    http.authorizeHttpRequests().anyRequest().denyAll();
+                    http.authorizeHttpRequests(auth -> auth.anyRequest().denyAll());
                     break;
                 default:
                     throw new IllegalArgumentException(swaggerProperties.getStatus() + " is not a valid value");
@@ -84,62 +77,10 @@ class SwaggerWebSecurityConfig {
         }
 
         private RequestMatcher swaggerRequestMatcher() {
+            var builder = PathPatternRequestMatcher.withDefaults();
             return new OrRequestMatcher(swaggerProperties.getAntPathPatters().stream()
-                    .map(pattern -> new AntPathRequestMatcher(pattern, "GET"))
+                    .map(pattern -> builder.matcher(HttpMethod.GET, pattern))
                     .collect(Collectors.toList()));
-        }
-    }
-
-    @Configuration
-    @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.REACTIVE)
-    @RequiredArgsConstructor
-    public static class SwaggerWebfluxSecurity {
-        private final SwaggerProperties swaggerProperties;
-
-        @Bean
-        @Order(Ordered.HIGHEST_PRECEDENCE + 8)
-        public SecurityWebFilterChain swaggerSecurityWebFilterChain(ServerHttpSecurity http) {
-            //Only responsible for swagger stuff
-            http.securityMatcher(swaggerRequestMatcher());
-
-            //Depending on swagger status set different config
-            switch (swaggerProperties.getStatus()) {
-                case OPEN:
-                    http.authorizeExchange().anyExchange().permitAll();
-                    break;
-                case SECURED:
-                    http.authorizeExchange().anyExchange().hasRole(SWAGGER_ROLE);
-                    http.httpBasic(this::setAuthenticationManager);
-                    break;
-                case DISABLED:
-                    http.authorizeExchange().anyExchange().denyAll();
-                    break;
-                default:
-                    throw new IllegalArgumentException(swaggerProperties.getStatus() + " is not a valid value");
-            }
-            return http.build();
-        }
-
-        private ServerWebExchangeMatcher swaggerRequestMatcher() {
-            return new OrServerWebExchangeMatcher(swaggerProperties.getAntPathPatters().stream()
-                    .map(pattern -> new PathPatternParserServerWebExchangeMatcher(pattern, HttpMethod.GET))
-                    .collect(Collectors.toList()));
-        }
-
-        private void setAuthenticationManager(ServerHttpSecurity.HttpBasicSpec basicSpec) {
-            if (swaggerProperties.getStatus() != SwaggerProperties.SwaggerStatus.SECURED) {
-                return;
-            }
-            SwaggerProperties.Secured secured = swaggerProperties.getSecured();
-
-            if (secured.getUsername() == null || secured.getPassword() == null) {
-                throw new IllegalArgumentException("Swagger is set to secured but username or password is not set");
-            }
-
-            basicSpec.authenticationManager(new UserDetailsRepositoryReactiveAuthenticationManager(
-                    new MapReactiveUserDetailsService(
-                            User.withUsername(secured.getUsername()).password(secured.getPassword())
-                                    .roles(SWAGGER_ROLE).build())));
         }
     }
 }

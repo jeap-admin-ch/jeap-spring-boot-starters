@@ -1,6 +1,6 @@
 package ch.admin.bit.jeap.log.rest;
 
-import ch.admin.bit.jeap.rest.tracing.AddSenderSystemHeader;
+import ch.admin.bit.jeap.rest.tracing.AddSenderSystemHeaderToRestClient;
 import ch.admin.bit.jeap.rest.tracing.RestRequestTracer;
 import ch.admin.bit.jeap.rest.tracing.TracerConfiguration;
 import org.junit.jupiter.api.Test;
@@ -106,7 +106,7 @@ class RestRequestLoggerResponseTests {
         RestRequestTracer tracer = new RestRequestTracer(config, List.of(logger), List.of(logger));
         Map<String, List<String>> headers = Map.of(
                 "req", List.of("value"),
-                AddSenderSystemHeader.APPLICATION_NAME_HEADER, List.of("calling-app"));
+                AddSenderSystemHeaderToRestClient.APPLICATION_NAME_HEADER, List.of("calling-app"));
         tracer.onResponseBuilder()
                 .method("POST")
                 .user("user")
@@ -164,7 +164,7 @@ class RestRequestLoggerResponseTests {
                 .incomingTime(ZonedDateTime.now())
                 .statusCode(202)
                 .remoteAddr(null)
-                .requestHeaders(Map.of(AddSenderSystemHeader.APPLICATION_NAME_HEADER, List.of("APP_NAME")))
+                .requestHeaders(Map.of(AddSenderSystemHeaderToRestClient.APPLICATION_NAME_HEADER, List.of("APP_NAME")))
                 .responseHeaders(Collections.emptyMap())
                 .attributes(Collections.emptyMap())
                 .emit();

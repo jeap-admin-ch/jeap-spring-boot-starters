@@ -24,8 +24,6 @@ import java.util.function.Supplier;
  */
 public class SimpleMethodSecurityExpressionHandler extends DefaultMethodSecurityExpressionHandler {
 
-
-    // The reactive stack still seems to call the version providing the authentication and not an authentication supplier
     @Override
     protected MethodSecurityExpressionOperations createSecurityExpressionRoot(Authentication authentication, MethodInvocation invocation) {
         // Only provide the additional functions for JEAP authentications

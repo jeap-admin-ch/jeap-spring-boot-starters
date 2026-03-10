@@ -41,7 +41,7 @@ import org.springframework.security.web.util.matcher.RequestMatchers;
 import java.util.Optional;
 
 /**
- * Resource server configuration for MVC. Check {@link WebFluxSecurityConfiguration} for the same in WebFlux
+ * Resource server configuration for MVC.
  */
 @AutoConfiguration
 @Conditional(JeapOAuth2ResourceCondition.class)

@@ -1,11 +1,9 @@
 package ch.admin.bit.jeap.security.it.client.webmvc;
 
-import ch.admin.bit.jeap.security.client.JeapOAuth2WebclientBuilderFactory;
 import ch.admin.bit.jeap.security.it.bearertoken.BearerTokenTestExtension;
 import ch.admin.bit.jeap.security.it.bearertoken.BearerTokenUrl;
 import ch.admin.bit.jeap.security.it.mockserver.OAuth2MockServer;
 import ch.admin.bit.jeap.security.it.resource.OAuth2TestGateway;
-import ch.admin.bit.jeap.security.it.resource.OAuth2TestGateway.WebClientTokenSource;
 import ch.admin.bit.jeap.security.resource.token.JeapAuthenticationContext;
 import ch.admin.bit.jeap.security.resource.token.JeapAuthenticationToken;
 import ch.admin.bit.jeap.security.restclient.JeapOAuth2RestClientBuilderFactory;
@@ -16,7 +14,11 @@ import com.nimbusds.jwt.JWT;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,10 +33,9 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-
 import java.time.Duration;
 
-import static ch.admin.bit.jeap.security.it.resource.OAuth2TestGateway.WebClientTokenSource.CLIENT;
+import static ch.admin.bit.jeap.security.it.resource.OAuth2TestGateway.RestClientTokenSource.CLIENT;
 import static com.github.tomakehurst.wiremock.client.WireMock.matching;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -82,7 +83,7 @@ class OAuth2RestClientWebMvcIT {
     }
 
     @BeforeEach
-    void setup(){
+    void setup() {
         oauth2MockServer.reset();
         when(attrs.getRequest()).thenReturn(servletRequest);
         when(servletRequest.getSession()).thenReturn(httpSession);
@@ -229,14 +230,14 @@ class OAuth2RestClientWebMvcIT {
 
     @Test
     void testCreateForClientId_WhenClientNotConfigured_ThenThrowsException() {
-        assertThatThrownBy( () -> jeapOAuth2RestClientBuilderFactory.createForClientRegistryId("unknown") ).
+        assertThatThrownBy(() -> jeapOAuth2RestClientBuilderFactory.createForClientRegistryId("unknown")).
                 isInstanceOf(IllegalArgumentException.class).
                 hasMessageContaining("There is no client registration with id 'unknown' configured.");
     }
 
     @Test
     void testCreateForClientRegistryIdPreferringTokenFromIncomingRequest_WhenClientNotConfigured_ThenThrowsException() {
-        assertThatThrownBy( () -> jeapOAuth2RestClientBuilderFactory.createForClientRegistryIdPreferringTokenFromIncomingRequest("unknown") ).
+        assertThatThrownBy(() -> jeapOAuth2RestClientBuilderFactory.createForClientRegistryIdPreferringTokenFromIncomingRequest("unknown")).
                 isInstanceOf(IllegalArgumentException.class).
                 hasMessageContaining("There is no client registration with id 'unknown' configured.");
     }
@@ -252,7 +253,7 @@ class OAuth2RestClientWebMvcIT {
                 body(String.class);
     }
 
-    private String callGateway(RestClient restClient, WebClientTokenSource tokenSource) {
+    private String callGateway(RestClient restClient, OAuth2TestGateway.RestClientTokenSource tokenSource) {
         return restClient.get().
                 uri("http://localhost:" + serverPort + OAuth2TestGateway.API_PATH,
                         uriBuilder -> uriBuilder.queryParam(OAuth2TestGateway.TOKEN_SOURCE_PARAM_NAME, tokenSource).build()).
@@ -262,14 +263,14 @@ class OAuth2RestClientWebMvcIT {
 
     // method appears to be unused but is required for authentication factory.
     private JeapAuthenticationToken defaultAuthentication() {
-        return  JeapAuthenticationTestTokenBuilder.create().withContext(JeapAuthenticationContext.SYS).build();
+        return JeapAuthenticationTestTokenBuilder.create().withContext(JeapAuthenticationContext.SYS).build();
     }
 
     @TestConfiguration
     static class GatewayConfig {
         @Bean
-        OAuth2TestGateway oAuth2TestGateway(JeapOAuth2WebclientBuilderFactory jeapOAuth2WebclientBuilderFactory) {
-            return new OAuth2TestGateway(jeapOAuth2WebclientBuilderFactory, bearerTokenUrl);
+        OAuth2TestGateway oAuth2TestGateway(JeapOAuth2RestClientBuilderFactory jeapOAuth2RestClientBuilderFactory) {
+            return new OAuth2TestGateway(jeapOAuth2RestClientBuilderFactory, bearerTokenUrl);
         }
     }
 

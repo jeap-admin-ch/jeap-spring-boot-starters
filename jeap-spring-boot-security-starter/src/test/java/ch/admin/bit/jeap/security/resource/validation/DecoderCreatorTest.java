@@ -1,8 +1,6 @@
 package ch.admin.bit.jeap.security.resource.validation;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
-import io.netty.channel.ConnectTimeoutException;
-import io.netty.handler.timeout.ReadTimeoutException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -10,8 +8,6 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.oauth2.core.OAuth2TokenValidator;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder;
-import reactor.core.publisher.Mono;
 
 import java.util.Map;
 
@@ -60,18 +56,6 @@ class DecoderCreatorTest {
     }
 
     @Test
-    void createReactiveDecoder_withDelay() {
-        OAuth2TokenValidator<Jwt> jwtValidator = mock(OAuth2TokenValidator.class);
-        Converter<Map<String, Object>, Map<String, Object>> claimSetConverter = source -> Map.of();
-        String jwkSetUri = "http://localhost:8089/.well-known/jwks.json";
-        ReactiveJwtDecoder jwtDecoder = JeapJwtDecoderFactory.DecoderCreator.createReactiveDecoder(jwkSetUri, jwtValidator, claimSetConverter, TIMEOUT_CONFIGURATION);
-
-        Mono<Jwt> decode = jwtDecoder.decode("eyJhbGciOiAiUlM1MTIiLCAidHlwIjogIkpXVCJ9.eyJzdWIiOiAiMTIzNDU2Nzg5MCJ9.c2lnbmF0dXJl");
-        Exception exception = assertThrows(Exception.class, () -> decode.block());
-        assertTrue(exception.getCause().getCause() instanceof ReadTimeoutException, "Got: " + exception.getCause().getCause());
-    }
-
-    @Test
     void createServletDecoder_withUnreachableEndpoint() {
         OAuth2TokenValidator<Jwt> jwtValidator = mock(OAuth2TokenValidator.class);
         Converter<Map<String, Object>, Map<String, Object>> claimSetConverter = source -> Map.of();
@@ -80,16 +64,4 @@ class DecoderCreatorTest {
 
         assertThrows(Exception.class, () -> jwtDecoder.decode("eyJhbGciOiAiUlM1MTIiLCAidHlwIjogIkpXVCJ9.eyJzdWIiOiAiMTIzNDU2Nzg5MCJ9.c2lnbmF0dXJl"));
     }
-
-    @Test
-    void createReactiveDecoder_withUnreachableEndpoint() {
-        OAuth2TokenValidator<Jwt> jwtValidator = mock(OAuth2TokenValidator.class);
-        Converter<Map<String, Object>, Map<String, Object>> claimSetConverter = source -> Map.of();
-        String jwkSetUri = "http://10.255.255.1/.well-known/jwks.json"; // unreachable private network
-        ReactiveJwtDecoder jwtDecoder = JeapJwtDecoderFactory.DecoderCreator.createReactiveDecoder(jwkSetUri, jwtValidator, claimSetConverter, TIMEOUT_CONFIGURATION);
-
-        Mono<Jwt> decode = jwtDecoder.decode("eyJhbGciOiAiUlM1MTIiLCAidHlwIjogIkpXVCJ9.eyJzdWIiOiAiMTIzNDU2Nzg5MCJ9.c2lnbmF0dXJl");
-        assertThrows(Exception.class, () -> decode.block());
-    }
-
 }

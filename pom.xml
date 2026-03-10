@@ -32,7 +32,7 @@
     <description>Spring Boot starters that pre-configure and standardise logging, monitoring, security and other
         cross-cutting concerns for jEAP-based apps.
     </description>
-    <version>19.16.0-SNAPSHOT</version>
+    <version>20.0.0-SNAPSHOT</version>
 
     <parent>
         <artifactId>jeap-internal-spring-boot-parent</artifactId>
@@ -52,19 +52,14 @@
         <module>jeap-spring-boot-tx</module>
         <module>jeap-spring-boot-web-config-starter</module>
         <module>jeap-spring-boot-web-config-starter-it-servlet</module>
-        <module>jeap-spring-boot-web-config-starter-it-webflux</module>
         <module>jeap-spring-boot-monitoring-starter</module>
         <module>jeap-spring-boot-monitoring-starter-it-mvc</module>
-        <module>jeap-spring-boot-monitoring-starter-it-webflux</module>
         <module>jeap-spring-boot-object-storage-starter</module>
         <module>jeap-spring-boot-swagger</module>
         <module>jeap-spring-boot-swagger-starter</module>
-        <module>jeap-spring-boot-swagger-webflux-starter</module>
         <module>jeap-spring-boot-security-starter-it</module>
         <module>jeap-spring-boot-security-starter-it-webmvc</module>
-        <module>jeap-spring-boot-security-starter-it-webflux</module>
         <module>jeap-spring-boot-security-client-starter-it</module>
-        <module>jeap-spring-boot-security-client-starter-it-webflux</module>
         <module>jeap-spring-boot-vault-starter</module>
         <module>jeap-spring-boot-featureflag-starter</module>
     </modules>

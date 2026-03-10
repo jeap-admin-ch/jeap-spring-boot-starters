@@ -52,7 +52,7 @@ public class RestRequestTracer {
             return;
         }
 
-        String callingApplicationName = Optional.ofNullable(requestHeaders.get(AddSenderSystemHeader.APPLICATION_NAME_HEADER))
+        String callingApplicationName = Optional.ofNullable(requestHeaders.get(AddSenderSystemHeaderToRestClient.APPLICATION_NAME_HEADER))
                 .map(Collection::stream)
                 .flatMap(Stream::findFirst)
                 .orElse(null);

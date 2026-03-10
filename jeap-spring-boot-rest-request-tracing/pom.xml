@@ -7,7 +7,7 @@
     <parent>
         <groupId>ch.admin.bit.jeap</groupId>
         <artifactId>jeap-spring-boot-starters</artifactId>
-        <version>19.16.0-SNAPSHOT</version>
+        <version>20.0.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>jeap-spring-boot-rest-request-tracing</artifactId>
@@ -30,12 +30,7 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-webflux</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
+         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-web</artifactId>
             <scope>provided</scope>

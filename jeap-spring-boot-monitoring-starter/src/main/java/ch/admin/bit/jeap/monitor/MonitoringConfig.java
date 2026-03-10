@@ -14,8 +14,7 @@ import org.springframework.context.annotation.PropertySource;
 @ConfigurationProperties(prefix = "jeap.monitor")
 @PropertySource(value = {
         "classpath:jeap-actuator.properties",
-        "classpath:jeap-monitoring.properties",
-        "classpath:jeap-tracing.properties"})
+        "classpath:jeap-monitoring.properties"})
 @Data
 class MonitoringConfig {
 

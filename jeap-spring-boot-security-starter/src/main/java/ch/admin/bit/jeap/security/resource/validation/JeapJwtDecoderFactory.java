@@ -1,23 +1,26 @@
 package ch.admin.bit.jeap.security.resource.validation;
 
 import ch.admin.bit.jeap.security.resource.introspection.JeapJwtIntrospection;
-import ch.admin.bit.jeap.security.resource.properties.*;
+import ch.admin.bit.jeap.security.resource.properties.AuthorizationServerConfigProperties;
+import ch.admin.bit.jeap.security.resource.properties.AuthorizationServerConfiguration;
+import ch.admin.bit.jeap.security.resource.properties.IntrospectionMode;
+import ch.admin.bit.jeap.security.resource.properties.IntrospectionProperties;
+import ch.admin.bit.jeap.security.resource.properties.ResourceServerProperties;
 import ch.admin.bit.jeap.security.resource.validation.IssuerJwtDecoder.IssuerJwtDecoderBuilder;
-import ch.admin.bit.jeap.security.resource.validation.ReactiveIssuerJwtDecoder.ReactiveIssuerJwtDecoderBuilder;
-import io.netty.channel.ChannelOption;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
-import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
 import org.springframework.security.oauth2.core.OAuth2TokenValidator;
 import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
-import org.springframework.security.oauth2.jwt.*;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtTimestampValidator;
+import org.springframework.security.oauth2.jwt.MappedJwtClaimSetConverter;
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.reactive.function.client.WebClient;
-import reactor.netty.http.client.HttpClient;
 
 import java.time.Duration;
 import java.util.Collections;
@@ -41,21 +44,6 @@ public class JeapJwtDecoderFactory {
         resourceServerProperties.getAllAuthServerConfigurations().forEach(authConfig -> {
             var decoder = createDecoder(authConfig, resourceServerProperties.getAudience(), decoderCreator);
             decoder = addIntrospectionIfConfigured(decoder, authConfig);
-            issuerJwtDecoderBuilder.issuerDecoder(authConfig.getIssuer(), decoder);
-        });
-        return issuerJwtDecoderBuilder.build();
-    }
-
-    /**
-     * Create a reactive JWT decoder that accepts tokens from the configured authorization servers.
-     *
-     * @return The requested JWT decoder
-     */
-    public ReactiveJwtDecoder createReactiveJwtDecoder() {
-        ReactiveIssuerJwtDecoderBuilder issuerJwtDecoderBuilder = ReactiveIssuerJwtDecoder.builder();
-        DecoderCreator<ReactiveJwtDecoder> decoderCreator = DecoderCreator::createReactiveDecoder;
-        resourceServerProperties.getAllAuthServerConfigurations().forEach(authConfig -> {
-            var decoder = createDecoder(authConfig, resourceServerProperties.getAudience(), decoderCreator);
             issuerJwtDecoderBuilder.issuerDecoder(authConfig.getIssuer(), decoder);
         });
         return issuerJwtDecoderBuilder.build();
@@ -98,7 +86,7 @@ public class JeapJwtDecoderFactory {
         }
         IntrospectionProperties introspectionProperties = authServerConfig.getIntrospection();
         IntrospectionMode introspectionMode = introspectionProperties != null ? introspectionProperties.getMode() : null;
-        if (introspectionMode == IntrospectionMode.NONE){
+        if (introspectionMode == IntrospectionMode.NONE) {
             // Introspection disabled on the auth server level
             return jwtDecoder;
         }
@@ -122,18 +110,6 @@ public class JeapJwtDecoderFactory {
             return jwtDecoder;
         }
 
-        static ReactiveJwtDecoder createReactiveDecoder(String jwkSetUri, OAuth2TokenValidator<Jwt> jwtValidator, Converter<Map<String, Object>, Map<String, Object>> claimSetConverter, JwksTimeoutConfiguration jwksTimeoutConfiguration) {
-            NimbusReactiveJwtDecoder jwtDecoder = NimbusReactiveJwtDecoder
-                    .withJwkSetUri(jwkSetUri)
-                    .jwsAlgorithm(SignatureAlgorithm.RS256)
-                    .jwsAlgorithm(SignatureAlgorithm.RS512)
-                    .webClient(createWebClient(jwksTimeoutConfiguration))
-                    .build();
-            jwtDecoder.setJwtValidator(jwtValidator);
-            jwtDecoder.setClaimSetConverter(claimSetConverter);
-            return jwtDecoder;
-        }
-
         private static RestTemplate createRestTemplate(JwksTimeoutConfiguration jwksTimeoutConfiguration) {
             SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
             requestFactory.setConnectTimeout(jwksTimeoutConfiguration.connectTimeoutInMillis());
@@ -141,14 +117,6 @@ public class JeapJwtDecoderFactory {
             return new RestTemplate(requestFactory);
         }
 
-        private static WebClient createWebClient(JwksTimeoutConfiguration jwksTimeoutConfiguration) {
-            HttpClient httpClient = HttpClient.create()
-                    .responseTimeout(Duration.ofMillis(jwksTimeoutConfiguration.readTimeoutInMillis()))
-                    .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, jwksTimeoutConfiguration.connectTimeoutInMillis());
-            return WebClient.builder()
-                    .clientConnector(new ReactorClientHttpConnector(httpClient))
-                    .build();
-        }
     }
 
     record JwksTimeoutConfiguration(

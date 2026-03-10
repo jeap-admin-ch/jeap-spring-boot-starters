@@ -28,7 +28,6 @@ public class SemanticMethodSecurityExpressionHandler extends DefaultMethodSecuri
         this.systemName = systemName;
     }
 
-    // The reactive stack still seems to call the version providing the authentication and not an authentication supplier
     @Override
     protected MethodSecurityExpressionOperations createSecurityExpressionRoot(
             Authentication authentication, MethodInvocation invocation) {

@@ -158,7 +158,7 @@ class DelegatingToSpringJeapTokenIntrospectorTest {
         // Assert calling the introspector throws an exception
         assertThatThrownBy(() -> tokenIntrospector.introspect(VALID_TOKEN))
                 .isInstanceOf((JeapIntrospectionException.class))
-                .hasMessageStartingWith("Token introspection failed: 500 Server Error");
+                .hasMessageStartingWith("Token introspection failed: 500 Internal Server Error");
 
         // Assert that a request to the token endpoint was made
         verify(postRequestedFor(urlEqualTo(INTROSPECTION_PATH)));

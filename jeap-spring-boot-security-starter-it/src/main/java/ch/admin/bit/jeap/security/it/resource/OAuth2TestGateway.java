@@ -1,45 +1,44 @@
 package ch.admin.bit.jeap.security.it.resource;
 
-import ch.admin.bit.jeap.security.client.JeapOAuth2WebclientBuilderFactory;
+import ch.admin.bit.jeap.security.restclient.JeapOAuth2RestClientBuilderFactory;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
+import org.springframework.web.client.RestClient;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import static ch.admin.bit.jeap.security.it.resource.OAuth2TestGateway.WebClientTokenSource.*;
+import static ch.admin.bit.jeap.security.it.resource.OAuth2TestGateway.RestClientTokenSource.*;
 
 @RestController
 public class OAuth2TestGateway {
 
     public static final String API_PATH = "/api/gateway";
-    public static final String TOKEN_SOURCE_PARAM_NAME = "web-client-token-source";
-    public enum WebClientTokenSource {
+    public static final String TOKEN_SOURCE_PARAM_NAME = "rest-client-token-source";
+
+    public enum RestClientTokenSource {
         CLIENT,
         REQUEST,
         REQUEST_ELSE_CLIENT
     }
 
-    private static final String WEBCLIENT_ID = "test-client";
+    private static final String REST_CLIENT_ID = "test-client";
 
-    private final Map<WebClientTokenSource, WebClient> webClients = new HashMap<>();
+    private final Map<RestClientTokenSource, RestClient> restClients = new HashMap<>();
 
-    public OAuth2TestGateway(JeapOAuth2WebclientBuilderFactory jeapOAuth2WebclientBuilderFactory, String targetResourceUrl) {
-        webClients.put(CLIENT, jeapOAuth2WebclientBuilderFactory.createForClientRegistryId(WEBCLIENT_ID).baseUrl(targetResourceUrl).build());
-        webClients.put(REQUEST, jeapOAuth2WebclientBuilderFactory.createForTokenFromIncomingRequest().baseUrl(targetResourceUrl).build());
-        webClients.put(REQUEST_ELSE_CLIENT, jeapOAuth2WebclientBuilderFactory.createForClientRegistryIdPreferringTokenFromIncomingRequest(WEBCLIENT_ID).baseUrl(targetResourceUrl).build());
+    public OAuth2TestGateway(JeapOAuth2RestClientBuilderFactory jeapOAuth2RestClientBuilderFactory, String targetResourceUrl) {
+        restClients.put(CLIENT, jeapOAuth2RestClientBuilderFactory.createForClientRegistryId(REST_CLIENT_ID).baseUrl(targetResourceUrl).build());
+        restClients.put(REQUEST, jeapOAuth2RestClientBuilderFactory.createForTokenFromIncomingRequest().baseUrl(targetResourceUrl).build());
+        restClients.put(REQUEST_ELSE_CLIENT, jeapOAuth2RestClientBuilderFactory.createForClientRegistryIdPreferringTokenFromIncomingRequest(REST_CLIENT_ID).baseUrl(targetResourceUrl).build());
     }
 
     @GetMapping(API_PATH)
-    public Mono<String> forward(@RequestParam(TOKEN_SOURCE_PARAM_NAME) WebClientTokenSource webClientTokenSource) {
-        WebClient callingWebClient = webClients.get(webClientTokenSource);
-        if (callingWebClient == null) {
-            throw new IllegalArgumentException("Unsupported WebClientTokenSource type.");
+    public String forward(@RequestParam(TOKEN_SOURCE_PARAM_NAME) RestClientTokenSource restClientTokenSource) {
+        RestClient callingRestClient = restClients.get(restClientTokenSource);
+        if (callingRestClient == null) {
+            throw new IllegalArgumentException("Unsupported RestClientTokenSource type.");
         }
-        return callingWebClient.get().retrieve().bodyToMono(String.class);
+        return callingRestClient.get().retrieve().body(String.class);
     }
-
 }

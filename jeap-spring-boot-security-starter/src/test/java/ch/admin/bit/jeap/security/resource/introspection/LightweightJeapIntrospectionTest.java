@@ -188,8 +188,7 @@ class LightweightJeapIntrospectionTest {
     @Configuration
     // We need to get rid of the "@ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)" on
     // MvcJeapIntrospectionConfiguration to be able to activate the configuration class in this test. As this project
-    // provides both the WebMVC and the WebFlux dependencies, the conditional-on-servlet-webapp would not be satisfied
-    // otherwise.
+    // provides the WebMVC dependencies, the conditional-on-servlet-webapp would not be satisfied otherwise.
     static class MvcJeapIntrospectionConfigurationUnconditional extends MvcJeapIntrospectionConfiguration {}
 
     @TestConfiguration

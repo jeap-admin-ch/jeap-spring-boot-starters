@@ -1,12 +1,11 @@
 package ch.admin.bit.jeap.security.resource.log;
 
 import ch.admin.bit.jeap.security.resource.configuration.JeapOauth2ResourceAuthenticationEntryPoint;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.oauth2.server.resource.web.BearerTokenAuthenticationEntryPoint;
-
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 
 @Slf4j
 public class LoggingBearerTokenAuthenticationEntryPoint implements JeapOauth2ResourceAuthenticationEntryPoint {

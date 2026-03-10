@@ -7,10 +7,15 @@ import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientAutoConfiguration;
 import org.springframework.boot.autoconfigure.web.client.RestClientAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.oauth2.client.*;
+import org.springframework.security.oauth2.client.AuthorizedClientServiceOAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientProvider;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientProviderBuilder;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.web.client.RestClient;
 
@@ -22,7 +27,7 @@ import org.springframework.web.client.RestClient;
 @AutoConfiguration
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 @ConditionalOnBean(RestClient.Builder.class)
-@AutoConfigureAfter(RestClientAutoConfiguration.class)
+@AutoConfigureAfter({RestClientAutoConfiguration.class, OAuth2ClientAutoConfiguration.class})
 @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
 public class OAuth2RestClientConfiguration {
 
