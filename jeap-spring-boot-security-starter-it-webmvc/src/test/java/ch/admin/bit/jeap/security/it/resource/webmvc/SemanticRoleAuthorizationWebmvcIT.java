@@ -14,23 +14,51 @@ public class SemanticRoleAuthorizationWebmvcIT extends AbstractSemanticRoleAutho
     }
 
     @Test
+    @Override
     protected void testGetAuth_whenWithUserRoleAuthRead_thenAccessGranted() {
         super.testGetAuth_whenWithUserRoleAuthRead_thenAccessGranted();
     }
 
     @Test
+    @Override
     protected void testGetAuth_whenOnlyWithUserRoleDifferentThanAuthRead_thenAccessDenied() {
         super.testGetAuth_whenOnlyWithUserRoleDifferentThanAuthRead_thenAccessDenied();
     }
 
     @Test
+    @Override
     protected void testGetAuthForPartner_whenWithBpRoleAuthReadForQueriedPartner_thenAccessGranted() {
         super.testGetAuthForPartner_whenWithBpRoleAuthReadForQueriedPartner_thenAccessGranted();
     }
 
     @Test
+    @Override
     protected void testGetAuthForPartner_whenWithoutBpRoleAuthReadForQueriedPartner_thenAccessDenied() {
         super.testGetAuthForPartner_whenWithoutBpRoleAuthReadForQueriedPartner_thenAccessDenied();
+    }
+
+    @Test
+    @Override
+    protected void testGetAuth_whenWithUserRoleAuthReadAlternativeSyntax_thenAccessGranted() {
+        super.testGetAuth_whenWithUserRoleAuthReadAlternativeSyntax_thenAccessGranted();
+    }
+
+    @Test
+    @Override
+    protected void testGetAuth_whenOnlyWithUserRoleDifferentThanAuthReadAlternativeSyntax_thenAccessDenied() {
+        super.testGetAuth_whenOnlyWithUserRoleDifferentThanAuthReadAlternativeSyntax_thenAccessDenied();
+    }
+
+    @Test
+    @Override
+    protected void testGetAuthForPartner_whenWithBpRoleAuthReadForQueriedPartnerAlternativeSyntax_thenAccessGranted() {
+        super.testGetAuthForPartner_whenWithBpRoleAuthReadForQueriedPartnerAlternativeSyntax_thenAccessGranted();
+    }
+
+    @Test
+    @Override
+    protected void testGetAuthForPartner_whenWithoutBpRoleAuthReadForQueriedPartnerAlternativeSyntax_thenAccessDenied() {
+        super.testGetAuthForPartner_whenWithoutBpRoleAuthReadForQueriedPartnerAlternativeSyntax_thenAccessDenied();
     }
 
 }

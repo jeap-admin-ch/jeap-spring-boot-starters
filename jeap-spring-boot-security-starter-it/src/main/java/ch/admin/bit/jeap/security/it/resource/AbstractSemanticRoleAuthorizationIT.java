@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 
 import static ch.admin.bit.jeap.security.it.resource.TestRoles.*;
 
+@SuppressWarnings("java:S100")
 public class AbstractSemanticRoleAuthorizationIT extends AccessTokenITBase {
 
 	protected AbstractSemanticRoleAuthorizationIT(int serverPort, String context) {
@@ -21,8 +22,20 @@ public class AbstractSemanticRoleAuthorizationIT extends AccessTokenITBase {
 		assertHttpStatusWithTokenOnGet(semanticProgrammaticAuthPathSpec, jeapToken, HttpStatus.OK);
 	}
 
+	protected void testGetAuth_whenWithUserRoleAuthReadAlternativeSyntax_thenAccessGranted() {
+		final String jeapToken = createJeapTokenWithUserRoles(SEMANTIC_AUTH_READ_ROLE_ALTERNATIVE_SYNTAX);
+		assertHttpStatusWithTokenOnGet(semanticAuthPathSpec, jeapToken, HttpStatus.OK);
+		assertHttpStatusWithTokenOnGet(semanticProgrammaticAuthPathSpec, jeapToken, HttpStatus.OK);
+	}
+
 	protected void testGetAuth_whenOnlyWithUserRoleDifferentThanAuthRead_thenAccessDenied() {
 		final String jeapToken = createJeapTokenWithUserRoles(SEMANTIC_OTHER_READ_ROLE);
+		assertHttpStatusWithTokenOnGet(semanticAuthPathSpec, jeapToken, HttpStatus.FORBIDDEN);
+		assertHttpStatusWithTokenOnGet(semanticProgrammaticAuthPathSpec, jeapToken, HttpStatus.FORBIDDEN);
+	}
+
+	protected void testGetAuth_whenOnlyWithUserRoleDifferentThanAuthReadAlternativeSyntax_thenAccessDenied() {
+		final String jeapToken = createJeapTokenWithUserRoles(SEMANTIC_OTHER_READ_ROLE_ALTERNATIVE_SYNTAX);
 		assertHttpStatusWithTokenOnGet(semanticAuthPathSpec, jeapToken, HttpStatus.FORBIDDEN);
 		assertHttpStatusWithTokenOnGet(semanticProgrammaticAuthPathSpec, jeapToken, HttpStatus.FORBIDDEN);
 	}
@@ -33,8 +46,20 @@ public class AbstractSemanticRoleAuthorizationIT extends AccessTokenITBase {
 		assertHttpStatusWithTokenOnGetForPartner(semanticProgrammaticAuthForPartnerPathTemplateSpec, jeapToken, PARTNER_ID, HttpStatus.OK);
 	}
 
+	protected void testGetAuthForPartner_whenWithBpRoleAuthReadForQueriedPartnerAlternativeSyntax_thenAccessGranted() {
+		final String jeapToken = createJeapTokenForBpRoles(SEMANTIC_AUTH_READ_ROLE_ALTERNATIVE_SYNTAX);
+		assertHttpStatusWithTokenOnGetForPartner(semanticAuthForPartnerPathTemplateSpec, jeapToken, PARTNER_ID, HttpStatus.OK);
+		assertHttpStatusWithTokenOnGetForPartner(semanticProgrammaticAuthForPartnerPathTemplateSpec, jeapToken, PARTNER_ID, HttpStatus.OK);
+	}
+
 	protected void testGetAuthForPartner_whenWithoutBpRoleAuthReadForQueriedPartner_thenAccessDenied() {
 		final String jeapToken = createJeapTokenForBpRoles(SEMANTIC_AUTH_READ_ROLE);
+		assertHttpStatusWithTokenOnGetForPartner(semanticAuthForPartnerPathTemplateSpec, jeapToken, OTHER_PARTNER_ID, HttpStatus.FORBIDDEN);
+		assertHttpStatusWithTokenOnGetForPartner(semanticProgrammaticAuthForPartnerPathTemplateSpec, jeapToken, OTHER_PARTNER_ID, HttpStatus.FORBIDDEN);
+	}
+
+	protected void testGetAuthForPartner_whenWithoutBpRoleAuthReadForQueriedPartnerAlternativeSyntax_thenAccessDenied() {
+		final String jeapToken = createJeapTokenForBpRoles(SEMANTIC_AUTH_READ_ROLE_ALTERNATIVE_SYNTAX);
 		assertHttpStatusWithTokenOnGetForPartner(semanticAuthForPartnerPathTemplateSpec, jeapToken, OTHER_PARTNER_ID, HttpStatus.FORBIDDEN);
 		assertHttpStatusWithTokenOnGetForPartner(semanticProgrammaticAuthForPartnerPathTemplateSpec, jeapToken, OTHER_PARTNER_ID, HttpStatus.FORBIDDEN);
 	}

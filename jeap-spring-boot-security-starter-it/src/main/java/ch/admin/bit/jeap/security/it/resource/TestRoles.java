@@ -24,6 +24,9 @@ public class TestRoles {
             .operation("read")
             .build().toString();
 
+    public static final String SEMANTIC_AUTH_READ_ROLE_ALTERNATIVE_SYNTAX = "jme_@auth_!read";
+    public static final String SEMANTIC_OTHER_READ_ROLE_ALTERNATIVE_SYNTAX = "jme_@other_!read";
+
     public static final String SIMPLE_AUTH_READ_ROLE = "authentication:read";
     public static final String SIMPLE_OTHER_READ_ROLE = "other:read";
 

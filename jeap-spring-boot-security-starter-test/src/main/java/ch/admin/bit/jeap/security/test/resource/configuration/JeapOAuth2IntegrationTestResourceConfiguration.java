@@ -2,6 +2,7 @@ package ch.admin.bit.jeap.security.test.resource.configuration;
 
 import ch.admin.bit.jeap.security.test.jws.TestKeyProvider;
 import ch.admin.bit.jeap.security.test.jws.configuration.JwsTestSupportConfiguration;
+import ch.admin.bit.jeap.security.test.resource.jwks.JwksEndpointMockBase;
 import ch.admin.bit.jeap.security.test.resource.jwks.ServletJwksEndpointMock;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.context.annotation.Bean;
@@ -21,6 +22,7 @@ public class JeapOAuth2IntegrationTestResourceConfiguration {
     public static final int JWKS_ENDPOINT_MOCK_SECURITY_CONFIGURATION_PRECEDENCE = Ordered.HIGHEST_PRECEDENCE + 5;
 
     @Configuration
+    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
     public static class ServletOAuth2IntegrationTestConfiguration {
 
@@ -34,7 +36,7 @@ public class JeapOAuth2IntegrationTestResourceConfiguration {
         public SecurityFilterChain servletJwksSecurityFilterChain(HttpSecurity http) throws Exception {
             http.
                     securityMatchers(matchers ->
-                            matchers.requestMatchers(ServletJwksEndpointMock.getContextPath() + "/**")).
+                            matchers.requestMatchers(JwksEndpointMockBase.getContextPath() + "/**")).
                     authorizeHttpRequests(authorizeHttpRequests ->
                             authorizeHttpRequests.anyRequest().permitAll());
             return http.build();

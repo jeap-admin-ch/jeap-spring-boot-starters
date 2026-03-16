@@ -1,12 +1,14 @@
 package ch.admin.bit.jeap.security.resource.semanticAuthentication;
 
 import lombok.*;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Optional;
 
 /**
  * A single semantic role split in its parts
  */
+@Slf4j
 @Value
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
 public class SemanticApplicationRole {
@@ -14,6 +16,57 @@ public class SemanticApplicationRole {
     String tenant;
     String resource;
     String operation;
+    @EqualsAndHashCode.Exclude
+    StringRepresentationType representationType;
+
+    /**
+     * The supported string representation types for semantic roles.
+     */
+    enum StringRepresentationType {
+
+        /** Standard representation using system_%tenant_@resource_#operation */
+        STANDARD('%', '#'),
+
+        /** Representation using system_:tenant_@resource_!operation
+         * (added because eIAM doesn't support the characters '%' and '#' in its role names)
+         * */
+        EIAM(':', '!');
+
+        private final char tenantSeparator;
+        private final char operationSeparator;
+
+        StringRepresentationType(char tenantSeparator, char operationSeparator) {
+            this.tenantSeparator = tenantSeparator;
+            this.operationSeparator = operationSeparator;
+        }
+
+        /**
+         * Detects the string representation type of a token role string.
+         *
+         * @param tokenRole The token role string to detect the representation type for
+         * @return The detected representation type, or null if the string contains mixed separators
+         */
+        public static StringRepresentationType from(String tokenRole) {
+            boolean hasSpecificStandardSeparators = STANDARD.hasSpecificSeparators(tokenRole);
+            boolean hasSpecificEiamSeparators = EIAM.hasSpecificSeparators(tokenRole);
+
+            if (hasSpecificStandardSeparators && hasSpecificEiamSeparators) {
+                log.error("Token role '{}' contains separators from both STANDARD and EIAM representations.", tokenRole);
+                return null;
+            }
+
+            // no specific eIAM separators -> only standard or common separators -> standard type
+            return hasSpecificEiamSeparators ? EIAM: STANDARD;
+        }
+
+        private boolean hasSpecificSeparators(String tokenRole) {
+            return tokenRole.contains("_" + tenantSeparator) || tokenRole.contains("_" + operationSeparator);
+        }
+    }
+
+    SemanticApplicationRole(String system, String tenant, String resource, String operation) {
+        this(system, tenant, resource, operation, StringRepresentationType.STANDARD);
+    }
 
     /**
      * Public builder for semantic roles. No wildcards are allowed here except tenant
@@ -24,15 +77,25 @@ public class SemanticApplicationRole {
      * @param operation The operation
      * @return The semantic role
      */
+    @SuppressWarnings("unused")
     @Builder
     private static SemanticApplicationRole create(@NonNull String system, String tenant, @NonNull String resource, @NonNull String operation) {
         return new SemanticApplicationRole(system, tenant, resource, operation);
     }
 
     /**
-     * Internal factory method to parse tokens in {@link SemanticRoleRepository}
+     * Internal factory method to parse tokens in {@link SemanticRoleRepository}.
+     * Auto-detects the string representation type.
      */
     static Optional<SemanticApplicationRole> fromTokenRole(String tokenRole) {
+        StringRepresentationType type = StringRepresentationType.from(tokenRole);
+        if (type == null) {
+            return Optional.empty();
+        }
+        return parseTokenRole(tokenRole, type);
+    }
+
+    private static Optional<SemanticApplicationRole> parseTokenRole(String tokenRole, StringRepresentationType type) {
         String[] splitsArray = tokenRole.split("_");
         int index = 0;
 
@@ -40,7 +103,7 @@ public class SemanticApplicationRole {
         String system = splitsArray[index++];
 
         //Next could be the tenant
-        String tenant = fetchElementStartsWith(splitsArray, index, '%');
+        String tenant = fetchElementStartsWith(splitsArray, index, type.tenantSeparator);
         if (tenant != null) {
             index++;
         }
@@ -52,17 +115,17 @@ public class SemanticApplicationRole {
         }
 
         //Next could be the operation
-        String operation = fetchElementStartsWith(splitsArray, index, '#');
+        String operation = fetchElementStartsWith(splitsArray, index, type.operationSeparator);
         if (operation != null) {
             index++;
         }
 
-        //If there is something left, this is not an semantic role
+        //If there is something left, this is not a semantic role
         if (splitsArray.length > index) {
             return Optional.empty();
         }
 
-        SemanticApplicationRole role = new SemanticApplicationRole(system, tenant, resource, operation);
+        SemanticApplicationRole role = new SemanticApplicationRole(system, tenant, resource, operation, type);
         return Optional.of(role);
     }
 
@@ -155,7 +218,8 @@ public class SemanticApplicationRole {
         sb.append(system);
 
         if (tenant != null) {
-            sb.append("_%");
+            sb.append("_");
+            sb.append(representationType.tenantSeparator);
             sb.append(tenant);
         }
 
@@ -165,7 +229,8 @@ public class SemanticApplicationRole {
         }
 
         if (operation != null) {
-            sb.append("_#");
+            sb.append("_");
+            sb.append(representationType.operationSeparator);
             sb.append(operation);
         }
         return sb.toString();

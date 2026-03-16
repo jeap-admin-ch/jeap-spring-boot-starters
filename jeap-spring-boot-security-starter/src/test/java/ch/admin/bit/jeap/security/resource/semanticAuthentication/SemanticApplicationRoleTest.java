@@ -1,17 +1,21 @@
 package ch.admin.bit.jeap.security.resource.semanticAuthentication;
 
-import org.junit.jupiter.api.Assertions;
+import ch.admin.bit.jeap.security.resource.semanticAuthentication.SemanticApplicationRole.StringRepresentationType;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class SemanticApplicationRoleTest {
+
+    // === Method sources ===
+
     static List<SemanticApplicationRole> allWildcardPossibilities() {
         List<SemanticApplicationRole> allPossibilities = new LinkedList<>();
         for (boolean resourceWc : new boolean[]{true, false}) {
@@ -26,6 +30,64 @@ class SemanticApplicationRoleTest {
         }
         return allPossibilities;
     }
+
+    static Stream<Arguments> validRoleStrings() {
+        return Stream.of(
+                // STANDARD representations
+                Arguments.of("mysystem", "mysystem", null, null, null, StringRepresentationType.STANDARD),
+                Arguments.of("mysystem_#myoperation", "mysystem", null, null, "myoperation", StringRepresentationType.STANDARD),
+                Arguments.of("docbox_@myresource_#myoperation", "docbox", null, "myresource", "myoperation", StringRepresentationType.STANDARD),
+                Arguments.of("mysystem_%mytenant_@myresource_#myoperation", "mysystem", "mytenant", "myresource", "myoperation", StringRepresentationType.STANDARD),
+                // EIAM representations
+                Arguments.of("mysystem_!myoperation", "mysystem", null, null, "myoperation", StringRepresentationType.EIAM),
+                Arguments.of("mysystem_@myresource_!myoperation", "mysystem", null, "myresource", "myoperation", StringRepresentationType.EIAM),
+                Arguments.of("mysystem_:mytenant_@myresource_!myoperation", "mysystem", "mytenant", "myresource", "myoperation", StringRepresentationType.EIAM)
+        );
+    }
+
+    static Stream<Arguments> invalidRoleStrings() {
+        return Stream.of(
+                // Not a semantic role
+                Arguments.of("some-role_something"),
+                // Wrong order - STANDARD
+                Arguments.of("mysystem_@myresource_%mytenant_#myoperation"),
+                // Wrong order - EIAM
+                Arguments.of("mysystem_@myresource_:mytenant_!myoperation"),
+                // Garbage at end - STANDARD
+                Arguments.of("mysystem_@myresource_#myoperation_garbage"),
+                // Garbage at end - EIAM
+                Arguments.of("mysystem_@myresource_!myoperation_garbage"),
+                // Mixed separators: STANDARD tenant + EIAM operation
+                Arguments.of("mysystem_%mytenant_@myresource_!myoperation"),
+                // Mixed separators: EIAM tenant + STANDARD operation
+                Arguments.of("mysystem_:mytenant_@myresource_#myoperation")
+        );
+    }
+
+    static Stream<Arguments> toStringCases() {
+        return Stream.of(
+                // STANDARD - all parts
+                Arguments.of(new SemanticApplicationRole("system", "tenant", "resource", "operation"),
+                        "system_%tenant_@resource_#operation"),
+                // STANDARD - some wildcards
+                Arguments.of(new SemanticApplicationRole("system", null, "resource", null),
+                        "system_@resource"),
+                // STANDARD - only system
+                Arguments.of(new SemanticApplicationRole("system", null, null, null),
+                        "system"),
+                // EIAM - all parts
+                Arguments.of(new SemanticApplicationRole("system", "tenant", "resource", "operation", StringRepresentationType.EIAM),
+                        "system_:tenant_@resource_!operation"),
+                // EIAM - some wildcards
+                Arguments.of(new SemanticApplicationRole("system", null, "resource", null, StringRepresentationType.EIAM),
+                        "system_@resource"),
+                // EIAM - only system
+                Arguments.of(new SemanticApplicationRole("system", null, null, null, StringRepresentationType.EIAM),
+                        "system")
+        );
+    }
+
+    // === Builder tests ===
 
     @Test
     void builderEnsureNoWildcards() {
@@ -92,67 +154,61 @@ class SemanticApplicationRoleTest {
         assertEquals("system", target.getSystem());
         assertEquals("resource", target.getResource());
         assertEquals("operation", target.getOperation());
-        Assertions.assertNull(target.getTenant());
+        assertNull(target.getTenant());
     }
 
     @Test
-    void fromTokenRole_invalid() {
-        Optional<SemanticApplicationRole> target = SemanticApplicationRole.fromTokenRole("justAnOldRole_something");
-        assertFalse(target.isPresent());
+    void builderDefaultsToStandardRepresentation() {
+        SemanticApplicationRole role = SemanticApplicationRole.builder()
+                .system("system")
+                .resource("resource")
+                .operation("operation")
+                .build();
+        assertEquals(StringRepresentationType.STANDARD, role.getRepresentationType());
     }
 
     @Test
-    void fromTokenRole_onlySystem() {
-        SemanticApplicationRole target = SemanticApplicationRole.fromTokenRole("input").orElseThrow();
+    void stringRepresentationType_from() {
+        assertEquals(StringRepresentationType.STANDARD, StringRepresentationType.from("mysystem"));
+        assertEquals(StringRepresentationType.STANDARD, StringRepresentationType.from("mysystem_@myresource"));
+        assertEquals(StringRepresentationType.STANDARD, StringRepresentationType.from("mysystem_%mytenant_@myresource_#myoperation"));
+        assertEquals(StringRepresentationType.EIAM, StringRepresentationType.from("mysystem_:mytenant_@myresource_!myoperation"));
+        assertEquals(StringRepresentationType.EIAM, StringRepresentationType.from("mysystem_!myoperation"));
+        assertEquals(StringRepresentationType.EIAM, StringRepresentationType.from("mysystem_:mytenant"));
+        // Mixed separators return null
+        assertNull(StringRepresentationType.from("mysystem_%mytenant_@myresource_!myoperation"));
+        assertNull(StringRepresentationType.from("mysystem_:mytenant_@myresource_#myoperation"));
+    }
 
-        assertEquals("input", target.getSystem());
-        Assertions.assertNull(target.getTenant());
-        Assertions.assertNull(target.getResource());
-        Assertions.assertNull(target.getOperation());
+    @ParameterizedTest
+    @MethodSource("validRoleStrings")
+    void fromTokenRole_validRoles(String tokenRole, String expectedSystem, String expectedTenant,
+                                 String expectedResource, String expectedOperation,
+                                 StringRepresentationType expectedType) {
+        SemanticApplicationRole target = SemanticApplicationRole.fromTokenRole(tokenRole).orElseThrow();
+
+        assertEquals(expectedSystem, target.getSystem());
+        assertEquals(expectedTenant, target.getTenant());
+        assertEquals(expectedResource, target.getResource());
+        assertEquals(expectedOperation, target.getOperation());
+        assertEquals(expectedType, target.getRepresentationType());
+    }
+
+    @ParameterizedTest
+    @MethodSource("invalidRoleStrings")
+    void fromTokenRole_invalidRoles(String tokenRole) {
+        assertTrue(SemanticApplicationRole.fromTokenRole(tokenRole).isEmpty());
     }
 
     @Test
-    void fromTokenRole_onlySystemAndOperation() {
-        SemanticApplicationRole target = SemanticApplicationRole.fromTokenRole("input_#read").orElseThrow();
+    void fromTokenRole_ambiguousStrings_defaultToTypeStandard() {
+        // "mysystem" has no type-specific separators - auto-detects as STANDARD
+        SemanticApplicationRole systemOnly = SemanticApplicationRole.fromTokenRole("mysystem").orElseThrow();
+        assertEquals(StringRepresentationType.STANDARD, systemOnly.getRepresentationType());
 
-        assertEquals("input", target.getSystem());
-        Assertions.assertNull(target.getTenant());
-        Assertions.assertNull(target.getResource());
-        assertEquals("read", target.getOperation());
-    }
-
-    @Test
-    void fromTokenRole_allButTenant() {
-        SemanticApplicationRole target = SemanticApplicationRole.fromTokenRole("docbox_@decree_#read").orElseThrow();
-
-        assertEquals("docbox", target.getSystem());
-        Assertions.assertNull(target.getTenant());
-        assertEquals("decree", target.getResource());
-        assertEquals("read", target.getOperation());
-    }
-
-    @Test
-    void fromTokenRole_all() {
-        SemanticApplicationRole target = SemanticApplicationRole.fromTokenRole("input_%camiuns_@registrationcertificate_#update").orElseThrow();
-
-        assertEquals("input", target.getSystem());
-        assertEquals("camiuns", target.getTenant());
-        assertEquals("registrationcertificate", target.getResource());
-        assertEquals("update", target.getOperation());
-    }
-
-    @Test
-    void fromTokenRole_wrongOrder() {
-        Optional<SemanticApplicationRole> target = SemanticApplicationRole.fromTokenRole("input_@registrationcertificate_%camiuns_#update");
-
-        assertTrue(target.isEmpty());
-    }
-
-    @Test
-    void fromTokenRole_garbageAtEnd() {
-        Optional<SemanticApplicationRole> target = SemanticApplicationRole.fromTokenRole("docbox_@decree_#read_garbage");
-
-        assertTrue(target.isEmpty());
+        // "mysystem_@myresource" uses only the shared resource separator - auto-detects as STANDARD
+        SemanticApplicationRole withResource = SemanticApplicationRole.fromTokenRole("mysystem_@myresource").orElseThrow();
+        assertEquals(StringRepresentationType.STANDARD, withResource.getRepresentationType());
     }
 
     @Test
@@ -203,19 +259,44 @@ class SemanticApplicationRoleTest {
         assertTrue(roleWithWildcard.matches(test));
     }
 
+    @ParameterizedTest
+    @MethodSource("toStringCases")
+    void toString_sameAsInToken(SemanticApplicationRole role, String expected) {
+        assertEquals(expected, role.toString());
+    }
+
+    @SuppressWarnings("unused")
+    @ParameterizedTest
+    @MethodSource("validRoleStrings")
+    void roundtrip_parseAndToString(String tokenRole, String expectedSystem, String expectedTenant,
+                                    String expectedResource, String expectedOperation,
+                                    StringRepresentationType expectedType) {
+        SemanticApplicationRole parsed = SemanticApplicationRole.fromTokenRole(tokenRole).orElseThrow();
+        assertEquals(tokenRole, parsed.toString());
+    }
+
     @Test
-    void toStringAsInToken() {
-        //All Given
-        SemanticApplicationRole test = new SemanticApplicationRole("system", "tenant", "resource", "operation");
-        assertEquals("system_%tenant_@resource_#operation", test.toString());
+    void equalityAcrossRepresentations() {
+        SemanticApplicationRole standard = SemanticApplicationRole.fromTokenRole(
+                "mysystem_%mytenant_@myresource_#myoperation").orElseThrow();
+        SemanticApplicationRole eiam = SemanticApplicationRole.fromTokenRole(
+                "mysystem_:mytenant_@myresource_!myoperation").orElseThrow();
 
-        //Some Wildcards
-        SemanticApplicationRole testWc = new SemanticApplicationRole("system", null, "resource", null);
-        assertEquals("system_@resource", testWc.toString());
+        assertEquals(standard, eiam);
+        assertEquals(standard.hashCode(), eiam.hashCode());
+    }
 
-        //Only System
-        SemanticApplicationRole onlySystem = new SemanticApplicationRole("system", null, null, null);
-        assertEquals("system", onlySystem.toString());
+    @Test
+    void matchingAcrossRepresentations() {
+        SemanticApplicationRole standard = SemanticApplicationRole.fromTokenRole(
+                "mysystem_%mytenant_@myresource_#myoperation").orElseThrow();
+        SemanticApplicationRole eiam = SemanticApplicationRole.fromTokenRole(
+                "mysystem_:mytenant_@myresource_!myoperation").orElseThrow();
+
+        assertTrue(standard.includes(eiam));
+        assertTrue(eiam.includes(standard));
+        assertTrue(standard.matches(eiam));
+        assertTrue(eiam.matches(standard));
     }
 
     @Test
