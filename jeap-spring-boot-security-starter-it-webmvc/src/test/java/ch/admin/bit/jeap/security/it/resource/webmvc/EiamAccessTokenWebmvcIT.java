@@ -1,7 +1,7 @@
 package ch.admin.bit.jeap.security.it.resource.webmvc;
 
 import ch.admin.bit.jeap.security.it.resource.AbstractEiamAccessTokenIT;
-import ch.admin.bit.jeap.security.it.resource.EiamClaimSetConverter;
+import ch.admin.bit.jeap.security.it.resource.EaimClaimSetConverterConfiguration;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -9,10 +9,10 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 
 @ActiveProfiles("eiam")
-@Import(EiamClaimSetConverter.class)
+@Import(EaimClaimSetConverterConfiguration.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT,
       		    properties = {  "server.port=8002",
-								"jeap.security.oauth2.resourceserver.authorization-server.claim-set-converter-name=eiamClaimSetConverter"})
+								"jeap.security.oauth2.resourceserver.authorization-server.claim-set-converter-name=" + EaimClaimSetConverterConfiguration.CONVERTER_BEAN_NAME})
 @SuppressWarnings("java:S2699") // asserts are in the super class methods, but sonar does not get it
 class EiamAccessTokenWebmvcIT extends AbstractEiamAccessTokenIT {
 
