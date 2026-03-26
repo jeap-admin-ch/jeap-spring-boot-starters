@@ -170,6 +170,7 @@ Apache License Version 2.0
  * spring-boot-starter-oauth2-resource-server - [org.springframework.boot:spring-boot-starter-oauth2-resource-server](https://spring.io/projects/spring-boot)
  * spring-boot-starter-security - [org.springframework.boot:spring-boot-starter-security](https://spring.io/projects/spring-boot)
  * spring-boot-starter-test - [org.springframework.boot:spring-boot-starter-test](https://spring.io/projects/spring-boot)
+ * spring-boot-starter-thymeleaf - [org.springframework.boot:spring-boot-starter-thymeleaf](https://spring.io/projects/spring-boot)
  * spring-boot-starter-tomcat - [org.springframework.boot:spring-boot-starter-tomcat](https://spring.io/projects/spring-boot)
  * spring-boot-starter-validation - [org.springframework.boot:spring-boot-starter-validation](https://spring.io/projects/spring-boot)
  * spring-boot-starter-web - [org.springframework.boot:spring-boot-starter-web](https://spring.io/projects/spring-boot)
