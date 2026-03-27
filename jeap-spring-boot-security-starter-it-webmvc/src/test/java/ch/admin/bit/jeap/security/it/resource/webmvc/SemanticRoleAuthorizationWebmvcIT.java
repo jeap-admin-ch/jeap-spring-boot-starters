@@ -61,4 +61,46 @@ public class SemanticRoleAuthorizationWebmvcIT extends AbstractSemanticRoleAutho
         super.testGetAuthForPartner_whenWithoutBpRoleAuthReadForQueriedPartnerAlternativeSyntax_thenAccessDenied();
     }
 
+    @Test
+    @Override
+    protected void testGetAuth_whenWithUserRoleAuthRead_thenAccessGrantedViaHasOperation() {
+        super.testGetAuth_whenWithUserRoleAuthRead_thenAccessGrantedViaHasOperation();
+    }
+
+    @Test
+    @Override
+    protected void testGetAuth_whenWithUserRoleWithDifferentOperation_thenAccessDeniedViaHasOperation() {
+        super.testGetAuth_whenWithUserRoleWithDifferentOperation_thenAccessDeniedViaHasOperation();
+    }
+
+    @Test
+    @Override
+    protected void testGetAuthForPartner_whenWithBpRoleAuthRead_thenAccessGrantedViaHasOperationForPartner() {
+        super.testGetAuthForPartner_whenWithBpRoleAuthRead_thenAccessGrantedViaHasOperationForPartner();
+    }
+
+    @Test
+    @Override
+    protected void testGetAuthForPartner_whenWithoutBpRoleAuthRead_thenAccessDeniedViaHasOperationForPartner() {
+        super.testGetAuthForPartner_whenWithoutBpRoleAuthRead_thenAccessDeniedViaHasOperationForPartner();
+    }
+
+    @Test
+    @Override
+    protected void testGetAuth_whenWithUserRole_thenAccessGrantedViaHasOperationForAllPartners() {
+        super.testGetAuth_whenWithUserRole_thenAccessGrantedViaHasOperationForAllPartners();
+    }
+
+    @Test
+    @Override
+    protected void testGetAuth_whenOnlyWithBpRole_thenAccessDeniedViaHasOperationForAllPartners() {
+        super.testGetAuth_whenOnlyWithBpRole_thenAccessDeniedViaHasOperationForAllPartners();
+    }
+
+    @Test
+    @Override
+    protected void testGetAuth_whenRoleExpressionContainsSeparatorCharacter_thenAccessDenied() {
+        super.testGetAuth_whenRoleExpressionContainsSeparatorCharacter_thenAccessDenied();
+    }
+
 }

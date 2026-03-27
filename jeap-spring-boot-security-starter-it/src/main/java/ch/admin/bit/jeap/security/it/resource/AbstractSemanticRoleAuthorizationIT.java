@@ -64,6 +64,41 @@ public class AbstractSemanticRoleAuthorizationIT extends AccessTokenITBase {
 		assertHttpStatusWithTokenOnGetForPartner(semanticProgrammaticAuthForPartnerPathTemplateSpec, jeapToken, OTHER_PARTNER_ID, HttpStatus.FORBIDDEN);
 	}
 
+	protected void testGetAuth_whenWithUserRoleAuthRead_thenAccessGrantedViaHasOperation() {
+		final String jeapToken = createJeapTokenWithUserRoles(SEMANTIC_AUTH_READ_ROLE);
+		assertHttpStatusWithTokenOnGet(semanticOperationAuthPathSpec, jeapToken, HttpStatus.OK);
+	}
+
+	protected void testGetAuth_whenWithUserRoleWithDifferentOperation_thenAccessDeniedViaHasOperation() {
+		final String jeapToken = createJeapTokenWithUserRoles(SEMANTIC_AUTH_WRITE_ROLE);
+		assertHttpStatusWithTokenOnGet(semanticOperationAuthPathSpec, jeapToken, HttpStatus.FORBIDDEN);
+	}
+
+	protected void testGetAuthForPartner_whenWithBpRoleAuthRead_thenAccessGrantedViaHasOperationForPartner() {
+		final String jeapToken = createJeapTokenForBpRoles(SEMANTIC_AUTH_READ_ROLE);
+		assertHttpStatusWithTokenOnGetForPartner(semanticOperationAuthForPartnerPathTemplateSpec, jeapToken, PARTNER_ID, HttpStatus.OK);
+	}
+
+	protected void testGetAuthForPartner_whenWithoutBpRoleAuthRead_thenAccessDeniedViaHasOperationForPartner() {
+		final String jeapToken = createJeapTokenForBpRoles(SEMANTIC_AUTH_READ_ROLE);
+		assertHttpStatusWithTokenOnGetForPartner(semanticOperationAuthForPartnerPathTemplateSpec, jeapToken, OTHER_PARTNER_ID, HttpStatus.FORBIDDEN);
+	}
+
+	protected void testGetAuth_whenWithUserRole_thenAccessGrantedViaHasOperationForAllPartners() {
+		final String jeapToken = createJeapTokenWithUserRoles(SEMANTIC_AUTH_READ_ROLE);
+		assertHttpStatusWithTokenOnGet(semanticOperationAllPartnersAuthPathSpec, jeapToken, HttpStatus.OK);
+	}
+
+	protected void testGetAuth_whenOnlyWithBpRole_thenAccessDeniedViaHasOperationForAllPartners() {
+		final String jeapToken = createJeapTokenForBpRoles(SEMANTIC_AUTH_READ_ROLE);
+		assertHttpStatusWithTokenOnGet(semanticOperationAllPartnersAuthPathSpec, jeapToken, HttpStatus.FORBIDDEN);
+	}
+
+	protected void testGetAuth_whenRoleExpressionContainsSeparatorCharacter_thenAccessDenied() {
+		final String jeapToken = createJeapTokenWithUserRoles(SEMANTIC_AUTH_READ_ROLE);
+		assertHttpStatusWithTokenOnGet(semanticSeparatorValidationAuthPathSpec, jeapToken, HttpStatus.FORBIDDEN);
+	}
+
 	private String createJeapTokenWithUserRoles(String... roles) {
 		return jwsBuilderFactory.createValidForFixedLongPeriodBuilder(SUBJECT, JeapAuthenticationContext.SYS).
 				withUserRoles(roles).

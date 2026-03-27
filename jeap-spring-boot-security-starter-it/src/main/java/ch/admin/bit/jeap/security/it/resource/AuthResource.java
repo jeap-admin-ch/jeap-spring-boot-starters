@@ -55,6 +55,30 @@ public class AuthResource {
         return getAuthForPartnerProtectedBySemanticRole(partnerId);
     }
 
+    @GetMapping("/api/semantic-operation/auth")
+    @PreAuthorize("hasOperation('read')")
+    public Auth getAuthProtectedBySemanticOperation() {
+        return createAuthFromToken(getJeapAuthenticationToken());
+    }
+
+    @GetMapping("/api/semantic-operation/{partnerId}/auth")
+    @PreAuthorize("hasOperationForPartner('read', #partnerId)")
+    public Auth getAuthForPartnerProtectedBySemanticOperation(@PathVariable("partnerId") String partnerId) {
+        return createAuthFromTokenForPartner(partnerId, getJeapAuthenticationToken());
+    }
+
+    @GetMapping("/api/semantic-operation-all-partners/auth")
+    @PreAuthorize("hasOperationForAllPartners('read')")
+    public Auth getAuthProtectedBySemanticOperationForAllPartners() {
+        return createAuthFromToken(getJeapAuthenticationToken());
+    }
+
+    @GetMapping("/api/semantic-separator-validation/auth")
+    @PreAuthorize("hasRole('jme_@auth_#read', 'read')")
+    public Auth getAuthProtectedBySemanticRoleWithSeparator() {
+        return createAuthFromToken(getJeapAuthenticationToken());
+    }
+
     @GetMapping("/api/simple/auth")
     @PreAuthorize("hasRole('authentication:read')")
     public Auth getAuthProtectedBySimpleRole() {

@@ -24,6 +24,12 @@ public class TestRoles {
             .operation("read")
             .build().toString();
 
+    public static final String SEMANTIC_AUTH_WRITE_ROLE = SemanticApplicationRole.builder()
+            .system("jme")
+            .resource("auth")
+            .operation("write")
+            .build().toString();
+
     public static final String SEMANTIC_AUTH_READ_ROLE_ALTERNATIVE_SYNTAX = "jme_@auth_!read";
     public static final String SEMANTIC_OTHER_READ_ROLE_ALTERNATIVE_SYNTAX = "jme_@other_!read";
 

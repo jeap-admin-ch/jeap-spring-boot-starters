@@ -33,6 +33,9 @@ public class AccessTokenITBase {
     private static final String SIMPLE_SUB_PATH = "simple";
     private static final String AUTHORITIES_SUB_PATH = "authorities";
     private static final String PROGRAMMATIC_PATH_SUFFIX = "-programmatic";
+    private static final String SEMANTIC_OPERATION_SUB_PATH = "semantic-operation";
+    private static final String SEMANTIC_OPERATION_ALL_PARTNERS_SUB_PATH = "semantic-operation-all-partners";
+    private static final String SEMANTIC_SEPARATOR_VALIDATION_SUB_PATH = "semantic-separator-validation";
     private static final String SEMANTIC_PROGRAMMATIC_SUB_PATH = SEMANTIC_SUB_PATH + PROGRAMMATIC_PATH_SUFFIX;
     private static final String SIMPLE_PROGRAMMATIC_SUB_PATH = SIMPLE_SUB_PATH + PROGRAMMATIC_PATH_SUFFIX;
     private static final String AUTHORITIES_PROGRAMMATIC_SUB_PATH = AUTHORITIES_SUB_PATH + PROGRAMMATIC_PATH_SUFFIX;
@@ -42,6 +45,10 @@ public class AccessTokenITBase {
     protected final RequestSpecification semanticProgrammaticAuthPathSpec;
     protected final RequestSpecification semanticAuthForPartnerPathTemplateSpec;
     protected final RequestSpecification semanticProgrammaticAuthForPartnerPathTemplateSpec;
+    protected final RequestSpecification semanticOperationAuthPathSpec;
+    protected final RequestSpecification semanticOperationAuthForPartnerPathTemplateSpec;
+    protected final RequestSpecification semanticOperationAllPartnersAuthPathSpec;
+    protected final RequestSpecification semanticSeparatorValidationAuthPathSpec;
     protected final RequestSpecification simpleAuthPathSpec;
     protected final RequestSpecification simpleProgrammaticAuthPathSpec;
     protected final RequestSpecification simpleAuthForPartnerPathTemplateSpec;
@@ -63,6 +70,10 @@ public class AccessTokenITBase {
         this.semanticProgrammaticAuthPathSpec = getAuthSpec(baseUrl, AUTH_PATH_PATTERN, SEMANTIC_PROGRAMMATIC_SUB_PATH, serverPort);
         this.semanticAuthForPartnerPathTemplateSpec = getAuthSpec(baseUrl, AUTH_FOR_PARTNER_PATH_PATTERN, SEMANTIC_SUB_PATH, serverPort);
         this.semanticProgrammaticAuthForPartnerPathTemplateSpec = getAuthSpec(baseUrl, AUTH_FOR_PARTNER_PATH_PATTERN, SEMANTIC_PROGRAMMATIC_SUB_PATH, serverPort);
+        this.semanticOperationAuthPathSpec = getAuthSpec(baseUrl, AUTH_PATH_PATTERN, SEMANTIC_OPERATION_SUB_PATH, serverPort);
+        this.semanticOperationAuthForPartnerPathTemplateSpec = getAuthSpec(baseUrl, AUTH_FOR_PARTNER_PATH_PATTERN, SEMANTIC_OPERATION_SUB_PATH, serverPort);
+        this.semanticOperationAllPartnersAuthPathSpec = getAuthSpec(baseUrl, AUTH_PATH_PATTERN, SEMANTIC_OPERATION_ALL_PARTNERS_SUB_PATH, serverPort);
+        this.semanticSeparatorValidationAuthPathSpec = getAuthSpec(baseUrl, AUTH_PATH_PATTERN, SEMANTIC_SEPARATOR_VALIDATION_SUB_PATH, serverPort);
         this.simpleAuthPathSpec = getAuthSpec(baseUrl, AUTH_PATH_PATTERN, SIMPLE_SUB_PATH, serverPort);
         this.simpleProgrammaticAuthPathSpec = getAuthSpec(baseUrl, AUTH_PATH_PATTERN, SIMPLE_PROGRAMMATIC_SUB_PATH, serverPort);
         this.simpleAuthForPartnerPathTemplateSpec = getAuthSpec(baseUrl, AUTH_FOR_PARTNER_PATH_PATTERN, SIMPLE_SUB_PATH, serverPort);
