@@ -350,4 +350,25 @@ class SemanticApplicationRoleTest {
         assertTrue(allWildcardsRole.sameResourceOrWildcard(null));
         assertTrue(allWildcardsRole.sameOperationOrWildcard(null));
     }
+
+    @Test
+    void containsAnySeparatorCharacter_withSeparatorChars_returnsTrue() {
+        assertTrue(StringRepresentationType.containsAnySeparatorCharacter("resource@operation"));
+        assertTrue(StringRepresentationType.containsAnySeparatorCharacter("tenant%something"));
+        assertTrue(StringRepresentationType.containsAnySeparatorCharacter("something#operation"));
+        assertTrue(StringRepresentationType.containsAnySeparatorCharacter("tenant:something"));
+        assertTrue(StringRepresentationType.containsAnySeparatorCharacter("something!operation"));
+        assertTrue(StringRepresentationType.containsAnySeparatorCharacter("system_%tenant_@resource_#operation"));
+        assertTrue(StringRepresentationType.containsAnySeparatorCharacter("system_:tenant_@resource_!operation"));
+    }
+
+    @Test
+    void containsAnySeparatorCharacter_withValidParams_returnsFalse() {
+        assertFalse(StringRepresentationType.containsAnySeparatorCharacter("read"));
+        assertFalse(StringRepresentationType.containsAnySeparatorCharacter("auth"));
+        assertFalse(StringRepresentationType.containsAnySeparatorCharacter("my-resource"));
+        assertFalse(StringRepresentationType.containsAnySeparatorCharacter("my_resource"));
+        assertFalse(StringRepresentationType.containsAnySeparatorCharacter(""));
+        assertFalse(StringRepresentationType.containsAnySeparatorCharacter(null));
+    }
 }

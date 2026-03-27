@@ -2,6 +2,7 @@ package ch.admin.bit.jeap.security.resource.semanticAuthentication;
 
 import ch.admin.bit.jeap.security.resource.token.JeapAuthenticationToken;
 import lombok.Value;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
 import java.util.function.Predicate;
@@ -13,6 +14,7 @@ import java.util.stream.Collectors;
  * system, i.e. if an authentication token also includes roles for different systems, those roles will be ignored.
  */
 @SuppressWarnings({"WeakerAccess", "unused"})
+@Slf4j
 @Value
 public class SemanticRoleRepository {
     Map<String, Set<SemanticApplicationRole>> businessPartnerRoles;
@@ -38,6 +40,19 @@ public class SemanticRoleRepository {
         );
         this.businessPartnerRoles = businessPartnerRoles;
         this.systemName = systemName;
+    }
+
+    private static boolean hasInvalidParameters(String methodName, String... params) {
+        for (String param : params) {
+            if (SemanticApplicationRole.StringRepresentationType.containsAnySeparatorCharacter(param)) {
+                log.error("Semantic role authorization method '{}' called with parameter value '{}' that contains a " +
+                                "role separator character. This indicates that a full token role string was pasted instead of " +
+                                "using decomposed parameters (e.g., hasRole('resource', 'operation')). Access will be denied.",
+                        methodName, param);
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -67,6 +82,9 @@ public class SemanticRoleRepository {
      * @return true if the user can perform this action
      */
     public boolean hasRoleForPartner(String operation, String partner) {
+        if (hasInvalidParameters("hasRoleForPartner", operation)) {
+            return false;
+        }
         SemanticApplicationRole role = new SemanticApplicationRole(systemName, null, null, operation);
         return hasRoleForPartner(role, partner);
     }
@@ -80,6 +98,9 @@ public class SemanticRoleRepository {
      * @return true if the user can perform this action
      */
     public boolean hasRoleForPartner(String resource, String operation, String partner) {
+        if (hasInvalidParameters("hasRoleForPartner", resource, operation)) {
+            return false;
+        }
         SemanticApplicationRole role = SemanticApplicationRole.builder()
                 .system(systemName)
                 .resource(resource)
@@ -98,6 +119,9 @@ public class SemanticRoleRepository {
      * @return true if the user can perform this action
      */
     public boolean hasRoleForPartner(String tenant, String resource, String operation, String partner) {
+        if (hasInvalidParameters("hasRoleForPartner", tenant, resource, operation)) {
+            return false;
+        }
         SemanticApplicationRole role = SemanticApplicationRole.builder()
                 .system(systemName)
                 .tenant(tenant)
@@ -132,6 +156,9 @@ public class SemanticRoleRepository {
      * @return true if the user can perform this action
      */
     public boolean hasOperation(String operation) {
+        if (hasInvalidParameters("hasOperation", operation)) {
+            return false;
+        }
         SemanticApplicationRole role = new SemanticApplicationRole(systemName, null, null, operation);
         return hasRole(role);
     }
@@ -145,6 +172,9 @@ public class SemanticRoleRepository {
      * @return true if the user can perform this action
      */
     public boolean hasRole(String resource, String operation) {
+        if (hasInvalidParameters("hasRole", resource, operation)) {
+            return false;
+        }
         SemanticApplicationRole role = SemanticApplicationRole.builder()
                 .system(systemName)
                 .resource(resource)
@@ -163,6 +193,9 @@ public class SemanticRoleRepository {
      * @return true if the user can perform this action
      */
     public boolean hasRole(String tenant, String resource, String operation) {
+        if (hasInvalidParameters("hasRole", tenant, resource, operation)) {
+            return false;
+        }
         SemanticApplicationRole role = SemanticApplicationRole.builder()
                 .system(systemName)
                 .tenant(tenant)
@@ -192,6 +225,9 @@ public class SemanticRoleRepository {
      * @return true if the user can perform this action
      */
     public boolean hasRoleForAllPartners(String operation) {
+        if (hasInvalidParameters("hasRoleForAllPartners", operation)) {
+            return false;
+        }
         SemanticApplicationRole role = new SemanticApplicationRole(systemName, null, null, operation);
         return hasRoleForAllPartners(role);
     }
@@ -205,6 +241,9 @@ public class SemanticRoleRepository {
      * @return true if the user can perform this action
      */
     public boolean hasRoleForAllPartners(String resource, String operation) {
+        if (hasInvalidParameters("hasRoleForAllPartners", resource, operation)) {
+            return false;
+        }
         SemanticApplicationRole role = SemanticApplicationRole.builder()
                 .system(systemName)
                 .resource(resource)
@@ -223,6 +262,9 @@ public class SemanticRoleRepository {
      * @return true if the user can perform this action
      */
     public boolean hasRoleForAllPartners(String tenant, String resource, String operation) {
+        if (hasInvalidParameters("hasRoleForAllPartners", tenant, resource, operation)) {
+            return false;
+        }
         SemanticApplicationRole role = SemanticApplicationRole.builder()
                 .system(systemName)
                 .tenant(tenant)
@@ -241,6 +283,9 @@ public class SemanticRoleRepository {
      * @return A list of the roles. Those roles can have certain fields set to null if they are wildcards.
      */
     public Collection<SemanticApplicationRole> getAllRolesForPartner(String operation, String partner) {
+        if (hasInvalidParameters("getAllRolesForPartner", operation)) {
+            return Collections.emptyList();
+        }
         List<SemanticApplicationRole> result = new LinkedList<>();
         userRoles.stream()
                 .filter(role -> role.sameOperationOrWildcard(operation))
@@ -261,6 +306,9 @@ public class SemanticRoleRepository {
      * @return A list of the roles. Those roles can have certain fields set to null if they are wildcards.
      */
     public Collection<SemanticApplicationRole> getAllRoles(String operation) {
+        if (hasInvalidParameters("getAllRoles", operation)) {
+            return Collections.emptyList();
+        }
         List<SemanticApplicationRole> result = new LinkedList<>();
 
         userRoles.stream()
@@ -280,6 +328,9 @@ public class SemanticRoleRepository {
      * @return A list of the roles. Those roles can have certain fields set to null if they are wildcards.
      */
     public Collection<SemanticApplicationRole> getAllRolesForAllPartners(String operation) {
+        if (hasInvalidParameters("getAllRolesForAllPartners", operation)) {
+            return Collections.emptyList();
+        }
         List<SemanticApplicationRole> result = new LinkedList<>();
         userRoles.stream()
                 .filter(role -> role.sameOperationOrWildcard(operation))
@@ -304,6 +355,9 @@ public class SemanticRoleRepository {
      * @return The partners
      */
     public Collection<String> getPartnersForRole(String operation) {
+        if (hasInvalidParameters("getPartnersForRole", operation)) {
+            return Collections.emptySet();
+        }
         return getPartnersForRole(new SemanticApplicationRole(systemName, null, null, operation));
     }
 
@@ -315,6 +369,9 @@ public class SemanticRoleRepository {
      * @return The partners
      */
     public Collection<String> getPartnersForRole(String resource, String operation) {
+        if (hasInvalidParameters("getPartnersForRole", resource, operation)) {
+            return Collections.emptySet();
+        }
         return getPartnersForRole(SemanticApplicationRole.builder().
                 system(systemName).resource(resource).operation(operation).build());
     }
@@ -328,8 +385,12 @@ public class SemanticRoleRepository {
      * @return The partners
      */
     public Collection<String> getPartnersForRole(String tenant, String resource, String operation) {
+        if (hasInvalidParameters("getPartnersForRole", tenant, resource, operation)) {
+            return Collections.emptySet();
+        }
         return getPartnersForRole(SemanticApplicationRole.builder().
-                system(systemName).tenant(tenant).resource(resource).operation(operation).build());    }
+                system(systemName).tenant(tenant).resource(resource).operation(operation).build());
+    }
 
     /**
      * Get all partners for which the current user has at least one role that matches the given role predicate.

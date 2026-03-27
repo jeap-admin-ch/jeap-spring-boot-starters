@@ -32,6 +32,8 @@ public class SemanticApplicationRole {
          * */
         EIAM(':', '!');
 
+        static final char RESOURCE_SEPARATOR = '@';
+
         private final char tenantSeparator;
         private final char operationSeparator;
 
@@ -57,6 +59,29 @@ public class SemanticApplicationRole {
 
             // no specific eIAM separators -> only standard or common separators -> standard type
             return hasSpecificEiamSeparators ? EIAM: STANDARD;
+        }
+
+        /**
+         * Checks if the given value contains any of the separator characters used in semantic role strings.
+         * This can be used to detect misuse where a full token role string is passed as a single parameter
+         * instead of using decomposed parameters.
+         *
+         * @param value The value to check
+         * @return true if the value contains any separator character
+         */
+        static boolean containsAnySeparatorCharacter(String value) {
+            if (value == null) {
+                return false;
+            }
+            if (value.indexOf(RESOURCE_SEPARATOR) >= 0) {
+                return true;
+            }
+            for (StringRepresentationType type : values()) {
+                if (value.indexOf(type.tenantSeparator) >= 0 || value.indexOf(type.operationSeparator) >= 0) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         private boolean hasSpecificSeparators(String tokenRole) {
@@ -109,7 +134,7 @@ public class SemanticApplicationRole {
         }
 
         //Next could be the resource
-        String resource = fetchElementStartsWith(splitsArray, index, '@');
+        String resource = fetchElementStartsWith(splitsArray, index, StringRepresentationType.RESOURCE_SEPARATOR);
         if (resource != null) {
             index++;
         }
@@ -224,7 +249,8 @@ public class SemanticApplicationRole {
         }
 
         if (resource != null) {
-            sb.append("_@");
+            sb.append("_");
+            sb.append(StringRepresentationType.RESOURCE_SEPARATOR);
             sb.append(resource);
         }
 

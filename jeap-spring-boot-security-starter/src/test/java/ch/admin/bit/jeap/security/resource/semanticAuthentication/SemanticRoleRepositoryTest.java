@@ -249,6 +249,79 @@ class SemanticRoleRepositoryTest {
         assertThat(semanticRoleRepository.getAllRolesForAllPartners(WRITE.getOperation())).isEmpty();
     }
 
+    @Test
+    void hasRole_withFullTokenRoleString_returnsFalse() {
+        SemanticRoleRepository target = new SemanticRoleRepository(SYSTEM, token);
+        assertFalse(target.hasRole("system_%tenant_@resource_#operation", "read"));
+        assertFalse(target.hasRole("system_@auth_#read", "read"));
+    }
+
+    @Test
+    void hasRole_withEiamSeparators_returnsFalse() {
+        SemanticRoleRepository target = new SemanticRoleRepository(SYSTEM, token);
+        assertFalse(target.hasRole("system_:tenant_@resource_!operation", "read"));
+    }
+
+    @Test
+    void hasRole_withSeparatorInResource_returnsFalse() {
+        SemanticRoleRepository target = new SemanticRoleRepository(SYSTEM, token);
+        assertFalse(target.hasRole("resource@extra", "read"));
+    }
+
+    @Test
+    void hasRole_withSeparatorInTenant_returnsFalse() {
+        SemanticRoleRepository target = new SemanticRoleRepository(SYSTEM, token);
+        assertFalse(target.hasRole("tenant%x", "resource", "read"));
+    }
+
+    @Test
+    void hasOperation_withSeparatorInOperation_returnsFalse() {
+        SemanticRoleRepository target = new SemanticRoleRepository(SYSTEM, token);
+        assertFalse(target.hasOperation("system_@resource_#read"));
+    }
+
+    @Test
+    void hasRoleForPartner_withSeparatorInOperation_returnsFalse() {
+        SemanticRoleRepository target = new SemanticRoleRepository(SYSTEM, token);
+        assertFalse(target.hasRoleForPartner("system_@resource_#write", PARTNER));
+        assertFalse(target.hasRoleForPartner("test", "system_#write", PARTNER));
+        assertFalse(target.hasRoleForPartner("tenant%x", "test", "write", PARTNER));
+    }
+
+    @Test
+    void hasRoleForAllPartners_withSeparator_returnsFalse() {
+        SemanticRoleRepository target = new SemanticRoleRepository(SYSTEM, token);
+        assertFalse(target.hasRoleForAllPartners("system_@resource_#read"));
+        assertFalse(target.hasRoleForAllPartners("test", "system_#read"));
+        assertFalse(target.hasRoleForAllPartners("tenant%x", "test", "read"));
+    }
+
+    @Test
+    void getAllRoles_withSeparator_returnsEmpty() {
+        SemanticRoleRepository target = new SemanticRoleRepository(SYSTEM, token);
+        assertTrue(target.getAllRoles("system_@resource_#read").isEmpty());
+    }
+
+    @Test
+    void getAllRolesForPartner_withSeparator_returnsEmpty() {
+        SemanticRoleRepository target = new SemanticRoleRepository(SYSTEM, token);
+        assertTrue(target.getAllRolesForPartner("system_@resource_#write", PARTNER).isEmpty());
+    }
+
+    @Test
+    void getAllRolesForAllPartners_withSeparator_returnsEmpty() {
+        SemanticRoleRepository target = new SemanticRoleRepository(SYSTEM, token);
+        assertTrue(target.getAllRolesForAllPartners("system_@resource_#read").isEmpty());
+    }
+
+    @Test
+    void getPartnersForRole_withSeparator_returnsEmpty() {
+        SemanticRoleRepository target = new SemanticRoleRepository(SYSTEM, token);
+        assertTrue(target.getPartnersForRole("system_@resource_#read").isEmpty());
+        assertTrue(target.getPartnersForRole("test", "system_#read").isEmpty());
+        assertTrue(target.getPartnersForRole("tenant%x", "test", "read").isEmpty());
+    }
+
     private static JeapAuthenticationToken getToken(List<String> userRoles, Map<String, List<String>> businessPartnerRoles) {
         JeapAuthenticationConverter converter = new JeapAuthenticationConverter(new DefaultAuthoritiesResolver());
         Jwt jwt = Jwt.withTokenValue("dummy_token_value")
