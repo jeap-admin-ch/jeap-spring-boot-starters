@@ -60,16 +60,16 @@ class SemanticRoleRepositoryTest {
 
         assertTrue(target.hasRoleForPartner(WRITE, PARTNER), "This role is given for this partner");
         assertTrue(target.hasRoleForPartner("test", "write", PARTNER), "This role is given for this partner");
-        assertTrue(target.hasRoleForPartner("write", PARTNER), "This role is given for this partner");
+        assertTrue(target.hasOperationForPartner("write", PARTNER), "This role is given for this partner");
         assertFalse(target.hasRoleForPartner(WRITE, "partner2"), "This role is not given for this partner");
         assertFalse(target.hasRoleForPartner("test", "write", "partner2"), "This role is not given for this partner");
-        assertFalse(target.hasRoleForPartner("write", "partner2"), "This role is not given for this partner");
+        assertFalse(target.hasOperationForPartner("write", "partner2"), "This role is not given for this partner");
         assertTrue(target.hasRoleForPartner(READ, PARTNER), "This role is given for all partners");
         assertTrue(target.hasRoleForPartner("test", "read", PARTNER), "This role is given for all partners");
-        assertTrue(target.hasRoleForPartner( "read", PARTNER), "This role is given for all partners");
+        assertTrue(target.hasOperationForPartner("read", PARTNER), "This role is given for all partners");
         assertFalse(target.hasRoleForPartner(DELETE, "partner2"), "This role is not given for any partner");
         assertFalse(target.hasRoleForPartner("test", "delete", "partner2"), "This role is not given for any partner");
-        assertFalse(target.hasRoleForPartner("delete", "partner2"), "This role is not given for any partner");
+        assertFalse(target.hasOperationForPartner("delete", "partner2"), "This role is not given for any partner");
     }
 
     @Test
@@ -92,13 +92,13 @@ class SemanticRoleRepositoryTest {
         SemanticRoleRepository target = new SemanticRoleRepository(SYSTEM, token);
 
         assertFalse(target.hasRoleForAllPartners("test", "write"), "This role is only given for a partner");
-        assertFalse(target.hasRoleForAllPartners( "write"), "This role is only given for a partner");
+        assertFalse(target.hasOperationForAllPartners("write"), "This role is only given for a partner");
         assertFalse(target.hasRoleForAllPartners(WRITE), "This role is only given for a partner");
         assertTrue(target.hasRoleForAllPartners("test", "read"), "This role is given for all partners");
-        assertTrue(target.hasRoleForAllPartners("read"), "This role is given for all partners");
+        assertTrue(target.hasOperationForAllPartners("read"), "This role is given for all partners");
         assertTrue(target.hasRoleForAllPartners(READ), "This role is given for all partners");
         assertFalse(target.hasRoleForAllPartners("test", "delete"), "This role is not given for any partner");
-        assertFalse(target.hasRoleForAllPartners("delete"), "This role is not given for any partner");
+        assertFalse(target.hasOperationForAllPartners("delete"), "This role is not given for any partner");
         assertFalse(target.hasRoleForAllPartners(DELETE), "This role is not given for any partner");
     }
 
@@ -107,30 +107,30 @@ class SemanticRoleRepositoryTest {
         SemanticRoleRepository target = new SemanticRoleRepository(SYSTEM, token);
 
         //This role is given only to partner
-        Collection<SemanticApplicationRole> resultsWritePartner = target.getAllRolesForPartner("write", PARTNER);
+        Collection<SemanticApplicationRole> resultsWritePartner = target.getAllRolesForOperationAndPartner("write", PARTNER);
         assertEquals(1, resultsWritePartner.size());
         assertEquals(
                 new SemanticApplicationRole(SYSTEM, null, "test", "write"),
                 ((List<SemanticApplicationRole>) resultsWritePartner).get(0));
-        Collection<SemanticApplicationRole> resultsWritePartner2 = target.getAllRolesForPartner("write", "partner2");
+        Collection<SemanticApplicationRole> resultsWritePartner2 = target.getAllRolesForOperationAndPartner("write", "partner2");
         assertEquals(0, resultsWritePartner2.size());
 
         //This role is given to all partners and is a wildcard
-        Collection<SemanticApplicationRole> resultsReadPartner = target.getAllRolesForPartner("read", PARTNER);
+        Collection<SemanticApplicationRole> resultsReadPartner = target.getAllRolesForOperationAndPartner("read", PARTNER);
         assertEquals(1, resultsReadPartner.size());
         assertEquals(
                 new SemanticApplicationRole(SYSTEM, null, null, "read"),
                 ((List<SemanticApplicationRole>) resultsReadPartner).get(0));
-        Collection<SemanticApplicationRole> resultsReadPartner2 = target.getAllRolesForPartner("read", "partner2");
+        Collection<SemanticApplicationRole> resultsReadPartner2 = target.getAllRolesForOperationAndPartner("read", "partner2");
         assertEquals(1, resultsReadPartner2.size());
         assertEquals(
                 new SemanticApplicationRole(SYSTEM, null, null, "read"),
                 ((List<SemanticApplicationRole>) resultsReadPartner2).get(0));
 
         //This role is not given to any partner
-        Collection<SemanticApplicationRole> resultsDeletePartner = target.getAllRolesForPartner("delete", PARTNER);
+        Collection<SemanticApplicationRole> resultsDeletePartner = target.getAllRolesForOperationAndPartner("delete", PARTNER);
         assertEquals(0, resultsDeletePartner.size());
-        Collection<SemanticApplicationRole> resultsDeletePartner2 = target.getAllRolesForPartner("delete", "partner2");
+        Collection<SemanticApplicationRole> resultsDeletePartner2 = target.getAllRolesForOperationAndPartner("delete", "partner2");
         assertEquals(0, resultsDeletePartner2.size());
     }
 
@@ -139,21 +139,21 @@ class SemanticRoleRepositoryTest {
         SemanticRoleRepository target = new SemanticRoleRepository(SYSTEM, token);
 
         //This role is given to one partner
-        Collection<SemanticApplicationRole> resultsWrite = target.getAllRoles("write");
+        Collection<SemanticApplicationRole> resultsWrite = target.getAllRolesForOperation("write");
         assertEquals(1, resultsWrite.size());
         assertEquals(
                 new SemanticApplicationRole(SYSTEM, null, "test", "write"),
                 ((List<SemanticApplicationRole>) resultsWrite).get(0));
 
         //This role is given to all partners and is a wildcard
-        Collection<SemanticApplicationRole> resultsRead = target.getAllRoles("read");
+        Collection<SemanticApplicationRole> resultsRead = target.getAllRolesForOperation("read");
         assertEquals(1, resultsRead.size());
         assertEquals(
                 new SemanticApplicationRole(SYSTEM, null, null, "read"),
                 ((List<SemanticApplicationRole>) resultsRead).get(0));
 
         //This role is not given to any partner
-        Collection<SemanticApplicationRole> resultsDelete = target.getAllRoles("delete");
+        Collection<SemanticApplicationRole> resultsDelete = target.getAllRolesForOperation("delete");
         assertEquals(0, resultsDelete.size());
     }
 
@@ -163,18 +163,18 @@ class SemanticRoleRepositoryTest {
         SemanticRoleRepository target = new SemanticRoleRepository(SYSTEM, token);
 
         //This role is given to one partner
-        Collection<SemanticApplicationRole> resultsWrite = target.getAllRolesForAllPartners("write");
+        Collection<SemanticApplicationRole> resultsWrite = target.getAllRolesForOperationForAllPartners("write");
         assertEquals(0, resultsWrite.size());
 
         //This role is given to all partners and is a wildcard
-        Collection<SemanticApplicationRole> resultsRead = target.getAllRolesForAllPartners("read");
+        Collection<SemanticApplicationRole> resultsRead = target.getAllRolesForOperationForAllPartners("read");
         assertEquals(1, resultsRead.size());
         assertEquals(
                 new SemanticApplicationRole(SYSTEM, null, null, "read"),
                 ((List<SemanticApplicationRole>) resultsRead).get(0));
 
         //This role is not given to any partner
-        Collection<SemanticApplicationRole> resultsDelete = target.getAllRolesForAllPartners("delete");
+        Collection<SemanticApplicationRole> resultsDelete = target.getAllRolesForOperationForAllPartners("delete");
         assertEquals(0, resultsDelete.size());
     }
 
@@ -206,8 +206,8 @@ class SemanticRoleRepositoryTest {
         assertThat(target.getPartnersForRole("r1", "o2")).containsOnly("bp1", "bp3", "bp7");
         assertThat(target.getPartnersForRole("r2", "o1")).containsOnly("bp5", "bp6", "bp9", "bp10");
         assertThat(target.getPartnersForRole("r2", "o2")).containsOnly("bp5", "bp9");
-        assertThat(target.getPartnersForRole("o1")).containsOnly("bp1", "bp2", "bp3", "bp4", "bp5", "bp6", "bp7", "bp8", "bp9", "bp10");
-        assertThat(target.getPartnersForRole("o2")).containsOnly("bp1", "bp3", "bp5", "bp7", "bp9");
+        assertThat(target.getPartnersForOperation("o1")).containsOnly("bp1", "bp2", "bp3", "bp4", "bp5", "bp6", "bp7", "bp8", "bp9", "bp10");
+        assertThat(target.getPartnersForOperation("o2")).containsOnly("bp1", "bp3", "bp5", "bp7", "bp9");
         assertThat(target.getPartnersForRole("t3", "r1", "o1")).containsOnly("bp7", "bp8");
         assertThat(target.getPartnersForRole("t1", "r3", "o1")).isEmpty();
         assertThat(target.getPartnersForRole("t1", "r1", "o3")).isEmpty();
@@ -239,14 +239,14 @@ class SemanticRoleRepositoryTest {
         assertThat(semanticRoleRepository.getBusinessPartnerRoles()).containsOnlyKeys(PARTNER);
         assertThat(semanticRoleRepository.getBusinessPartnerRoles().get(PARTNER)).containsOnly(WRITE);
 
-        assertThat(semanticRoleRepository.getAllRoles(READ.getOperation())).containsOnly(READ);
-        assertThat(semanticRoleRepository.getAllRoles(WRITE.getOperation())).containsOnly(WRITE);
-        assertThat(semanticRoleRepository.getAllRolesForPartner(READ.getOperation(), PARTNER)).containsOnly(READ);
-        assertThat(semanticRoleRepository.getAllRolesForPartner(WRITE.getOperation(), PARTNER)).containsOnly(WRITE);
-        assertThat(semanticRoleRepository.getAllRolesForPartner(READ.getOperation(), OTHER_PARTNER)).containsOnly(READ);
-        assertThat(semanticRoleRepository.getAllRolesForPartner(WRITE.getOperation(), OTHER_PARTNER)).isEmpty();
-        assertThat(semanticRoleRepository.getAllRolesForAllPartners(READ.getOperation())).containsOnly(READ);
-        assertThat(semanticRoleRepository.getAllRolesForAllPartners(WRITE.getOperation())).isEmpty();
+        assertThat(semanticRoleRepository.getAllRolesForOperation(READ.getOperation())).containsOnly(READ);
+        assertThat(semanticRoleRepository.getAllRolesForOperation(WRITE.getOperation())).containsOnly(WRITE);
+        assertThat(semanticRoleRepository.getAllRolesForOperationAndPartner(READ.getOperation(), PARTNER)).containsOnly(READ);
+        assertThat(semanticRoleRepository.getAllRolesForOperationAndPartner(WRITE.getOperation(), PARTNER)).containsOnly(WRITE);
+        assertThat(semanticRoleRepository.getAllRolesForOperationAndPartner(READ.getOperation(), OTHER_PARTNER)).containsOnly(READ);
+        assertThat(semanticRoleRepository.getAllRolesForOperationAndPartner(WRITE.getOperation(), OTHER_PARTNER)).isEmpty();
+        assertThat(semanticRoleRepository.getAllRolesForOperationForAllPartners(READ.getOperation())).containsOnly(READ);
+        assertThat(semanticRoleRepository.getAllRolesForOperationForAllPartners(WRITE.getOperation())).isEmpty();
     }
 
     @Test
@@ -281,17 +281,17 @@ class SemanticRoleRepositoryTest {
     }
 
     @Test
-    void hasRoleForPartner_withSeparatorInOperation_returnsFalse() {
+    void hasOperationForPartner_withSeparatorInOperation_returnsFalse() {
         SemanticRoleRepository target = new SemanticRoleRepository(SYSTEM, token);
-        assertFalse(target.hasRoleForPartner("system_@resource_#write", PARTNER));
+        assertFalse(target.hasOperationForPartner("system_@resource_#write", PARTNER));
         assertFalse(target.hasRoleForPartner("test", "system_#write", PARTNER));
         assertFalse(target.hasRoleForPartner("tenant%x", "test", "write", PARTNER));
     }
 
     @Test
-    void hasRoleForAllPartners_withSeparator_returnsFalse() {
+    void hasOperationForAllPartners_withSeparator_returnsFalse() {
         SemanticRoleRepository target = new SemanticRoleRepository(SYSTEM, token);
-        assertFalse(target.hasRoleForAllPartners("system_@resource_#read"));
+        assertFalse(target.hasOperationForAllPartners("system_@resource_#read"));
         assertFalse(target.hasRoleForAllPartners("test", "system_#read"));
         assertFalse(target.hasRoleForAllPartners("tenant%x", "test", "read"));
     }
@@ -299,25 +299,25 @@ class SemanticRoleRepositoryTest {
     @Test
     void getAllRoles_withSeparator_returnsEmpty() {
         SemanticRoleRepository target = new SemanticRoleRepository(SYSTEM, token);
-        assertTrue(target.getAllRoles("system_@resource_#read").isEmpty());
+        assertTrue(target.getAllRolesForOperation("system_@resource_#read").isEmpty());
     }
 
     @Test
     void getAllRolesForPartner_withSeparator_returnsEmpty() {
         SemanticRoleRepository target = new SemanticRoleRepository(SYSTEM, token);
-        assertTrue(target.getAllRolesForPartner("system_@resource_#write", PARTNER).isEmpty());
+        assertTrue(target.getAllRolesForOperationAndPartner("system_@resource_#write", PARTNER).isEmpty());
     }
 
     @Test
     void getAllRolesForAllPartners_withSeparator_returnsEmpty() {
         SemanticRoleRepository target = new SemanticRoleRepository(SYSTEM, token);
-        assertTrue(target.getAllRolesForAllPartners("system_@resource_#read").isEmpty());
+        assertTrue(target.getAllRolesForOperationForAllPartners("system_@resource_#read").isEmpty());
     }
 
     @Test
-    void getPartnersForRole_withSeparator_returnsEmpty() {
+    void getPartnersForOperation_withSeparator_returnsEmpty() {
         SemanticRoleRepository target = new SemanticRoleRepository(SYSTEM, token);
-        assertTrue(target.getPartnersForRole("system_@resource_#read").isEmpty());
+        assertTrue(target.getPartnersForOperation("system_@resource_#read").isEmpty());
         assertTrue(target.getPartnersForRole("test", "system_#read").isEmpty());
         assertTrue(target.getPartnersForRole("tenant%x", "test", "read").isEmpty());
     }
