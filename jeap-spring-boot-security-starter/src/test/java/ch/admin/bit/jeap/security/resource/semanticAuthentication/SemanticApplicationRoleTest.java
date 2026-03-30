@@ -352,6 +352,57 @@ class SemanticApplicationRoleTest {
     }
 
     @Test
+    void constructor_withSeparatorInSystem_throwsException() {
+        assertThrows(IllegalArgumentException.class,
+                () -> new SemanticApplicationRole("system_@resource", null, null, "read"));
+    }
+
+    @Test
+    void constructor_withSeparatorInOperation_throwsException() {
+        assertThrows(IllegalArgumentException.class,
+                () -> new SemanticApplicationRole("system", null, null, "system_#read"));
+    }
+
+    @Test
+    void constructor_withValidParts_succeeds() {
+        assertDoesNotThrow(
+                () -> new SemanticApplicationRole("system", null, null, "read"));
+        assertDoesNotThrow(
+                () -> new SemanticApplicationRole("system", "tenant", "resource", "read"));
+    }
+
+    @Test
+    void builder_withSeparatorInResource_throwsException() {
+        assertThrows(IllegalArgumentException.class,
+                () -> SemanticApplicationRole.builder()
+                        .system("jme")
+                        .resource("jme_@auth")
+                        .operation("read")
+                        .build());
+    }
+
+    @Test
+    void builder_withSeparatorInTenant_throwsException() {
+        assertThrows(IllegalArgumentException.class,
+                () -> SemanticApplicationRole.builder()
+                        .system("jme")
+                        .tenant("tenant%x")
+                        .resource("auth")
+                        .operation("read")
+                        .build());
+    }
+
+    @Test
+    void builder_withValidParts_succeeds() {
+        assertDoesNotThrow(
+                () -> SemanticApplicationRole.builder()
+                        .system("jme")
+                        .resource("auth")
+                        .operation("read")
+                        .build());
+    }
+
+    @Test
     void containsAnySeparatorCharacter_withSeparatorChars_returnsTrue() {
         assertTrue(StringRepresentationType.containsAnySeparatorCharacter("resource@operation"));
         assertTrue(StringRepresentationType.containsAnySeparatorCharacter("tenant%something"));

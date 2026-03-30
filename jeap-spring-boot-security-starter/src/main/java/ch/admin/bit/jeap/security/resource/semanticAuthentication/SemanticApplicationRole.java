@@ -1,6 +1,9 @@
 package ch.admin.bit.jeap.security.resource.semanticAuthentication;
 
-import lombok.*;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Optional;
@@ -10,7 +13,6 @@ import java.util.Optional;
  */
 @Slf4j
 @Value
-@AllArgsConstructor(access = AccessLevel.PACKAGE)
 public class SemanticApplicationRole {
     String system;
     String tenant;
@@ -24,12 +26,16 @@ public class SemanticApplicationRole {
      */
     enum StringRepresentationType {
 
-        /** Standard representation using system_%tenant_@resource_#operation */
+        /**
+         * Standard representation using system_%tenant_@resource_#operation
+         */
         STANDARD('%', '#'),
 
-        /** Representation using system_:tenant_@resource_!operation
+        /**
+         * Representation using system_:tenant_@resource_!operation
          * (added because eIAM doesn't support the characters '%' and '#' in its role names)
-         * */
+         *
+         */
         EIAM(':', '!');
 
         static final char RESOURCE_SEPARATOR = '@';
@@ -58,7 +64,7 @@ public class SemanticApplicationRole {
             }
 
             // no specific eIAM separators -> only standard or common separators -> standard type
-            return hasSpecificEiamSeparators ? EIAM: STANDARD;
+            return hasSpecificEiamSeparators ? EIAM : STANDARD;
         }
 
         /**
@@ -89,6 +95,16 @@ public class SemanticApplicationRole {
         }
     }
 
+    SemanticApplicationRole(String system, String tenant, String resource, String operation,
+                            StringRepresentationType stringRepresentationType) {
+        validateNoSeparatorCharacters(system, tenant, resource, operation);
+        this.system = system;
+        this.tenant = tenant;
+        this.resource = resource;
+        this.operation = operation;
+        this.representationType = stringRepresentationType;
+    }
+
     SemanticApplicationRole(String system, String tenant, String resource, String operation) {
         this(system, tenant, resource, operation, StringRepresentationType.STANDARD);
     }
@@ -106,6 +122,22 @@ public class SemanticApplicationRole {
     @Builder
     private static SemanticApplicationRole create(@NonNull String system, String tenant, @NonNull String resource, @NonNull String operation) {
         return new SemanticApplicationRole(system, tenant, resource, operation);
+    }
+
+    private static void validateNoSeparatorCharacters(String system, String tenant, String resource, String operation) {
+        validatePartNoSeparatorCharacters("system", system);
+        validatePartNoSeparatorCharacters("tenant", tenant);
+        validatePartNoSeparatorCharacters("resource", resource);
+        validatePartNoSeparatorCharacters("operation", operation);
+    }
+
+    private static void validatePartNoSeparatorCharacters(String partName, String value) {
+        if (StringRepresentationType.containsAnySeparatorCharacter(value)) {
+            throw new IllegalArgumentException(
+                    "Semantic role part '" + partName + "' has value '" + value +
+                            "' that contains a role separator character. This indicates that a full token role string " +
+                            "was used instead of decomposed role parts.");
+        }
     }
 
     /**
@@ -187,7 +219,7 @@ public class SemanticApplicationRole {
      * @return True if this role matches the given role.
      */
     boolean matches(SemanticApplicationRole roleToMatch) {
-        return  roleToMatch.sameSystem(system) &&
+        return roleToMatch.sameSystem(system) &&
                 (tenant == null || roleToMatch.sameTenantOrWildcard(tenant)) &&
                 (resource == null || roleToMatch.sameResourceOrWildcard(resource)) &&
                 (operation == null || roleToMatch.sameOperationOrWildcard(operation));
