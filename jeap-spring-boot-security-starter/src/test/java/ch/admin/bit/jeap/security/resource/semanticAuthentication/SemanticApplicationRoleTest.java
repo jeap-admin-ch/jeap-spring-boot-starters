@@ -373,23 +373,21 @@ class SemanticApplicationRoleTest {
 
     @Test
     void builder_withSeparatorInResource_throwsException() {
-        assertThrows(IllegalArgumentException.class,
-                () -> SemanticApplicationRole.builder()
-                        .system("jme")
-                        .resource("jme_@auth")
-                        .operation("read")
-                        .build());
+        var builder = SemanticApplicationRole.builder()
+                .system("jme")
+                .resource("jme_@auth")
+                .operation("read");
+        assertThrows(IllegalArgumentException.class, builder::build);
     }
 
     @Test
     void builder_withSeparatorInTenant_throwsException() {
-        assertThrows(IllegalArgumentException.class,
-                () -> SemanticApplicationRole.builder()
-                        .system("jme")
-                        .tenant("tenant%x")
-                        .resource("auth")
-                        .operation("read")
-                        .build());
+        var builder = SemanticApplicationRole.builder()
+                .system("jme")
+                .tenant("tenant%x")
+                .resource("auth")
+                .operation("read");
+        assertThrows(IllegalArgumentException.class, builder::build);
     }
 
     @Test

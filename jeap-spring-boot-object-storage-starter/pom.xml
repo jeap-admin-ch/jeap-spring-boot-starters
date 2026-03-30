@@ -33,9 +33,14 @@
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>s3</artifactId>
             <exclusions>
+                <!-- URL connection client (JDK default, no dependencies) is added as dependency -->
                 <exclusion>
                     <groupId>software.amazon.awssdk</groupId>
                     <artifactId>apache-client</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>software.amazon.awssdk</groupId>
+                    <artifactId>netty-nio-client</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
