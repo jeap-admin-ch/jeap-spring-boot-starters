@@ -6,10 +6,7 @@ import io.micrometer.core.instrument.Tags;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.actuate.health.HealthContributorRegistry;
-import org.springframework.boot.actuate.health.HealthEndpoint;
-import org.springframework.boot.actuate.health.HealthIndicator;
-import org.springframework.boot.actuate.health.Status;
+import org.springframework.boot.actuate.health.*;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -59,15 +56,22 @@ public class HealthMetricsAutoConfig {
             healthContributorRegistry.stream().forEach(namedContributor -> {
                 String name = namedContributor.getName();
                 Object contributor = namedContributor.getContributor();
-                if (contributor instanceof HealthIndicator indicator) {
-                    try {
-                        var status = indicator.health().getStatus();
-                        indicatorStatus.put(name, Status.UP.equals(status) ? 1.0 : 0.0);
-                    } catch (Exception e) {
-                        indicatorStatus.put(name, 0.0);
-                    }
+                try {
+                    indicatorStatus.put(name, isContributorUp(contributor) ? 1.0 : 0.0);
+                } catch (Exception e) {
+                    indicatorStatus.put(name, 0.0);
                 }
             });
         }
+    }
+
+    private boolean isContributorUp(Object contributor) {
+        if (contributor instanceof HealthIndicator indicator) {
+            return Status.UP.equals(indicator.health().getStatus());
+        } else if (contributor instanceof CompositeHealthContributor composite) {
+            return composite.stream().allMatch(namedMember -> isContributorUp(namedMember.getContributor()));
+        }
+        // Unknown contributor type – treat as UP to avoid false alerts
+        return true;
     }
 }
