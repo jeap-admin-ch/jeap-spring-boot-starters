@@ -8,6 +8,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [21.4.0] - 2026-04-16
 
 ### Fixed
+
 - Corrected Prometheus health metric calculation for composite/nested Spring Boot health contributors (e.g. `db`), preventing false `0.0` values.
 
 ## [21.3.0] - 2026-04-16
