@@ -34,30 +34,30 @@ public class AbstractCurrentUserControllerAuthorizationIT extends AccessTokenITB
 
         testGetCurrentUserFull(
                 """
-            {
-                "subject": "subject",
-                "name": "name",
-                "preferredUsername": "preferredUsername",
-                "familyName": "familyName",
-                "givenName": "givenName",
-                "locale": "locale",
-                "authenticationContextClassReference": "acr",
-                "authenticationMethodsReferences": [
-                    "amr1",
-                    "amr2"
-                ],
-                "adminDirUid": "adminDirUID",
-                "userExtId": "extId",
-                "userRoles": [
-                    "test2"
-                ],
-                "businessPartnerRoles": {
-                    "12345": [
-                        "roleA"
-                    ]
-                },
-                "pamsLoginLevel": "loginLevel"
-            }
+                              {
+                            "adminDirUid": "adminDirUID",
+                            "authenticationContextClassReference": "acr",
+                            "authenticationMethodsReferences": [
+                                "amr1",
+                                "amr2"
+                            ],
+                            "businessPartnerRoles": {
+                                "12345": [
+                                    "roleA"
+                                ]
+                            },
+                            "familyName": "familyName",
+                            "givenName": "givenName",
+                            "locale": "locale",
+                            "name": "name",
+                            "pamsLoginLevel": "loginLevel",
+                            "preferredUsername": "preferredUsername",
+                            "subject": "subject",
+                            "userExtId": "extId",
+                            "userRoles": [
+                                "test2"
+                            ]
+                        }
         """, false
         );
 

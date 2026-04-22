@@ -5,7 +5,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.StdIo;
 import org.junitpioneer.jupiter.StdOut;
-import org.springframework.boot.test.autoconfigure.actuate.observability.AutoConfigureObservability;
+import org.springframework.boot.micrometer.metrics.test.autoconfigure.AutoConfigureMetrics;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.io.IOException;
@@ -15,15 +15,15 @@ import java.nio.file.Path;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Slf4j
-@AutoConfigureObservability
+@AutoConfigureMetrics
 @ActiveProfiles({"aws", "rollingLogFile"})
-public class LoggingRollingFileIT extends LogIntegrationTestBase {
+class LoggingRollingFileIT extends LogIntegrationTestBase {
 
     private static final Path LOGFILE_PATH = Path.of("log.log");
 
     @Test
     @StdIo
-    void when_rollingfileIsSetInAwsProfile_then_shouldLogToFileAndStdout(StdOut stdOut) throws IOException {
+    void when_rollingFileIsSetInAwsProfile_then_shouldLogToFileAndStdout(StdOut stdOut) throws IOException {
         String logMessage = "Some message logged using cloud profile to console and file";
         log.info(logMessage);
 
@@ -38,7 +38,8 @@ public class LoggingRollingFileIT extends LogIntegrationTestBase {
     static void deleteLogFile() {
         try {
             Files.deleteIfExists(LOGFILE_PATH);
-        } catch (IOException ignored) {
+        } catch (IOException _) {
+            // Ignore
         }
     }
 }

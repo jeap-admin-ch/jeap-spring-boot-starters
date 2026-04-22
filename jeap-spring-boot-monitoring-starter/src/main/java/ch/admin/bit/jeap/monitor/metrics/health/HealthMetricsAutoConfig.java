@@ -6,11 +6,13 @@ import io.micrometer.core.instrument.Tags;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.actuate.health.HealthContributorRegistry;
-import org.springframework.boot.actuate.health.HealthEndpoint;
-import org.springframework.boot.actuate.health.HealthIndicator;
-import org.springframework.boot.actuate.health.Status;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.health.actuate.endpoint.HealthEndpoint;
+import org.springframework.boot.health.contributor.CompositeHealthContributor;
+import org.springframework.boot.health.contributor.Health;
+import org.springframework.boot.health.contributor.HealthIndicator;
+import org.springframework.boot.health.contributor.Status;
+import org.springframework.boot.health.registry.HealthContributorRegistry;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 
@@ -39,7 +41,7 @@ public class HealthMetricsAutoConfig {
 
         if (perContributorMetricsEnabled) {
             healthContributorRegistry.stream().forEach(contributor -> {
-                String name = contributor.getName();
+                String name = contributor.name();
                 Gauge.builder("health_indicator_status", indicatorStatus, m -> m.getOrDefault(name, 0.0))
                         .tags(Tags.of("component", name))
                         .register(meterRegistry);
@@ -57,17 +59,27 @@ public class HealthMetricsAutoConfig {
 
         if (perContributorMetricsEnabled) {
             healthContributorRegistry.stream().forEach(namedContributor -> {
-                String name = namedContributor.getName();
-                Object contributor = namedContributor.getContributor();
-                if (contributor instanceof HealthIndicator indicator) {
-                    try {
-                        var status = indicator.health().getStatus();
-                        indicatorStatus.put(name, Status.UP.equals(status) ? 1.0 : 0.0);
-                    } catch (Exception e) {
-                        indicatorStatus.put(name, 0.0);
-                    }
+                String name = namedContributor.name();
+                Object contributor = namedContributor.contributor();
+                try {
+                    indicatorStatus.put(name, isContributorUp(contributor) ? 1.0 : 0.0);
+                } catch (Exception _) {
+                    indicatorStatus.put(name, 0.0);
                 }
             });
         }
+    }
+
+    private boolean isContributorUp(Object contributor) {
+        if (contributor instanceof HealthIndicator indicator) {
+            Health health = indicator.health();
+            if (health != null) {
+                return Status.UP.equals(health.getStatus());
+            }
+        } else if (contributor instanceof CompositeHealthContributor composite) {
+            return composite.stream().allMatch(namedMember -> isContributorUp(namedMember.contributor()));
+        }
+        // Unknown contributor type – treat as UP to avoid false alerts
+        return true;
     }
 }

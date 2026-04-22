@@ -7,10 +7,10 @@ import io.micrometer.core.instrument.Timer;
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.actuate.health.Health;
-import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.test.autoconfigure.actuate.observability.AutoConfigureObservability;
+import org.springframework.boot.health.contributor.Health;
+import org.springframework.boot.health.contributor.HealthIndicator;
+import org.springframework.boot.micrometer.metrics.test.autoconfigure.AutoConfigureMetrics;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalManagementPort;
 import org.springframework.context.annotation.Bean;
@@ -19,7 +19,7 @@ import org.springframework.test.context.TestPropertySource;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(classes = HealthContributorPrometheusMetricsDisabledIT.TestApp.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@AutoConfigureObservability
+@AutoConfigureMetrics
 @TestPropertySource(properties = "jeap.health.metric.contributor-metrics.enabled=false")
 class HealthContributorPrometheusMetricsDisabledIT {
 
@@ -40,9 +40,10 @@ class HealthContributorPrometheusMetricsDisabledIT {
                 .then().statusCode(200)
                 .extract().asString();
 
-        assertThat(metrics).doesNotContain("health_indicator_status{component=\"db\"} 1.0");
-        assertThat(metrics).doesNotContain("health_indicator_status{component=\"ldap\"} 0.0");
-        assertThat(metrics).doesNotContain("health_indicator_status{component=\"diskSpace\"}");
+        assertThat(metrics)
+                .doesNotContain("health_indicator_status{component=\"db\"} 1.0")
+                .doesNotContain("health_indicator_status{component=\"ldap\"} 0.0")
+                .doesNotContain("health_indicator_status{component=\"diskSpace\"}");
     }
 
     @Test

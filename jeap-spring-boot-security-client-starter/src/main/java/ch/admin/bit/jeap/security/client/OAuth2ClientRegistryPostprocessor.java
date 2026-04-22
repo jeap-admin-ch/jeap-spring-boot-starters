@@ -4,7 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientProperties;
+import org.springframework.boot.security.oauth2.client.autoconfigure.OAuth2ClientProperties;
 
 import java.util.Set;
 
@@ -33,6 +33,7 @@ public class OAuth2ClientRegistryPostprocessor implements BeanPostProcessor {
 
     private static final String OPENID_SCOPE = "openid";
 
+    @Override
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
         if (bean instanceof OAuth2ClientProperties properties) {
             properties.getRegistration().forEach(this::defaultToOpenidScopeForEmptyScope);

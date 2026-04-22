@@ -5,12 +5,12 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.NonNull;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.server.ServletServerHttpRequest;
-import org.springframework.lang.NonNull;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -78,6 +78,11 @@ class ServletRequestTracer extends OncePerRequestFilter {
         String user = (String) Optional.ofNullable(request.getAttribute(ServletStoreUserFilter.USERNAME_ATTRIBUTE))
                 .filter(value -> value instanceof String)
                 .orElse(null);
+
+        Map<String, List<String>> requestHeaders = servletServerHttpRequest.getHeaders().headerNames().stream()
+                .collect(Collectors.toMap(Function.identity(),
+                        entry -> Objects.requireNonNullElse(servletServerHttpRequest.getHeaders().get(entry), List.of())));
+
         restRequestTracer.onResponseBuilder()
                 .method(method(servletServerHttpRequest))
                 .requestUri(servletServerHttpRequest.getURI().toASCIIString())
@@ -87,7 +92,7 @@ class ServletRequestTracer extends OncePerRequestFilter {
                 .statusCode(response.getStatus())
                 .remoteAddr(servletServerHttpRequest.getRemoteAddress())
                 .responseHeaders(responseHeaders)
-                .requestHeaders(servletServerHttpRequest.getHeaders())
+                .requestHeaders(requestHeaders)
                 .attributes(attributes)
                 .emit();
     }

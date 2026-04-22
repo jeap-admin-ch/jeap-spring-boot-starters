@@ -3,13 +3,12 @@ package ch.admin.bit.jeap.monitor;
 import ch.admin.bit.jeap.monitor.MonitoringConfig.ActuatorConfig;
 import ch.admin.bit.jeap.monitor.MonitoringConfig.PrometheusConfig;
 import org.springframework.boot.actuate.autoconfigure.endpoint.web.WebEndpointProperties;
-import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
-import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest.EndpointRequestMatcher;
-import org.springframework.boot.actuate.health.HealthEndpoint;
 import org.springframework.boot.actuate.info.InfoEndpoint;
-import org.springframework.boot.actuate.metrics.export.prometheus.PrometheusScrapeEndpoint;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
+import org.springframework.boot.health.actuate.endpoint.HealthEndpoint;
+import org.springframework.boot.micrometer.metrics.autoconfigure.export.prometheus.PrometheusScrapeEndpoint;
+import org.springframework.boot.security.autoconfigure.actuate.web.servlet.EndpointRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
@@ -64,7 +63,7 @@ public class ActuatorSecurity {
         @Order(Ordered.HIGHEST_PRECEDENCE + 9)
         public SecurityFilterChain actuatorSecurityFilterChain(HttpSecurity http) throws Exception {
             http.
-                    securityMatcher(org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest.toAnyEndpoint()).
+                    securityMatcher(EndpointRequest.toAnyEndpoint()).
                     authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.
                             requestMatchers(openEndpoints()).permitAll().
                             requestMatchers(securedPrometheusMatcher()).hasRole(PROMETHEUS_ROLE).
@@ -81,7 +80,7 @@ public class ActuatorSecurity {
             return http.build();
         }
 
-        private AuthenticationManager createServletActuatorAuthManager(AuthenticationManagerBuilder auth) throws Exception {
+        private AuthenticationManager createServletActuatorAuthManager(AuthenticationManagerBuilder auth) {
             auth.inMemoryAuthentication()
                     .passwordEncoder(NoUpgradeEncodingDelegatingPasswordEncoder.createInstance())
                     .withUser(prometheusConfig.getUser()).password(prometheusConfig.getPassword()).roles(PROMETHEUS_ROLE).and()
@@ -115,7 +114,7 @@ public class ActuatorSecurity {
         }
 
         private RequestMatcher toRequestMatcher(Class<?> endpoint) {
-            EndpointRequestMatcher endpointRequestMatcher = EndpointRequest.to(endpoint);
+            EndpointRequest.EndpointRequestMatcher endpointRequestMatcher = EndpointRequest.to(endpoint);
             // If admin endpoints are enabled match requests for changing log levels in addition to requests for reading log levels
             if (actuatorConfig.isEnableAdminEndpoints() && ActuatorEndpointIdUtil.isLoggersEndpoint(endpoint)) {
                 return HttpMethodFilteringRequestMatcher.filterGetAndPost(endpointRequestMatcher);

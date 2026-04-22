@@ -8,9 +8,11 @@ import ch.admin.bit.jeap.web.configuration.HttpHeaderFilterPostProcessor;
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.actuate.autoconfigure.security.servlet.ManagementWebSecurityAutoConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
+import org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration;
+import org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration;
+import org.springframework.boot.security.autoconfigure.actuate.web.servlet.ManagementWebSecurityAutoConfiguration;
+import org.springframework.boot.security.autoconfigure.web.servlet.ServletWebSecurityAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -25,9 +27,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.http.HttpHeaders.CACHE_CONTROL;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@EnableAutoConfiguration(exclude = {SecurityAutoConfiguration.class, ActuatorSecurity.class, ManagementWebSecurityAutoConfiguration.class})
+@EnableAutoConfiguration(exclude = {SecurityAutoConfiguration.class, UserDetailsServiceAutoConfiguration.class, ServletWebSecurityAutoConfiguration.class, ActuatorSecurity.class, ManagementWebSecurityAutoConfiguration.class})
 @Import({DisableJeapSecurityStarterAutoConfiguration.class, DisableJeapPermitAllSecurityConfiguration.class})
-public class AddBrowserSecurityHeadersFilterWithoutSpringSecurityTest {
+class AddBrowserSecurityHeadersFilterWithoutSpringSecurityTest {
 
     private static final String STRICT_ORIGIN_WHEN_CROSS_ORIGIN = "strict-origin-when-cross-origin";
     private static final String CONTENT_SECURITY_POLICY = "Content-Security-Policy";
@@ -167,7 +169,7 @@ public class AddBrowserSecurityHeadersFilterWithoutSpringSecurityTest {
     }
 
     @Test
-    void expect_noptapi_and_async_resources_to_have_headers_configured() {
+    void expect_notApi_and_async_resources_to_have_headers_configured() {
         get("/notapi/async-resource").then()
                 .statusCode(200)
                 .header(AbstractHeaders.REFERRER_POLICY, STRICT_ORIGIN_WHEN_CROSS_ORIGIN)

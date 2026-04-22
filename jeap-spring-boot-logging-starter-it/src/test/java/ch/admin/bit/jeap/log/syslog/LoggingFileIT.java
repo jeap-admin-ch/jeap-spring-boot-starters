@@ -5,7 +5,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.StdIo;
 import org.junitpioneer.jupiter.StdOut;
-import org.springframework.boot.test.autoconfigure.actuate.observability.AutoConfigureObservability;
+import org.springframework.boot.micrometer.metrics.test.autoconfigure.AutoConfigureMetrics;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
@@ -16,19 +16,19 @@ import java.nio.file.Path;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Slf4j
-@AutoConfigureObservability
+@AutoConfigureMetrics
 @ActiveProfiles("aws")
 @TestPropertySource(properties = {
         "spring.boot.admin.client.url=http://localhost",
         "spring.application.name=test"
 })
-public class LoggingFileIT extends LogIntegrationTestBase {
+class LoggingFileIT extends LogIntegrationTestBase {
 
     private static final Path LOGFILE_PATH = Path.of("log.log");
 
     @Test
     @StdIo
-    void when_adminUrlIsSetInAwsrofile_then_shouldLogToFileAndStdoutForSpringBootAdminLogActuator(StdOut stdOut) throws IOException {
+    void when_adminUrlIsSetInAwsProfile_then_shouldLogToFileAndStdoutForSpringBootAdminLogActuator(StdOut stdOut) throws IOException {
         String logMessage = "Some message logged using cloud profile to console and file";
         log.info(logMessage);
 
@@ -43,7 +43,8 @@ public class LoggingFileIT extends LogIntegrationTestBase {
     static void deleteLogFile() {
         try {
             Files.deleteIfExists(LOGFILE_PATH);
-        } catch (IOException ignored) {
+        } catch (IOException _) {
+            //Ignore
         }
     }
 }

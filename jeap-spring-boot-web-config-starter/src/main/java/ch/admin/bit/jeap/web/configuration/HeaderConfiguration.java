@@ -63,7 +63,7 @@ public class HeaderConfiguration {
             }
         }
 
-        // If either a prefix or a pattern are configured, one of them must haved matched above
+        // If either a prefix or a pattern are configured, one of them must have matched above
         // Otherwise default to accept, i.e. default to add security headers (secure by default)
         return !hasPatternConfigured && !hasPrefixConfigured;
     }

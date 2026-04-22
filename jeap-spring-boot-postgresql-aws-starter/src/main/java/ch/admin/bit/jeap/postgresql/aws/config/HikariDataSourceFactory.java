@@ -2,7 +2,7 @@ package ch.admin.bit.jeap.postgresql.aws.config;
 
 import com.zaxxer.hikari.HikariDataSource;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
+import org.springframework.boot.jdbc.autoconfigure.DataSourceProperties;
 import software.amazon.jdbc.ds.AwsWrapperDataSource;
 
 @Slf4j

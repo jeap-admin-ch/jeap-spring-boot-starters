@@ -2,7 +2,7 @@ package ch.admin.bit.jeap.rest.tracing;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
-import org.springframework.boot.web.client.RestClientCustomizer;
+import org.springframework.boot.restclient.RestClientCustomizer;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestClient;
 

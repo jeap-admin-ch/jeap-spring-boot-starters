@@ -34,7 +34,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.security.web.util.matcher.DispatcherTypeRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatchers;
 
@@ -118,14 +118,14 @@ public class MvcSecurityConfiguration {
                                                             JeapJwtDecoderFactory jeapJwtDecoderFactory,
                                                             Optional<JeapOauth2ResourceAuthenticationEntryPoint> jeapOauth2ResourceAuthenticationEntryPoint,
                                                             Optional<JeapOauth2ResourceAccessDeniedHandler> jeapOauth2ResourceAccessDeniedHandler,
-                                                            @Value("${server.error.path:${error.path:/error}}") String errorPath) throws Exception {
+                                                            @Value("${server.error.path:${error.path:/error}}") String errorPath) {
 
         //All requests must be authenticated except internal error dispatches to the error page
         http.authorizeHttpRequests(authorizeHttpRequests ->
                 authorizeHttpRequests.
                         requestMatchers(
                                 RequestMatchers.allOf(
-                                        AntPathRequestMatcher.antMatcher(HttpMethod.GET, errorPath),
+                                        PathPatternRequestMatcher.pathPattern(HttpMethod.GET, errorPath),
                                         new DispatcherTypeRequestMatcher(DispatcherType.ERROR))
                         ).permitAll().
                         anyRequest().fullyAuthenticated()

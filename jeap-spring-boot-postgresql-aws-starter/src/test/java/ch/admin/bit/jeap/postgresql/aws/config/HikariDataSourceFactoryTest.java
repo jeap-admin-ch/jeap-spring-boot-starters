@@ -2,9 +2,7 @@ package ch.admin.bit.jeap.postgresql.aws.config;
 
 import com.zaxxer.hikari.HikariDataSource;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
-import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
+import org.springframework.boot.jdbc.autoconfigure.DataSourceProperties;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;

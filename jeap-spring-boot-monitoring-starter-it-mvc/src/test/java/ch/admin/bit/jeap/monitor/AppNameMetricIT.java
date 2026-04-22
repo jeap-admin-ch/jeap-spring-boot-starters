@@ -3,14 +3,14 @@ package ch.admin.bit.jeap.monitor;
 import ch.admin.bit.jeap.monitor.metrics.log.MetricsTestApp;
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.autoconfigure.actuate.observability.AutoConfigureObservability;
+import org.springframework.boot.micrometer.metrics.test.autoconfigure.AutoConfigureMetrics;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalManagementPort;
 
 import static org.hamcrest.Matchers.containsString;
 
 @SpringBootTest(classes = MetricsTestApp.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@AutoConfigureObservability
+@AutoConfigureMetrics
 class AppNameMetricIT {
 
     @LocalManagementPort

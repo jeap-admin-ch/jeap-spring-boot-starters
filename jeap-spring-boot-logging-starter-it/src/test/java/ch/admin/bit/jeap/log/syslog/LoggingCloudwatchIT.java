@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @Slf4j
 @TestPropertySource(properties = "jeap.logging.platform=cloudwatch")
-public class LoggingCloudwatchIT extends LogIntegrationTestBase {
+class LoggingCloudwatchIT extends LogIntegrationTestBase {
 
     @Test
     @StdIo

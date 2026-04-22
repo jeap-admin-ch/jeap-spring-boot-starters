@@ -1,7 +1,7 @@
 package ch.admin.bit.jeap.security.resource.introspection;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.boot.restclient.RestTemplateBuilder;
 import org.springframework.http.client.support.BasicAuthenticationInterceptor;
 import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
 import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;

@@ -14,7 +14,7 @@ import static org.springframework.http.HttpHeaders.CACHE_CONTROL;
         properties = {
                 "jeap.security.oauth2.resourceserver.authorization-server.issuer=http://issuer",
                 "spring.application.name=test"})
-public class AddBrowserSecurityHeadersFilterWithSpringSecurityTest {
+class AddBrowserSecurityHeadersFilterWithSpringSecurityTest {
 
     private static final String CONTENT_SECURITY_POLICY = "Content-Security-Policy";
     private static final String CSP_VALUE =

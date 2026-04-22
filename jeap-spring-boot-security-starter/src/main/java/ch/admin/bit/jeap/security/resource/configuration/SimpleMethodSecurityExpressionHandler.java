@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Delegate;
 import org.aopalliance.intercept.MethodInvocation;
+import org.jspecify.annotations.Nullable;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.security.access.expression.SecurityExpressionRoot;
@@ -41,7 +42,7 @@ public class SimpleMethodSecurityExpressionHandler extends DefaultMethodSecurity
     }
 
     @Override
-    public EvaluationContext createEvaluationContext(Supplier<Authentication> authentication, MethodInvocation mi) {
+    public EvaluationContext createEvaluationContext(Supplier<? extends @Nullable Authentication> authentication, MethodInvocation mi) {
         StandardEvaluationContext context = (StandardEvaluationContext) super.createEvaluationContext(authentication, mi);
         //Only use the extended functionality for our tokens, do default otherwise
         if (authentication.get() instanceof JeapAuthenticationToken jeapAuthenticationToken) {

@@ -1,9 +1,9 @@
 package ch.admin.bit.jeap.security.restclient;
 
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NonNull;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.client.*;
-import org.springframework.lang.NonNull;
 import org.springframework.security.oauth2.client.OAuth2AuthorizeRequest;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
@@ -25,7 +25,7 @@ public class OAuth2ClientCredentialsRestClientInitializer implements ClientHttpR
 
     @Override
     public void initialize(@NonNull ClientHttpRequest request) {
-        if (preferTokenFromIncomingRequest && request.getHeaders().containsKey(HttpHeaders.AUTHORIZATION)) {
+        if (preferTokenFromIncomingRequest && request.getHeaders().containsHeader(HttpHeaders.AUTHORIZATION)) {
             log.trace("The configuration preferTokenFromIncomingRequest is true: reusing the token from incoming request...");
         } else {
             final String clientRegistrationId = this.clientRegistration.getRegistrationId();

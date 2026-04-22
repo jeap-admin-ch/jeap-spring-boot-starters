@@ -2,8 +2,8 @@ package ch.admin.bit.jeap.swagger.webmvc.it;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -12,11 +12,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(classes = TestConfiguration.class, properties = {"jeap.swagger.status=OPEN"})
 @AutoConfigureMockMvc
 class OpenIT {
-    private final static String SWAGGER_REDIRECT_URL = "/swagger-ui.html";
-    private final static String SWAGGER_UI_URL = "/swagger-ui/index.html";
-    private final static String SWAGGER_CONFIG_URL = "/api-docs/swagger-config";
-    private final static String OPEN_API_SPEC_URL = "/api-docs/test";
-    private final static String OAUTH_REDIRECT_URL = "http://localhost/swagger-ui/oauth2-redirect.html";
+    private static final String SWAGGER_REDIRECT_URL = "/swagger-ui.html";
+    private static final String SWAGGER_UI_URL = "/swagger-ui/index.html";
+    private static final String SWAGGER_CONFIG_URL = "/api-docs/swagger-config";
+    private static final String OPEN_API_SPEC_URL = "/api-docs/test";
+    private static final String OAUTH_REDIRECT_URL = "http://localhost/swagger-ui/oauth2-redirect.html";
 
     @Autowired
     private MockMvc mockMvc;

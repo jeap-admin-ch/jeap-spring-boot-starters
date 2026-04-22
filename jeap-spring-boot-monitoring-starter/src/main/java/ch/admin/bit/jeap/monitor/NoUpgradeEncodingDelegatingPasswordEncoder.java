@@ -1,5 +1,6 @@
 package ch.admin.bit.jeap.monitor;
 
+import org.jspecify.annotations.NonNull;
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.DelegatingPasswordEncoder;
@@ -27,7 +28,7 @@ public class NoUpgradeEncodingDelegatingPasswordEncoder extends DelegatingPasswo
     }
 
     @Override
-    public boolean upgradeEncoding(String prefixEncodedPassword) {
+    public boolean upgradeEncodingNonNull(@NonNull String prefixEncodedPassword) {
         return false;
     }
 

@@ -7,14 +7,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.actuate.observability.AutoConfigureObservability;
+import org.springframework.boot.micrometer.metrics.test.autoconfigure.AutoConfigureMetrics;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.context.refresh.ContextRefresher;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
-@AutoConfigureObservability
+@AutoConfigureMetrics
 @Slf4j
 @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
 class LoggingMetricsContextRefreshAutoConfigTest {

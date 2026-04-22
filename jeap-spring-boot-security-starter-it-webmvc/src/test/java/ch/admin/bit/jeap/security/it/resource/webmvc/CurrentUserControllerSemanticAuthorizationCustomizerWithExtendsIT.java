@@ -29,26 +29,26 @@ class CurrentUserControllerSemanticAuthorizationCustomizerWithExtendsIT extends 
                                 {
                                     "foo": "foo",
                                     "bar": "bar",
-                                    "subject": "subject",
-                                    "name": "name",
-                                    "preferredUsername": "preferredUsername",
-                                    "familyName": "familyName",
-                                    "givenName": "givenName",
-                                    "locale": "locale",
                                     "authenticationContextClassReference": "acr",
                                     "authenticationMethodsReferences": [
                                         "amr1",
                                         "amr2"
                                     ],
-                                    "userExtId": "extId",
-                                    "userRoles": [
-                                        "test2"
-                                    ],
                                     "businessPartnerRoles": {
                                         "12345": [
                                             "roleA"
                                         ]
-                                    }
+                                    },
+                                    "familyName": "familyName",
+                                    "givenName": "givenName",
+                                    "locale": "locale",
+                                    "name": "name",
+                                    "preferredUsername": "preferredUsername",
+                                    "subject": "subject",
+                                    "userExtId": "extId",
+                                    "userRoles": [
+                                        "test2"
+                                    ]
                                 }
                        """, true
        );

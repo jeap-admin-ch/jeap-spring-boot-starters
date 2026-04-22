@@ -11,16 +11,10 @@ import ch.admin.bit.jeap.security.test.resource.JeapAuthenticationTestTokenBuild
 import ch.admin.bit.jeap.security.test.resource.extension.WithAuthentication;
 import com.github.tomakehurst.wiremock.matching.StringValuePattern;
 import com.nimbusds.jwt.JWT;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -39,10 +33,9 @@ import static ch.admin.bit.jeap.security.it.resource.OAuth2TestGateway.RestClien
 import static com.github.tomakehurst.wiremock.client.WireMock.matching;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.when;
 
 @ActiveProfiles("client")
-@ExtendWith(BearerTokenTestExtension.class)
+@ExtendWith({MockitoExtension.class, BearerTokenTestExtension.class})
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class OAuth2RestClientWebMvcIT {
 
@@ -58,12 +51,6 @@ class OAuth2RestClientWebMvcIT {
 
     @Mock
     private ServletRequestAttributes attrs;
-    @Mock
-    private HttpServletRequest servletRequest;
-    @Mock
-    private HttpServletResponse servletResponse;
-    @Mock
-    private HttpSession httpSession;
 
     private static String bearerTokenUrl;
 
@@ -85,9 +72,6 @@ class OAuth2RestClientWebMvcIT {
     @BeforeEach
     void setup() {
         oauth2MockServer.reset();
-        when(attrs.getRequest()).thenReturn(servletRequest);
-        when(servletRequest.getSession()).thenReturn(httpSession);
-        when(attrs.getResponse()).thenReturn(servletResponse);
         RequestContextHolder.setRequestAttributes(attrs);
     }
 
@@ -262,6 +246,7 @@ class OAuth2RestClientWebMvcIT {
     }
 
     // method appears to be unused but is required for authentication factory.
+    @SuppressWarnings("java:S1144")
     private JeapAuthenticationToken defaultAuthentication() {
         return JeapAuthenticationTestTokenBuilder.create().withContext(JeapAuthenticationContext.SYS).build();
     }

@@ -3,7 +3,7 @@ package ch.admin.bit.jeap.monitor;
 import io.restassured.RestAssured;
 import io.restassured.specification.RequestSpecification;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.autoconfigure.actuate.observability.AutoConfigureObservability;
+import org.springframework.boot.micrometer.metrics.test.autoconfigure.AutoConfigureMetrics;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalManagementPort;
 
@@ -12,7 +12,7 @@ import org.springframework.boot.test.web.server.LocalManagementPort;
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
         properties = "management.endpoint.beans.enabled=true"
 )
-@AutoConfigureObservability
+@AutoConfigureMetrics
 class ActuatorSecurityAdditionalEndpointConfigWebmvcIT {
 
     @LocalManagementPort

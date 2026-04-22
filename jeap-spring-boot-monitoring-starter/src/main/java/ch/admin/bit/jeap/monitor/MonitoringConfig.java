@@ -1,10 +1,10 @@
 package ch.admin.bit.jeap.monitor;
 
 import lombok.Data;
-import org.springframework.boot.actuate.autoconfigure.metrics.MetricsAspectsAutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
+import org.springframework.boot.micrometer.metrics.autoconfigure.MetricsAspectsAutoConfiguration;
 import org.springframework.context.annotation.PropertySource;
 
 /**

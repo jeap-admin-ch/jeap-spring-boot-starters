@@ -33,7 +33,7 @@ public abstract class AbstractHeaders<RESPONSE> {
 
     /**
      * @param additionalContentSources If given (nullable), is added to the list of allowed frame/connect sources in the Content-Security-Policy header
-     * @param contentSecurityPolicy
+     * @param contentSecurityPolicy the policy
      * @param featurePolicy if given, then overrides the default value of the feature-policy header
      */
     protected AbstractHeaders(HttpHeaderFilterPostProcessor postProcessor, Collection<String> additionalContentSources, String contentSecurityPolicy, String featurePolicy) {
@@ -75,7 +75,7 @@ public abstract class AbstractHeaders<RESPONSE> {
     }
 
     /**
-     * Santitizes Content-Security-Policy values according to <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/Sources#sources">source-value</a>.
+     * Sanitizes Content-Security-Policy values according to <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/Sources#sources">source-value</a>.
      * <p>
      * Mostly meant to allow for URLs to be used as additionalContentSource values (i.e. Keycloak Realm), from which
      * the host part is then used as origin.

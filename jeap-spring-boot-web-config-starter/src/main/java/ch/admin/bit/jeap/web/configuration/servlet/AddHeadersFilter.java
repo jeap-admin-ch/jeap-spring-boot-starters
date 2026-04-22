@@ -6,6 +6,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -31,7 +32,7 @@ public class AddHeadersFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,@NonNull FilterChain filterChain) throws ServletException, IOException {
         try {
             addHeaders(request, response);
         } catch (Exception ex) {
@@ -60,7 +61,7 @@ public class AddHeadersFilter extends OncePerRequestFilter {
         if (pathInfo != null) {
             url.append(pathInfo);
         }
-        if (url.length() == 0) {
+        if (url.isEmpty()) {
             url.append("/");
         }
         return url.toString();

@@ -5,7 +5,7 @@ import io.restassured.specification.RequestSpecification;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.springframework.boot.test.autoconfigure.actuate.observability.AutoConfigureObservability;
+import org.springframework.boot.micrometer.metrics.test.autoconfigure.AutoConfigureMetrics;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalManagementPort;
 
@@ -16,7 +16,7 @@ import static org.hamcrest.Matchers.equalTo;
         classes = TestConfig.class,
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
 )
-@AutoConfigureObservability
+@AutoConfigureMetrics
 class ActuatorSecurityDefaultConfigWebmvcIT {
 
     @LocalManagementPort
@@ -30,7 +30,7 @@ class ActuatorSecurityDefaultConfigWebmvcIT {
         requestWithoutRoles().get("/jme-management-test/actuator/health")
                 .then().assertThat()
                 .statusCode(200)
-                .body(equalTo("{\"status\":\"UP\",\"groups\":[\"liveness\",\"readiness\"]}"));
+                .body(equalTo("{\"groups\":[\"liveness\",\"readiness\"],\"status\":\"UP\"}"));
         requestWithoutRoles().get("/jme-management-test/actuator/health/readiness")
                 .then().assertThat()
                 .statusCode(200)
