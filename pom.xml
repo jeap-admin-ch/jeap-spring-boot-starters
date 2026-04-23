@@ -32,7 +32,7 @@
     <description>Spring Boot starters that pre-configure and standardise logging, monitoring, security and other
         cross-cutting concerns for jEAP-based apps.
     </description>
-    <version>22.0.0-alpha-springboot4-SNAPSHOT</version>
+    <version>22.0.1-alpha-springboot4-SNAPSHOT</version>
 
     <parent>
         <artifactId>jeap-internal-spring-boot-parent</artifactId>

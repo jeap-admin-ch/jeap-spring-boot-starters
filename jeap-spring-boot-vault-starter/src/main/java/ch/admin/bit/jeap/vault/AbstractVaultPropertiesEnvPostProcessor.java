@@ -2,8 +2,9 @@ package ch.admin.bit.jeap.vault;
 
 import lombok.SneakyThrows;
 import org.apache.commons.logging.Log;
+import org.jspecify.annotations.NonNull;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.env.EnvironmentPostProcessor;
+import org.springframework.boot.EnvironmentPostProcessor;
 import org.springframework.boot.logging.DeferredLogFactory;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.MapPropertySource;
@@ -23,7 +24,7 @@ abstract class AbstractVaultPropertiesEnvPostProcessor implements EnvironmentPos
     }
 
     @Override
-    public void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
+    public void postProcessEnvironment(ConfigurableEnvironment environment, @NonNull SpringApplication application) {
         boolean vaultEnabled = Boolean.parseBoolean(
                 environment.getProperty("spring.cloud.vault.enabled", "true"));
         if (vaultEnabled) {
@@ -33,7 +34,7 @@ abstract class AbstractVaultPropertiesEnvPostProcessor implements EnvironmentPos
         }
     }
 
-    abstract protected void doPostProcessEnvironment(ConfigurableEnvironment environment);
+    protected abstract void doPostProcessEnvironment(ConfigurableEnvironment environment);
 
     /**
      * <p>

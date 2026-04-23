@@ -1,7 +1,8 @@
 package ch.admin.bit.jeap.starter.application;
 
+import org.jspecify.annotations.NonNull;
+import org.springframework.boot.EnvironmentPostProcessor;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.env.EnvironmentPostProcessor;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.MapPropertySource;
 
@@ -30,7 +31,7 @@ public class ReverseProxyPropertiesEnvPostProcessor implements EnvironmentPostPr
      * </pre>
      */
     @Override
-    public void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
+    public void postProcessEnvironment(ConfigurableEnvironment environment, @NonNull SpringApplication application) {
         Map<String, Object> map = Map.of(
                 "server.tomcat.use-relative-redirects", "true",
                 // jEAP applications are usually operated on a cloud platform behind a reverse proxy

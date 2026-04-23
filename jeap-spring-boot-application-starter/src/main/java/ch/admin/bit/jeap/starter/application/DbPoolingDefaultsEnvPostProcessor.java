@@ -1,7 +1,8 @@
 package ch.admin.bit.jeap.starter.application;
 
+import org.jspecify.annotations.NonNull;
+import org.springframework.boot.EnvironmentPostProcessor;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.env.EnvironmentPostProcessor;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.util.ClassUtils;
@@ -19,7 +20,7 @@ import java.util.Map;
 public class DbPoolingDefaultsEnvPostProcessor implements EnvironmentPostProcessor {
 
     @Override
-    public void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
+    public void postProcessEnvironment(@NonNull ConfigurableEnvironment environment, @NonNull SpringApplication application) {
         if (isHikariPresent()) {
             String poolNamePostfix = getPoolNamePostfix(environment);
 

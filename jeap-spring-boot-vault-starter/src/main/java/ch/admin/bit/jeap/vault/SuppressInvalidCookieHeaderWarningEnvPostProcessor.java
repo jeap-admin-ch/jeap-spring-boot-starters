@@ -1,7 +1,8 @@
 package ch.admin.bit.jeap.vault;
 
+import org.jspecify.annotations.NonNull;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.env.EnvironmentPostProcessor;
+import org.springframework.boot.EnvironmentPostProcessor;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.util.ClassUtils;
@@ -19,7 +20,7 @@ import java.util.Set;
 public class SuppressInvalidCookieHeaderWarningEnvPostProcessor implements EnvironmentPostProcessor {
 
     @Override
-    public void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
+    public void postProcessEnvironment(ConfigurableEnvironment environment, @NonNull SpringApplication application) {
         if (isVaultProfileActive(environment.getActiveProfiles()) && apacheHttpClientActiveForVault()) {
             Map<String, Object> map = Map.of(
                     "logging.level.org.apache.http.client.protocol",

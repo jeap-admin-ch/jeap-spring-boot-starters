@@ -2,8 +2,9 @@ package ch.admin.bit.jeap.monitor;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NonNull;
+import org.springframework.boot.EnvironmentPostProcessor;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.env.EnvironmentPostProcessor;
 import org.springframework.boot.env.PropertiesPropertySourceLoader;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.MapPropertySource;
@@ -27,7 +28,7 @@ class SpringBootActuatorEndpointActivator implements EnvironmentPostProcessor {
     private static final String ENABLE_ENDPOINT_BY_ID_TEMPLATE = "management.endpoint.%s.enabled";
 
     @Override
-    public void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
+    public void postProcessEnvironment(ConfigurableEnvironment environment, @NonNull SpringApplication application) {
         if (environment.getProperty(MonitoringConfig.ENABLE_ADMIN_ENDPOINTS_PROPERTY, Boolean.class, false)) {
             enableSpringBootActuatorProperties(environment);
             enableAdditionalPermittedEndpoints(environment);

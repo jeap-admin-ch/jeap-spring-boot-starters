@@ -1,7 +1,7 @@
 package ch.admin.bit.jeap.security.resource.claimsetconverter;
 
+import org.jspecify.annotations.NonNull;
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.lang.NonNull;
 import org.springframework.security.oauth2.jwt.MappedJwtClaimSetConverter;
 
 import java.util.Map;

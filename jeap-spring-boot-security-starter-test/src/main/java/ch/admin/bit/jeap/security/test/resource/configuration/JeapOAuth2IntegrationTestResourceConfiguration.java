@@ -33,7 +33,7 @@ public class JeapOAuth2IntegrationTestResourceConfiguration {
 
         @Bean
         @Order(JWKS_ENDPOINT_MOCK_SECURITY_CONFIGURATION_PRECEDENCE)
-        public SecurityFilterChain servletJwksSecurityFilterChain(HttpSecurity http) throws Exception {
+        public SecurityFilterChain servletJwksSecurityFilterChain(HttpSecurity http) {
             http.
                     securityMatchers(matchers ->
                             matchers.requestMatchers(JwksEndpointMockBase.getContextPath() + "/**")).

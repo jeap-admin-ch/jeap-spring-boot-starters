@@ -1,9 +1,9 @@
 package ch.admin.bit.jeap.security.test.client;
 
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NonNull;
 import org.springframework.http.client.ClientHttpRequest;
 import org.springframework.http.client.ClientHttpRequestInitializer;
-import org.springframework.lang.NonNull;
 
 @Slf4j
 public class OAuth2ClientAuthTokenProviderRestClientInitializer implements ClientHttpRequestInitializer {

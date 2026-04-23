@@ -2,12 +2,12 @@ package ch.admin.bit.jeap.rest.tracing;
 
 import ch.admin.bit.jeap.security.resource.token.JeapAuthenticationToken;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.NonNull;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
-import org.springframework.lang.NonNull;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -28,7 +28,7 @@ import java.util.Optional;
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @RequiredArgsConstructor
 class ServletStoreUserFilter extends OncePerRequestFilter {
-    final static String USERNAME_ATTRIBUTE = ServletStoreUserFilter.class.getCanonicalName() + ".Username";
+    static final String USERNAME_ATTRIBUTE = ServletStoreUserFilter.class.getCanonicalName() + ".Username";
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {

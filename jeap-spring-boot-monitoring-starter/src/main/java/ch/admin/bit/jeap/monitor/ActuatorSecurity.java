@@ -61,7 +61,7 @@ public class ActuatorSecurity {
 
         @Bean
         @Order(Ordered.HIGHEST_PRECEDENCE + 9)
-        public SecurityFilterChain actuatorSecurityFilterChain(HttpSecurity http) throws Exception {
+        public SecurityFilterChain actuatorSecurityFilterChain(HttpSecurity http) {
             http.
                     securityMatcher(EndpointRequest.toAnyEndpoint()).
                     authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.

@@ -19,7 +19,7 @@ public class PermitAllWebSecurityConfiguration {
         @Bean
         @Order(Ordered.HIGHEST_PRECEDENCE + 5)
         // Overrule other web security configurations, but still allow room for overriding.
-        public SecurityFilterChain servletPermitAllSecurityFilterChain(HttpSecurity http) throws Exception {
+        public SecurityFilterChain servletPermitAllSecurityFilterChain(HttpSecurity http) {
             http.
                     securityMatcher("/**").
                     csrf(csrf -> csrf.disable()).
