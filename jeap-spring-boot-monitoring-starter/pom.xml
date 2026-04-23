@@ -7,7 +7,7 @@
     <parent>
         <groupId>ch.admin.bit.jeap</groupId>
         <artifactId>jeap-spring-boot-starters</artifactId>
-        <version>22.2.0-alpha-springboot4-SNAPSHOT</version>
+        <version>22.3.0-alpha-springboot4-SNAPSHOT</version>
     </parent>
 
     <artifactId>jeap-spring-boot-monitoring-starter</artifactId>
@@ -25,17 +25,11 @@
         </dependency>
         <dependency>
             <groupId>io.micrometer</groupId>
-            <artifactId>micrometer-tracing-bridge-brave</artifactId>
+            <artifactId>micrometer-tracing-bridge-otel</artifactId>
         </dependency>
         <dependency>
-            <groupId>io.zipkin.brave</groupId>
-            <artifactId>brave-instrumentation-kafka-clients</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>io.zipkin.reporter2</groupId>
-                    <artifactId>zipkin-reporter-brave</artifactId>
-                </exclusion>
-            </exclusions>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-exporter-otlp</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -80,6 +74,17 @@
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-sdk-testing</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wiremock</groupId>
+            <artifactId>wiremock-standalone</artifactId>
+            <version>${wiremock.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
