@@ -66,14 +66,9 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
-        <!--
-             Actuator brings in OtelTracingAutoConfiguration / MicrometerTracingAutoConfiguration so integration
-             tests can exercise the actual bridge wiring (Tracer, Propagator, Slf4jEventListener → MDC) rather
-             than asserting Logback pattern rendering in isolation.
-        -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-actuator</artifactId>
+            <artifactId>spring-boot-starter-opentelemetry-test</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

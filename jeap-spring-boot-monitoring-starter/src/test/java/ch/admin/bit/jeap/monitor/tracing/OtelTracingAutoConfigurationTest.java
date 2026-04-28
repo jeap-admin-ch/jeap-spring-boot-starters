@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.test.autoconfigure.actuate.observability.AutoConfigureObservability;
+import org.springframework.boot.micrometer.tracing.test.autoconfigure.AutoConfigureTracing;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -39,9 +39,9 @@ import static org.assertj.core.api.Assertions.assertThat;
  * The test replaces the OTLP exporter with an {@link InMemorySpanExporter} so
  * no real network traffic is attempted.
  */
-// @AutoConfigureObservability activates the tracing stack in tests — without it,
-// Spring Boot installs no-op tracer/propagator beans.
-@AutoConfigureObservability
+// @AutoConfigureTracing activates the tracing stack in tests — without it, Spring Boot
+// sets management.tracing.export.enabled=false and the OTel exporter pipeline is bypassed.
+@AutoConfigureTracing
 @SpringBootTest(
         classes = OtelTracingAutoConfigurationTest.TestApp.class,
         properties = {

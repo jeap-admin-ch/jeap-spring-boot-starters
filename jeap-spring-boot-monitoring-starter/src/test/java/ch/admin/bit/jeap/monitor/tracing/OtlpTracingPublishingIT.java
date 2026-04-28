@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.test.autoconfigure.actuate.observability.AutoConfigureObservability;
+import org.springframework.boot.micrometer.tracing.test.autoconfigure.AutoConfigureTracing;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -23,12 +23,12 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMoc
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Proves that when {@code management.otlp.tracing.endpoint} is configured, finished
- * spans are actually pushed to that endpoint via OTLP/HTTP. Spring Boot creates the
+ * Proves that when {@code management.opentelemetry.tracing.export.otlp.endpoint} is configured,
+ * finished spans are actually pushed to that endpoint via OTLP/HTTP. Spring Boot creates the
  * {@code OtlpHttpSpanExporter} only when the endpoint property is set, so this IT
  * verifies the opt-in publishing path documented in {@code jeap-monitoring.properties}.
  */
-@AutoConfigureObservability
+@AutoConfigureTracing
 @SpringBootTest(
         classes = OtlpTracingPublishingIT.TestApp.class,
         properties = {
@@ -51,7 +51,7 @@ class OtlpTracingPublishingIT {
 
     @DynamicPropertySource
     static void otlpEndpoint(DynamicPropertyRegistry registry) {
-        registry.add("management.otlp.tracing.endpoint",
+        registry.add("management.opentelemetry.tracing.export.otlp.endpoint",
                 () -> OTLP_COLLECTOR.baseUrl() + TRACES_PATH);
     }
 

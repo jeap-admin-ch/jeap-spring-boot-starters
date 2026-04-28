@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.test.autoconfigure.actuate.observability.AutoConfigureObservability;
+import org.springframework.boot.micrometer.tracing.test.autoconfigure.AutoConfigureTracing;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.nio.charset.StandardCharsets;
@@ -23,7 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * End-to-end test proving that starting a span populates the SLF4J MDC with {@code traceId} / {@code spanId}, and
  * that the Logback pattern renders the tracing context.
  **/
-@AutoConfigureObservability
+@AutoConfigureTracing
 @SpringBootTest(
         classes = OtelTracingIT.TestApp.class,
         properties = {

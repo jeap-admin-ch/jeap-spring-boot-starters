@@ -6,7 +6,7 @@ import io.micrometer.tracing.propagation.Propagator;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.test.autoconfigure.actuate.observability.AutoConfigureObservability;
+import org.springframework.boot.micrometer.tracing.test.autoconfigure.AutoConfigureTracing;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.HashMap;
@@ -21,7 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * known format is accepted inbound. This keeps correlation working while
  * jEAP applications migrate from Brave/B3 to OpenTelemetry/W3C.
  */
-@AutoConfigureObservability
+@AutoConfigureTracing
 @SpringBootTest(
         classes = TracingPropagationDefaultsTest.TestApp.class,
         properties = {
