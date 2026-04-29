@@ -100,7 +100,7 @@ class OtelTracingAutoConfigurationTest {
     @Test
     void spanPopulatesMdcWithTraceIdAndSpanId() {
         Span span = tracer.nextSpan().name("mdc-test-span").start();
-        try (var ignored = tracer.withSpan(span)) {
+        try (var _ = tracer.withSpan(span)) {
             String traceId = MDC.get("traceId");
             String spanId = MDC.get("spanId");
 

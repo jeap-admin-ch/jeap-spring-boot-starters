@@ -46,17 +46,15 @@ class TracingPropagationDefaultsTest {
     void outboundInjectionEmitsBothW3cAndB3Headers() {
         Map<String, String> carrier = new HashMap<>();
         Span span = tracer.nextSpan().name("outbound").start();
-        try (var ignored = tracer.withSpan(span)) {
+        try (var _ = tracer.withSpan(span)) {
             propagator.inject(span.context(), carrier, Map::put);
         } finally {
             span.end();
         }
 
         assertThat(carrier)
-                .as("W3C traceparent must be emitted")
-                .containsKey("traceparent");
-        assertThat(carrier)
-                .as("B3 single-header must be emitted")
+                .as("W3C traceparent and B3 single-header must be emitted")
+                .containsKey("traceparent")
                 .containsKey("b3");
     }
 

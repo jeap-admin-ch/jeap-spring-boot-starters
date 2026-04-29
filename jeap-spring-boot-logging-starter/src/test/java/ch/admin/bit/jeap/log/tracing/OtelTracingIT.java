@@ -53,7 +53,7 @@ class OtelTracingIT {
     @Test
     void startingASpan_populatesMdcAndLogbackPatternRendersIt() {
         Span span = tracer.nextSpan().name("mdc-bridge-test").start();
-        try (var ignored = tracer.withSpan(span)) {
+        try (var _ = tracer.withSpan(span)) {
             String traceId = MDC.get("traceId");
             String spanId = MDC.get("spanId");
 
@@ -84,6 +84,7 @@ class OtelTracingIT {
     }
 
     @Test
+    @SuppressWarnings("java:S125")
     void patternRendersEmptyPlaceholdersOutsideAnySpan() {
         // Outside a span, Micrometer Tracing leaves MDC unpopulated;
         // the pattern's ':-' default must render an empty slot, not 'null'.

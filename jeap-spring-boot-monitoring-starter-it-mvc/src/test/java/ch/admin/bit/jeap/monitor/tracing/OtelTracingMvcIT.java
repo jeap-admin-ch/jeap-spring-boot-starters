@@ -94,7 +94,7 @@ class OtelTracingMvcIT {
         // span without authenticating.
         @Bean
         @Order(Ordered.HIGHEST_PRECEDENCE)
-        SecurityFilterChain helloSecurityFilterChain(HttpSecurity http) throws Exception {
+        SecurityFilterChain helloSecurityFilterChain(HttpSecurity http) {
             http.securityMatcher("/hello")
                 .authorizeHttpRequests(r -> r.anyRequest().permitAll())
                 .csrf(AbstractHttpConfigurer::disable);
