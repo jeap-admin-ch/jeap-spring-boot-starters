@@ -1,6 +1,6 @@
 publiccodeYmlVersion: 0.4.0
 name: jeap-spring-boot-starters
-softwareVersion: 22.2.0-alpha-springboot4
+softwareVersion: 22.3.0-alpha-springboot4
 releaseDate: 2026-04-29
 applicationSuite: jEAP
 url: "https://github.com/jeap-admin-ch/jeap-spring-boot-starters.git"
