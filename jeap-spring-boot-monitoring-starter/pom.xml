@@ -7,7 +7,7 @@
     <parent>
         <groupId>ch.admin.bit.jeap</groupId>
         <artifactId>jeap-spring-boot-starters</artifactId>
-        <version>22.4.0-alpha-springboot4-SNAPSHOT</version>
+        <version>22.5.0-alpha-springboot4-SNAPSHOT</version>
     </parent>
 
     <artifactId>jeap-spring-boot-monitoring-starter</artifactId>

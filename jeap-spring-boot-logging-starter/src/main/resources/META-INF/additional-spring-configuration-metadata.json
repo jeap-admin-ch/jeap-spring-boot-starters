@@ -1,0 +1,10 @@
+{
+  "properties": [
+    {
+      "name": "jeap.logging.rest.unhandled-exception-logging.enabled",
+      "type": "java.lang.Boolean",
+      "defaultValue": false,
+      "description": "Whether to register a servlet filter that logs exceptions escaping Spring's MVC handling at ERROR level while the trace context (traceId, spanId) is still present in the MDC."
+    }
+  ]
+}
