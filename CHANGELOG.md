@@ -6,65 +6,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 > - Spring Boot 3 maintenance (bug fixes, patches, and regular updates) continues on branch `release/springboot3`.
-> - The Spring Boot 4 upgrade process happens on the `master` branch, with the goal of releasing Spring Boot 4 compatible versions of all jeap components in a single major release.
 
-## [22.6.0-alpha-springboot4] - 2026-05-19
+## [23.0.0] - 2026-05-26
 
 ### Changed
 
-- Update parent from 7.0.7-alpha-springboot4 to 7.0.9-alpha-springboot4
-
-## [22.5.1-alpha-springboot4] - 2026-05-15
-
-### Added
+- Official release with spring boot 4
+- Update parent from 6.0.3 to 7.0.0 (Spring Boot 4)
 - Custom subclass of `ShallowEtagFilter` called `SseAwareEtagHeaderFilter`
   It ignores requests with Accept: text/event-stream as the `ShallowEtagFilter` was waiting for the response to complete
   which never happens as it is a stream.
-
-### Changed
 - Set `SseAwareEtagHeaderFilter` as default bean for the ShallowEtagFilter. 
-
-## [22.5.0-alpha-springboot4] - 2026-05-07
-
-### Added
 - Added opt-in `UnhandledExceptionLoggingFilter` in `jeap-spring-boot-logging-starter` that logs exceptions
   escaping Spring's MVC handling while the trace context (`traceId`, `spanId`) is still present.
   Enable via `jeap.logging.rest.unhandled-exception-logging.enabled=true`.
-
-## [22.4.0-alpha-springboot4] - 2026-05-06
-
-### Changed
-
-- Update parent from 7.0.6-alpha-springboot4 to 7.0.7-alpha-springboot4
-
-## [22.3.1-alpha-springboot4] - 2026-04-29
-- fixed version in publiccode.html
-
-## [22.3.0-alpha-springboot4] - 2026-04-28
-
-### Changed
 - Switched tracing backend from Brave/Zipkin to OpenTelemetry (Micrometer Tracing OTel bridge + OTLP span exporter) in
   `jeap-spring-boot-monitoring-starter` and `jeap-spring-boot-logging-starter`. Metrics (Micrometer + Prometheus) and
   logs (SLF4J + Logback) are unchanged.
 - Configured migration-friendly propagation defaults: `management.tracing.propagation.produce=W3C,B3` and `consume=W3C,B3,B3_MULTI`.
-
-## [22.2.0-alpha-springboot4] - 2026-04-24
-
-### Changed
-
-- Update parent from 7.0.5-alpha-springboot4 to 7.0.6-alpha-springboot4
-
-## [22.1.0-alpha-springboot4] - 2026-04-23
-
-### Changed
-
-- Update parent from 7.0.4-alpha-springboot4 to 7.0.5-alpha-springboot4
-
-## [22.0.0] - 2026-xx-xx
-
-### Changed
-
-- Update parent from 6.0.3 to 7.0.0 (Spring Boot 4)
 
 ## [21.3.0] - 2026-04-16
 
