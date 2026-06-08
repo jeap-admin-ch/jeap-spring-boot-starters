@@ -1,14 +1,13 @@
 package ch.admin.bit.jeap.log.aws;
 
 import ch.qos.logback.classic.spi.ILoggingEvent;
-import com.fasterxml.jackson.core.JsonGenerator;
 import net.logstash.logback.composite.AbstractJsonProvider;
 import net.logstash.logback.composite.JsonWritingUtils;
 import org.springframework.boot.json.JsonParser;
 import org.springframework.boot.json.JsonParserFactory;
 import org.springframework.web.client.RestClient;
+import tools.jackson.core.JsonGenerator;
 
-import java.io.IOException;
 import java.util.Map;
 
 public class EcsContainerMetadataAttributeProvider extends AbstractJsonProvider<ILoggingEvent>  {
@@ -55,7 +54,7 @@ public class EcsContainerMetadataAttributeProvider extends AbstractJsonProvider<
     }
 
     @Override
-    public void writeTo(JsonGenerator generator, ILoggingEvent iLoggingEvent) throws IOException {
+    public void writeTo(JsonGenerator generator, ILoggingEvent iLoggingEvent) {
         JsonWritingUtils.writeStringField(generator, TASK_DEFINITION_VERSION, taskDefinitionVersion);
     }
 

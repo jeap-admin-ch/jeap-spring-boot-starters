@@ -7,6 +7,12 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 > - Spring Boot 3 maintenance (bug fixes, patches, and regular updates) continues on branch `release/springboot3`.
 
+## [23.3.0] - 2026-06-08
+
+### Changed
+
+- Update logstash-logback-encoder from 8.1 to 9.0 (migrates to Jackson 3)
+
 ## [23.2.0] - 2026-06-04
 
 ### Changed
