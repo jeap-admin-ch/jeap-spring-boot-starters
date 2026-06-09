@@ -14,10 +14,6 @@
     <name>${project.groupId}:${project.artifactId}</name>
     <description>jeap starter for Spring Boot applications with distributed logging.</description>
 
-    <properties>
-        <commons.version>3.10</commons.version>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>ch.qos.logback</groupId>

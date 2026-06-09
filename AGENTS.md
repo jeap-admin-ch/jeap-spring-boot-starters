@@ -1,10 +1,10 @@
 # AGENTS.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to coding agents when working with code in this repository.
 
 ## Project Overview
 
-jEAP Spring Boot Starters is a collection of ~21 Spring Boot auto-configuration modules providing standardized cross-cutting concerns (logging, monitoring, security, OAuth2, Vault, S3, feature flags, etc.) for jEAP-based applications. Maintained by the Federal Office of Information Technology, Systems and Telecommunication (FOITT). Released as open source (Apache 2.0) as part of the jEAP platform.
+jEAP Spring Boot Starters is a collection of Spring Boot auto-configuration modules providing standardized cross-cutting concerns (logging, monitoring, security, OAuth2, Vault, S3, feature flags, etc.) for jEAP-based applications. Maintained by the Federal Office of Information Technology, Systems and Telecommunication (FOITT). Released as open source (Apache 2.0) as part of the jEAP platform.
 
 The Maven parent is `ch.admin.bit.jeap:jeap-internal-spring-boot-parent`, which pins Spring Boot and dependency versions; this repo does not declare them directly.
 
