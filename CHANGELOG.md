@@ -12,6 +12,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Changed
 
 - Update logstash-logback-encoder from 8.1 to 9.0 (migrates to Jackson 3)
+- Update aws-advanced-jdbc-wrapper version to 4.0.1
 
 ## [23.2.0] - 2026-06-04
 
