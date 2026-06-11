@@ -2,10 +2,17 @@ package ch.admin.bit.jeap.web.configuration.servlet;
 
 import ch.admin.bit.jeap.web.configuration.HeaderConfiguration;
 import ch.admin.bit.jeap.web.configuration.HttpHeaderFilterPostProcessor;
+import jakarta.servlet.DispatcherType;
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.Ordered;
 import org.springframework.web.filter.ShallowEtagHeaderFilter;
 
 import java.util.Optional;
@@ -34,5 +41,37 @@ public class ServletWebConfiguration {
     @ConditionalOnProperty(name = "jeap.web.headers.etag", matchIfMissing = true)
     ShallowEtagHeaderFilter shallowEtagHeaderFilter() {
         return new SseAwareEtagHeaderFilter();
+    }
+
+    /**
+     * Disables ETag content-caching for {@code FORWARD} and {@code INCLUDE} dispatches.
+     * <p>
+     * To compute an ETag, {@link ShallowEtagHeaderFilter} wraps the response in a buffering wrapper and only copies the
+     * buffered body to the real response after the filter chain unwinds. This is incompatible with a {@code forward:} to
+     * a static resource (e.g. Spring Boot's welcome-page handler forwarding {@code /} to {@code index.html}): the Servlet
+     * container commits and finalizes the response when {@code RequestDispatcher.forward()} completes, i.e. before control
+     * returns to the buffering filter. The filter then finds the response already committed, skips the ETag, and can no
+     * longer flush the buffered body — the client receives an empty page.
+     * <p>
+     * This filter runs at the start of each forward/include dispatch (before the target handler writes) and calls
+     * {@link ShallowEtagHeaderFilter#disableContentCaching(ServletRequest)}. That makes the response wrapper return the
+     * raw output stream so the forwarded handler writes straight through, and makes the outer ETag filter skip itself,
+     * avoiding a double write. Only forwarded/included responses are affected; they are served without an ETag, while all
+     * regular (non-forwarded) requests keep their ETag unchanged. Trading the marginal ETag value on a forward for a
+     * correct response body is the intended tradeoff.
+     */
+    @Bean
+    @ConditionalOnProperty(name = "jeap.web.headers.etag", matchIfMissing = true)
+    FilterRegistrationBean<Filter> disableEtagCachingOnForwardFilter() {
+        FilterRegistrationBean<Filter> registration = new FilterRegistrationBean<>(
+                (ServletRequest request, ServletResponse response, FilterChain chain) -> {
+                    ShallowEtagHeaderFilter.disableContentCaching(request);
+                    chain.doFilter(request, response);
+                });
+        registration.setName("disableEtagCachingOnForwardFilter");
+        registration.setDispatcherTypes(DispatcherType.FORWARD, DispatcherType.INCLUDE);
+        registration.addUrlPatterns("/*");
+        registration.setOrder(Ordered.HIGHEST_PRECEDENCE); // run first within the forward dispatch
+        return registration;
     }
 }

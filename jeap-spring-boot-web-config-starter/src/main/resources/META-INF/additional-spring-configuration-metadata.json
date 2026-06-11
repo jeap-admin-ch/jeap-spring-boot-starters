@@ -1,0 +1,10 @@
+{
+  "properties": [
+    {
+      "name": "jeap.web.headers.etag",
+      "type": "java.lang.Boolean",
+      "description": "Whether to register the ShallowEtagHeaderFilter that adds an ETag header to responses. The ETag header avoids sending a response body when it is already cached on the client, saving bandwidth but not server-side processing time. Set to false to disable the filter.",
+      "defaultValue": true
+    }
+  ]
+}
