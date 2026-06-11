@@ -11,6 +11,24 @@
       "description": "Enable or disable the export of individual health contributor statuses as separate metrics.",
       "defaultValue": false,
       "type": "java.lang.Boolean"
+    },
+    {
+      "name": "jeap.monitor.metrics.truststore.enabled",
+      "description": "Whether to export trust store metrics. Only effective when the javax.net.ssl.trustStore properties are set.",
+      "defaultValue": true,
+      "type": "java.lang.Boolean"
+    },
+    {
+      "name": "jeap.monitor.metrics.rest.maximum-allowable-jeap-relation-metrics",
+      "description": "Upper bound for the number of distinct jEAP relation REST metrics that are exported. Once the limit is reached, further metrics are dropped to avoid metric cardinality explosion.",
+      "defaultValue": 10,
+      "type": "java.lang.Integer"
+    },
+    {
+      "name": "jeap.monitor.metrics.security.maximum-allowable-metrics",
+      "description": "Upper bound for the number of distinct REST security metrics that are exported. Once the limit is reached, further metrics are dropped to avoid metric cardinality explosion.",
+      "defaultValue": 1000,
+      "type": "java.lang.Integer"
     }
   ]
 }

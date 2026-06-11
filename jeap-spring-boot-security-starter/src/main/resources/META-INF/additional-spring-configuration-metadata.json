@@ -1,0 +1,34 @@
+{
+  "properties": [
+    {
+      "name": "jeap.security.oauth2.current-user-endpoint.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Whether to expose the jEAP current-user endpoint, which returns information about the currently authenticated user.",
+      "defaultValue": false
+    },
+    {
+      "name": "jeap.security.oauth2.resourceserver.log.authentication-failure.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Whether to register an authentication entry point that logs failed authentication attempts (invalid or missing bearer tokens) on the resource server.",
+      "defaultValue": false
+    },
+    {
+      "name": "jeap.security.oauth2.resourceserver.log.access-denied.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Whether to register an access denied handler that logs authorization failures (authenticated but not permitted) on the resource server.",
+      "defaultValue": false
+    },
+    {
+      "name": "jeap.security.oauth2.resourceserver.log.access-denied.debug",
+      "type": "java.lang.Boolean",
+      "description": "Whether the access denied handler logs additional debug information about the denied request. Only effective when jeap.security.oauth2.resourceserver.log.access-denied.enabled is true.",
+      "defaultValue": false
+    },
+    {
+      "name": "jeap.security.oauth2.resourceserver.log-user-access",
+      "type": "java.lang.Boolean",
+      "description": "Whether to register a servlet filter that logs each authenticated user's access to the resource server.",
+      "defaultValue": false
+    }
+  ]
+}

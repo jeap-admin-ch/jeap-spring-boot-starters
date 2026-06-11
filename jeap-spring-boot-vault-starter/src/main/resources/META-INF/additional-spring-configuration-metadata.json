@@ -1,0 +1,19 @@
+{
+  "properties": [
+    {
+      "name": "jeap.vault.kubernetes.role",
+      "type": "java.lang.String",
+      "description": "The Vault role used to authenticate against Vault with the Kubernetes authentication method."
+    },
+    {
+      "name": "jeap.vault.kubernetes.kubernetes-path",
+      "type": "java.lang.String",
+      "description": "The mount path of the Kubernetes authentication backend in Vault."
+    },
+    {
+      "name": "jeap.vault.kv.backend",
+      "type": "java.lang.String",
+      "description": "The mount path of the key-value (KV) secrets backend in Vault used to read secrets from."
+    }
+  ]
+}

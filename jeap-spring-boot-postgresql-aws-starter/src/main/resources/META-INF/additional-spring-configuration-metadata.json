@@ -17,6 +17,11 @@
       "description": "Flag to enable the AWS advanced Jdbc wrapper.",
       "defaultValue": true,
       "type": "java.lang.Boolean"
+    },
+    {
+      "name": "jeap.datasource.aws.database-name",
+      "description": "Name of the database the read-only replica datasource connects to. If empty, the database name is taken from the primary datasource configuration.",
+      "type": "java.lang.String"
     }
   ],
   "hints": [
