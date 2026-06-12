@@ -10,6 +10,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Changed
 
 - Update parent from 8.1.0 to 8.2.0
+- Remove logstash version because it is managed by the internal parent now
 
 ## [23.4.0] - 2026-06-11
 

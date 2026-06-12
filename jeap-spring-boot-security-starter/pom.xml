@@ -36,7 +36,6 @@
         <dependency>
             <groupId>net.logstash.logback</groupId>
             <artifactId>logstash-logback-encoder</artifactId>
-            <version>${logstash.version}</version>
             <exclusions>
                 <!-- Forcing logstash to use the spring boot managed jackson databind version -->
                 <exclusion>

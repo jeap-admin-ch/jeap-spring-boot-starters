@@ -67,7 +67,6 @@
     <properties>
         <aws-advanced-jdbc-wrapper.version>4.0.1</aws-advanced-jdbc-wrapper.version>
         <springdoc-openapi.version>3.0.3</springdoc-openapi.version>
-        <logstash.version>9.0</logstash.version>
         <wiremock.version>3.13.2</wiremock.version>
         <junit-pioneer.version>2.3.0</junit-pioneer.version>
         <maven.javadoc.skip>false</maven.javadoc.skip>
