@@ -10,39 +10,31 @@
         <version>23.5.1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>jeap-spring-boot-rest-request-tracing</artifactId>
+    <artifactId>jeap-spring-boot-nonwebapp-it</artifactId>
     <name>${project.groupId}:${project.artifactId}</name>
-    <description>REST request tracing</description>
+    <description>Integration tests verifying that the logging and monitoring starters also work in
+        non-web (non-servlet) Spring Boot applications, i.e. with a reduced classpath that does not
+        contain the servlet API (jakarta.servlet).</description>
 
     <dependencies>
+        <!-- Starters under test, depended on exactly like a real non-web application would: no web
+             starter is added, so jakarta.servlet-api (which the starters declare as 'provided' and
+             is therefore not transitive) is genuinely absent from the classpath. -->
         <dependency>
             <groupId>ch.admin.bit.jeap</groupId>
-            <artifactId>jeap-spring-boot-security-starter</artifactId>
+            <artifactId>jeap-spring-boot-logging-starter</artifactId>
             <version>${project.version}</version>
-            <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>jakarta.servlet</groupId>
-            <artifactId>jakarta.servlet-api</artifactId>
-            <scope>provided</scope>
+            <groupId>ch.admin.bit.jeap</groupId>
+            <artifactId>jeap-spring-boot-monitoring-starter</artifactId>
+            <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot</artifactId>
-        </dependency>
-         <dependency>
-             <groupId>org.springframework.boot</groupId>
-             <artifactId>spring-boot-starter-restclient</artifactId>
-         </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-configuration-processor</artifactId>
-            <optional>true</optional>
         </dependency>
     </dependencies>
 </project>

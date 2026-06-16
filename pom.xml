@@ -32,7 +32,7 @@
     <description>Spring Boot starters that pre-configure and standardise logging, monitoring, security and other
         cross-cutting concerns for jEAP-based apps.
     </description>
-    <version>23.5.0-SNAPSHOT</version>
+    <version>23.5.1-SNAPSHOT</version>
 
     <parent>
         <artifactId>jeap-internal-spring-boot-parent</artifactId>
@@ -54,6 +54,7 @@
         <module>jeap-spring-boot-web-config-starter-it-servlet</module>
         <module>jeap-spring-boot-monitoring-starter</module>
         <module>jeap-spring-boot-monitoring-starter-it-mvc</module>
+        <module>jeap-spring-boot-nonwebapp-it</module>
         <module>jeap-spring-boot-object-storage-starter</module>
         <module>jeap-spring-boot-swagger</module>
         <module>jeap-spring-boot-swagger-starter</module>
