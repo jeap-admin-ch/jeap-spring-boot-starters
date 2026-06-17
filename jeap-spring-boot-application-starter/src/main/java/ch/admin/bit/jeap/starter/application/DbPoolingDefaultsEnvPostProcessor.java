@@ -34,10 +34,9 @@ public class DbPoolingDefaultsEnvPostProcessor implements EnvironmentPostProcess
         }
     }
 
-    @SuppressWarnings("ConstantConditions")
     private String getPoolNamePostfix(ConfigurableEnvironment environment) {
-        String appName = environment.getProperty("spring.application.name", (String) null);
-        return appName == null ? "" : "-" + appName;
+        String appName = environment.getProperty("spring.application.name");
+        return appName != null ? "-" + appName : "";
     }
 
     private boolean isHikariPresent() {

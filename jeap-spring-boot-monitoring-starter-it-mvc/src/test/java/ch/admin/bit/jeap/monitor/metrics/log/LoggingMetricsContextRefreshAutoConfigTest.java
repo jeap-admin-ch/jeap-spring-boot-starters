@@ -58,6 +58,7 @@ class LoggingMetricsContextRefreshAutoConfigTest {
                 .isTrue();
     }
 
+    @SuppressWarnings("java:S1872")
     private boolean logbackMetricsFilterPresent() {
         LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
 

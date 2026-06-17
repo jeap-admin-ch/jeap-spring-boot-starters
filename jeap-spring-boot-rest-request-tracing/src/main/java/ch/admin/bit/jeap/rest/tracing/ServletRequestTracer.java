@@ -30,25 +30,33 @@ import java.util.stream.StreamSupport;
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @RequiredArgsConstructor
 class ServletRequestTracer extends OncePerRequestFilter {
+
     /**
      * See org.springframework.web.servlet.HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE -
      * using a String attribute name here to avoid a dependency on spring-webmvc
      */
     private static final String BEST_MATCHING_PATTERN_ATTRIBUTE =
             "org.springframework.web.servlet.HandlerMapping.bestMatchingPattern";
+
     public static final String UNKNOWN_METHOD = "UNKNOWN";
 
     private final RestRequestTracer restRequestTracer;
 
     @Override
-    protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(@NonNull HttpServletRequest request,
+                                    @NonNull HttpServletResponse response,
+                                    @NonNull FilterChain filterChain)
+            throws ServletException, IOException {
+
         boolean shouldSkipTracing = isAsyncDispatch(request);
         if (shouldSkipTracing) {
             filterChain.doFilter(request, response);
             return;
         }
+
         ZonedDateTime incomingTime = ZonedDateTime.now();
         logRequest(request);
+
         try {
             filterChain.doFilter(request, response);
         } finally {
@@ -57,9 +65,13 @@ class ServletRequestTracer extends OncePerRequestFilter {
     }
 
     private void logRequest(HttpServletRequest request) {
-        ServletServerHttpRequest servletServerHttpRequest = request instanceof ServletServerHttpRequest ?
-                (ServletServerHttpRequest) request : new ServletServerHttpRequest(request);
+        ServletServerHttpRequest servletServerHttpRequest =
+                request instanceof ServletServerHttpRequest serverHttpRequest
+                        ? serverHttpRequest
+                        : new ServletServerHttpRequest(request);
+
         String method = method(servletServerHttpRequest);
+
         restRequestTracer.onRequestBuilder()
                 .method(method)
                 .requestUri(servletServerHttpRequest.getURI().toASCIIString())
@@ -67,21 +79,43 @@ class ServletRequestTracer extends OncePerRequestFilter {
                 .emit();
     }
 
-    private void logResponse(HttpServletRequest request, HttpServletResponse response, ZonedDateTime incomingTime) {
+    private void logResponse(HttpServletRequest request,
+                             HttpServletResponse response,
+                             ZonedDateTime incomingTime) {
+
         Map<String, Object> attributes = StreamSupport
-                .stream(Spliterators.spliteratorUnknownSize(request.getAttributeNames().asIterator(), Spliterator.ORDERED), false)
+                .stream(
+                        Spliterators.spliteratorUnknownSize(
+                                request.getAttributeNames().asIterator(),
+                                Spliterator.ORDERED),
+                        false)
                 .collect(Collectors.toMap(Function.identity(), request::getAttribute));
-        Map<String, List<String>> responseHeaders = response.getHeaderNames().stream().distinct()
-                .collect(Collectors.toMap(Function.identity(), name -> new ArrayList<>(response.getHeaders(name))));
-        ServletServerHttpRequest servletServerHttpRequest = request instanceof ServletServerHttpRequest ?
-                (ServletServerHttpRequest) request : new ServletServerHttpRequest(request);
-        String user = (String) Optional.ofNullable(request.getAttribute(ServletStoreUserFilter.USERNAME_ATTRIBUTE))
-                .filter(value -> value instanceof String)
+
+        Map<String, List<String>> responseHeaders = response.getHeaderNames().stream()
+                .distinct()
+                .collect(Collectors.toMap(
+                        Function.identity(),
+                        name -> new ArrayList<>(response.getHeaders(name))));
+
+        ServletServerHttpRequest servletServerHttpRequest =
+                request instanceof ServletServerHttpRequest serverHttpRequest
+                        ? serverHttpRequest
+                        : new ServletServerHttpRequest(request);
+
+        String user = Optional.ofNullable(
+                        request.getAttribute(ServletStoreUserFilter.USERNAME_ATTRIBUTE))
+                .filter(String.class::isInstance)
+                .map(String.class::cast)
                 .orElse(null);
 
-        Map<String, List<String>> requestHeaders = servletServerHttpRequest.getHeaders().headerNames().stream()
-                .collect(Collectors.toMap(Function.identity(),
-                        entry -> Objects.requireNonNullElse(servletServerHttpRequest.getHeaders().get(entry), List.of())));
+        Map<String, List<String>> requestHeaders = servletServerHttpRequest.getHeaders()
+                .headerNames()
+                .stream()
+                .collect(Collectors.toMap(
+                        Function.identity(),
+                        entry -> Objects.requireNonNullElse(
+                                servletServerHttpRequest.getHeaders().get(entry),
+                                List.of())));
 
         restRequestTracer.onResponseBuilder()
                 .method(method(servletServerHttpRequest))
@@ -97,7 +131,10 @@ class ServletRequestTracer extends OncePerRequestFilter {
                 .emit();
     }
 
+    @SuppressWarnings("java:S2583")
     private static String method(ServletServerHttpRequest request) {
-        return request.getMethod() == null ? UNKNOWN_METHOD : request.getMethod().toString();
+        return request.getMethod() == null
+                ? UNKNOWN_METHOD
+                : request.getMethod().toString();
     }
 }

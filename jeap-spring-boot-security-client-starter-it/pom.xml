@@ -7,7 +7,7 @@
     <parent>
         <groupId>ch.admin.bit.jeap</groupId>
     	<artifactId>jeap-spring-boot-starters</artifactId>
-        <version>23.5.1-SNAPSHOT</version>
+        <version>23.5.2-SNAPSHOT</version>
     </parent>
 
     <artifactId>jeap-spring-boot-security-client-starter-it</artifactId>
@@ -33,7 +33,7 @@
                 <exclusion>
                     <!-- For the test setup here we need to be just a client -->
                     <groupId>ch.admin.bit.jeap</groupId>
-                    <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+                    <artifactId>spring-boot-starter-security-oauth2-resource-server</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>

@@ -53,6 +53,7 @@ public class LoggingMetricsContextRefreshAutoConfig {
             }
         }
 
+        @SuppressWarnings("java:S1872")
         private boolean isTurboFilterRegistered(TurboFilter filter) {
             // MetricsTurboFilter is contained in LogbackMetrics, but not a public class.
             return filter != null && filter.getClass().getSimpleName().equals("MetricsTurboFilter");
