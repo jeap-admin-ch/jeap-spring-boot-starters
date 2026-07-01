@@ -100,6 +100,13 @@ All code under `ch.admin.bit.jeap.[domain].*`:
 - **Spring Boot 4.x**: uses the `@AutoConfiguration` pattern (not legacy `spring.factories`)
 - **Java 25**: required minimum version
 
+## Docs
+
+User-facing documentation for *consuming* the starters lives in [README.md](README.md) (hub with the
+full module table) and the focused topic files under [docs/](docs/) (one topic per file). When you
+change public behaviour or a configuration property, update the matching `docs/*.md` file and the
+documentation index in the README.
+
 ## Versioning & Conventions
 
 - Semantic Versioning; all changes documented in [CHANGELOG.md](./CHANGELOG.md) (Keep a Changelog format).
