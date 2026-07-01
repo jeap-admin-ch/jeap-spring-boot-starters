@@ -77,7 +77,6 @@ jeap:
 | `jeap.datasource.aws.hostname`                                | —              | RDS endpoint host (used to build the URL when `url` unset)       |
 | `jeap.datasource.aws.port`                                    | `5432`         | RDS port                                                         |
 | `jeap.datasource.aws.database-name`                           | `{app}_db`     | Database name (inferred from app name if omitted)                |
-| `jeap.datasource.aws.enable-advanced-jdbc-wrapper`            | `true`         | Enable the AWS Advanced JDBC Wrapper                             |
 | `jeap.datasource.aws.wrapper.target-data-source-properties.*` | see below      | Properties passed to the wrapper's target datasource (camelCase) |
 | `jeap.datasource.hikari.*`                                    | see below      | HikariCP pool tuning for the primary (writer)                    |
 

@@ -19,7 +19,6 @@ class ContextConfigurationTest {
     void contextConfiguredExplicitSpringJdbcDataSourceIsIgnored() {
         contextRunner.withUserConfiguration(TestConfig.class)
                 .withPropertyValues("jeap.postgresql.aws.enabled=true")
-                .withPropertyValues("jeap.datasource.aws.enable-advanced-jdbc-wrapper=false")
                 .withPropertyValues("jeap.datasource.url=jdbc:h2:mem:readwrite;DB_CLOSE_ON_EXIT=FALSE")
                 .withPropertyValues("spring.datasource.url=jdbc:h2:mem:dummy")
                 .withPropertyValues("spring.datasource.username=user")
@@ -50,7 +49,6 @@ class ContextConfigurationTest {
     void contextConfiguredExplicitJeapSingleDataSource() {
         contextRunner.withUserConfiguration(TestConfig.class)
                 .withPropertyValues("jeap.postgresql.aws.enabled=true")
-                .withPropertyValues("jeap.datasource.aws.enable-advanced-jdbc-wrapper=false")
                 .withPropertyValues("jeap.datasource.url=jdbc:h2:mem:dummy")
                 .withPropertyValues("jeap.datasource.username=user")
                 .withPropertyValues("jeap.datasource.password=pass")
@@ -79,7 +77,6 @@ class ContextConfigurationTest {
     void contextConfiguredExplicitJeapMultipleDataSourceDisabledByDefault() {
         contextRunner.withUserConfiguration(TestConfig.class)
                 .withPropertyValues("jeap.postgresql.aws.enabled=true")
-                .withPropertyValues("jeap.datasource.aws.enable-advanced-jdbc-wrapper=false")
                 .withPropertyValues("jeap.datasource.url=jdbc:h2:mem:dummy")
                 .withPropertyValues("jeap.datasource.username=user")
                 .withPropertyValues("jeap.datasource.password=pass")
@@ -112,7 +109,6 @@ class ContextConfigurationTest {
         contextRunner.withUserConfiguration(TestConfig.class)
                 .withPropertyValues("jeap.postgresql.aws.enabled=true")
                 .withPropertyValues("jeap.datasource.url=jdbc:h2:mem:dummy")
-                .withPropertyValues("jeap.datasource.aws.enable-advanced-jdbc-wrapper=false")
                 .withPropertyValues("jeap.datasource.username=user")
                 .withPropertyValues("jeap.datasource.password=pass")
                 .withPropertyValues("jeap.datasource.hikari.schema=PUBLIC") // Default H2 schema
@@ -150,7 +146,6 @@ class ContextConfigurationTest {
                 .withPropertyValues("spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.H2Dialect")
                 .withPropertyValues("spring.application.name=theapp")
                 .withPropertyValues("jeap.postgresql.aws.enabled=true")
-                .withPropertyValues("jeap.datasource.aws.enable-advanced-jdbc-wrapper=false")
                 .withPropertyValues("jeap.datasource.driverClassname=org.h2.Driver")
                 .withPropertyValues("jeap.datasource.aws.hostname=somehost")
                 .withPropertyValues("jeap.datasource.replica.aws.hostname=somereplicahost")
@@ -176,7 +171,6 @@ class ContextConfigurationTest {
                 .withPropertyValues("spring.jpa.hibernate.ddl-auto=none")
                 .withPropertyValues("spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.H2Dialect")
                 .withPropertyValues("jeap.postgresql.aws.enabled=true")
-                .withPropertyValues("jeap.datasource.aws.enable-advanced-jdbc-wrapper=false")
                 .withPropertyValues("jeap.datasource.driverClassname=org.h2.Driver")
                 .withPropertyValues("jeap.datasource.aws.database-name=test_db")
                 .withPropertyValues("jeap.datasource.aws.hostname=somehost")
@@ -203,7 +197,6 @@ class ContextConfigurationTest {
                 .withPropertyValues("spring.jpa.hibernate.ddl-auto=none")
                 .withPropertyValues("spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.H2Dialect")
                 .withPropertyValues("jeap.postgresql.aws.enabled=true")
-                .withPropertyValues("jeap.datasource.aws.enable-advanced-jdbc-wrapper=false")
                 .withPropertyValues("jeap.datasource.driverClassname=org.h2.Driver")
                 .withPropertyValues("jeap.datasource.aws.database-name=test_db")
                 .withPropertyValues("jeap.datasource.aws.hostname=somehost")

@@ -37,9 +37,14 @@ jeap:
   security:
     oauth2:
       resourceserver:
+        system-name: mysystem
         authorization-server:
           issuer: https://keycloak.example.ch/auth/realms/myrealm
 ```
+
+Set `system-name` to your service's name — setting it activates semantic-role authorization
+(structured `system_%tenant_@resource_#operation` roles instead of opaque strings). See the
+[security starter docs](jeap-spring-boot-security-starter.md#authorization) for details.
 
 Then guard endpoints with role checks — see the
 [security starter authorization section](jeap-spring-boot-security-starter.md#authorization).
