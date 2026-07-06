@@ -70,8 +70,7 @@ public class ResourceServerProperties {
     /**
      * Configurations of the auth servers to be trusted by this resource server.
      */
-    @Valid
-    List<AuthorizationServerConfigProperties> authServers;
+    List<@Valid AuthorizationServerConfigProperties> authServers;
 
     public String getAudience() {
         return StringUtils.hasText(resourceId) ? resourceId : applicationName;
