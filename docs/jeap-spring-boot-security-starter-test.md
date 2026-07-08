@@ -131,6 +131,31 @@ The RSA test key pair is provided by `TestKeyProvider`, configured under
 `RSAKeyUtils` (`ch.admin.bit.jeap.security.test.jws`) loads an RSA key from a keystore or generates a
 fresh 2048-bit key, for use with `JwsBuilder` or the JWKS mock.
 
+## OIDC Authorization Code mock server
+
+For tests that need discovery + authorize + token + userinfo endpoints, use
+`OidcAuthorizationMockServer` (`ch.admin.bit.jeap.security.test.mock`). It runs a WireMock-backed
+OIDC provider with Authorization Code + PKCE support and signs tokens with the module's shared
+`JwsBuilder` / `RSAKeyUtils`.
+
+```java
+OidcAuthorizationMockServer mockServer = OidcAuthorizationMockServer
+        .builder(18081, "/mock-idp", "http://localhost:18080")
+        .withDefaultClientId("my-client-id")
+        .withUserRoles(List.of("jeap_@mysystem_#read"))
+        .build();
+
+mockServer.start();
+```
+
+Endpoints under the configured base path:
+
+- `/.well-known/openid-configuration`
+- `/.well-known/jwks.json`
+- `/oauth2/authorize`
+- `/oauth2/token`
+- `/oauth2/userinfo`
+
 ## Mock authorization beans
 
 To unit-test programmatic authorization without a token, inject a mock authorization bean — each
