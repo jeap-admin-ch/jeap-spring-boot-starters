@@ -10,6 +10,12 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Added
 
 - Add OIDC Authorization mock server.
+- `jeap-spring-boot-security-starter-test`: add named role profiles in `OidcAuthorizationMockServer` via `withRoleProfile(...)`, plus profile switching via `setActiveProfile(...)`.
+- `jeap-spring-boot-security-starter-test`: add convenience identity-claim setters in `OidcAuthorizationMockServer` (`withGivenName(...)`, `withFamilyName(...)`, `withName(...)`, `withLocale(...)`) for access token, ID token and userinfo responses.
+
+### Changed
+
+- `jeap-spring-boot-security-starter-test`: `OidcAuthorizationMockServer.reset()` now restores the default profile and clears runtime OAuth state without rotating the JWKS key.
 
 ## [23.11.0] - 2026-07-09
 

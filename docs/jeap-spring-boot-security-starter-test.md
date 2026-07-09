@@ -142,6 +142,9 @@ OIDC provider with Authorization Code + PKCE support and signs tokens with the m
 OidcAuthorizationMockServer mockServer = OidcAuthorizationMockServer
         .builder(18081, "/mock-idp", "http://localhost:18080")
         .withDefaultClientId("my-client-id")
+        .withGivenName("Max")
+        .withFamilyName("Muster")
+        .withLocale("de")
         .withUserRoles(List.of("jeap_@mysystem_#read"))
         .withRoleProfile("admin", List.of("jeap_@mysystem_#write"))
         .build();
@@ -153,6 +156,12 @@ You can switch roles per test without starting another server instance:
 
 - set the active profile in test code: `mockServer.setActiveProfile("admin")`;
 - call `mockServer.reset()` between tests to clear runtime state and restore the default profile.
+
+Claim handling:
+
+- `sub` can be configured via `withSubject(...)`; `aud` is derived from `client_id` (or `withDefaultClientId(...)`).
+- OIDC standard identity claims can be set via `withName(...)`, `withGivenName(...)`, `withFamilyName(...)`, `withPreferredUsername(...)` and `withLocale(...)`.
+- Use `withAccessTokenClaims(...)`, `withIdTokenClaims(...)`, `withUserInfoClaims(...)` for additional custom claims.
 
 Endpoints under the configured base path:
 

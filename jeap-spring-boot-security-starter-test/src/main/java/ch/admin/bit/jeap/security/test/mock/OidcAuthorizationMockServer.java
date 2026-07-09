@@ -47,7 +47,12 @@ public class OidcAuthorizationMockServer {
     private static final String DEFAULT_SUBJECT = "mock-user";
     private static final String DEFAULT_PREFERRED_USERNAME = "mock-user";
     private static final String DEFAULT_EMAIL = "mock-user@example.com";
+    private static final String DEFAULT_GIVEN_NAME = "Mock";
+    private static final String DEFAULT_FAMILY_NAME = "User";
+    private static final String DEFAULT_NAME = DEFAULT_GIVEN_NAME + " " + DEFAULT_FAMILY_NAME;
+    private static final String DEFAULT_LOCALE = "de";
     private static final String DEFAULT_SCOPE = "openid profile roles";
+    private static final String CLAIM_LOCALE = "locale";
     private static final String PATH_DELIMITER = "/";
     private static final String ERROR_KEY = "error";
 
@@ -131,7 +136,7 @@ public class OidcAuthorizationMockServer {
      * Sets the active profile used for subsequent authorize requests.
      */
     public void setActiveProfile(String profileName) {
-        this.activeProfileName = resolveProfile(profileName).name();
+        this.activeProfileName = resolveProfile(profileName).profileName();
     }
 
     private void registerRoutes() {
@@ -147,31 +152,6 @@ public class OidcAuthorizationMockServer {
                 .willReturn(ResponseDefinitionBuilder.responseDefinition().withTransformers(OAuthDynamicTransformer.NAME)));
     }
 
-    private SignedJWT createToken(Duration tokenExpiresIn, String clientId, String nonce, OAuthMockProfile profile) {
-        ZonedDateTime now = ZonedDateTime.now().truncatedTo(ChronoUnit.SECONDS);
-        ZonedDateTime expiry = now.plus(tokenExpiresIn);
-
-        JwsBuilder builder = JwsBuilder.create(
-                        UUID.randomUUID().toString(),
-                        issuer,
-                        expiry,
-                        now,
-                        now,
-                        profile.subject(),
-                        JeapAuthenticationContext.USER)
-                .withRsaKey(privateKey)
-                .withAudiences(clientId)
-                .withUserRoles(profile.userRoles().toArray(String[]::new))
-                .withClaim("roles", profile.userRoles());
-        if (nonce != null && !nonce.isBlank()) {
-            builder.withClaim("nonce", nonce);
-            profile.idTokenClaims().forEach(builder::withClaim);
-        } else {
-            profile.accessTokenClaims().forEach(builder::withClaim);
-        }
-        return builder.build();
-    }
-
     public static class Builder {
         private final int port;
         private final String basePath;
@@ -181,6 +161,10 @@ public class OidcAuthorizationMockServer {
         private String subject = DEFAULT_SUBJECT;
         private String preferredUsername = DEFAULT_PREFERRED_USERNAME;
         private String email = DEFAULT_EMAIL;
+        private String givenName = DEFAULT_GIVEN_NAME;
+        private String familyName = DEFAULT_FAMILY_NAME;
+        private String tokenName = DEFAULT_NAME;
+        private String locale = DEFAULT_LOCALE;
         private String scope = DEFAULT_SCOPE;
         private List<String> userRoles = DEFAULT_USER_ROLES;
         private String defaultProfileName = DEFAULT_PROFILE_NAME;
@@ -224,6 +208,38 @@ public class OidcAuthorizationMockServer {
          */
         public Builder withEmail(String email) {
             this.email = requireNotBlank(email, "email");
+            return this;
+        }
+
+        /**
+         * Sets the {@code given_name} claim in access/id token and userinfo responses.
+         */
+        public Builder withGivenName(String givenName) {
+            this.givenName = requireNotBlank(givenName, "givenName");
+            return this;
+        }
+
+        /**
+         * Sets the {@code family_name} claim in access/id token and userinfo responses.
+         */
+        public Builder withFamilyName(String familyName) {
+            this.familyName = requireNotBlank(familyName, "familyName");
+            return this;
+        }
+
+        /**
+         * Sets the {@code name} claim in access/id token and userinfo responses.
+         */
+        public Builder withName(String name) {
+            this.tokenName = requireNotBlank(name, "name");
+            return this;
+        }
+
+        /**
+         * Sets the {@code locale} claim in access/id token and userinfo responses.
+         */
+        public Builder withLocale(String locale) {
+            this.locale = requireNotBlank(locale, CLAIM_LOCALE);
             return this;
         }
 
@@ -310,13 +326,17 @@ public class OidcAuthorizationMockServer {
                     subject,
                     preferredUsername,
                     email,
+                    givenName,
+                    familyName,
+                    tokenName,
+                    locale,
                     scope,
                     List.copyOf(userRoles),
                     Map.copyOf(accessTokenClaims),
                     Map.copyOf(idTokenClaims),
                     Map.copyOf(userInfoClaims));
             Map<String, OAuthMockProfile> configuredProfiles = new HashMap<>();
-            configuredProfiles.put(defaultProfile.name(), defaultProfile);
+            configuredProfiles.put(defaultProfile.profileName(), defaultProfile);
             roleProfiles.forEach((profileName, roles) -> configuredProfiles.put(
                     profileName, defaultProfile.withNameAndRoles(profileName, roles)));
             if (!configuredProfiles.containsKey(defaultProfileName)) {
@@ -334,11 +354,15 @@ public class OidcAuthorizationMockServer {
     }
 
     private record OAuthMockProfile(
-            String name,
+            String profileName,
             String defaultClientId,
             String subject,
             String preferredUsername,
             String email,
+            String givenName,
+            String familyName,
+            String tokenName,
+            String locale,
             String scope,
             List<String> userRoles,
             Map<String, Object> accessTokenClaims,
@@ -352,6 +376,10 @@ public class OidcAuthorizationMockServer {
                     subject,
                     preferredUsername,
                     email,
+                    givenName,
+                    familyName,
+                    tokenName,
+                    locale,
                     scope,
                     List.copyOf(roles),
                     accessTokenClaims,
@@ -454,7 +482,7 @@ public class OidcAuthorizationMockServer {
             authCodes.put(code, new AuthCodeRecord(
                     codeChallenge,
                     nonce,
-                    requestedProfile.name(),
+                    requestedProfile.profileName(),
                     System.currentTimeMillis() + Duration.ofMinutes(10).toMillis()));
 
             String location = redirectUri
@@ -517,13 +545,46 @@ public class OidcAuthorizationMockServer {
             OAuthMockProfile resolvedProfile = resolveProfileFromUserInfoRequest(request);
             Map<String, Object> userInfo = new HashMap<>();
             userInfo.put("sub", resolvedProfile.subject());
-            userInfo.put("name", "Mock User");
+            userInfo.put("name", resolvedProfile.tokenName());
+            userInfo.put("given_name", resolvedProfile.givenName());
+            userInfo.put("family_name", resolvedProfile.familyName());
             userInfo.put("preferred_username", resolvedProfile.preferredUsername());
+            userInfo.put(CLAIM_LOCALE, resolvedProfile.locale());
             userInfo.put("email", resolvedProfile.email());
             userInfo.put("userroles", resolvedProfile.userRoles());
-            userInfo.put("bproles", Map.of("default", resolvedProfile.userRoles()));
+            userInfo.put("bproles", Map.of(DEFAULT_PROFILE_NAME, resolvedProfile.userRoles()));
             userInfo.putAll(resolvedProfile.userInfoClaims());
             return json(200, userInfo);
+        }
+
+        private SignedJWT createToken(Duration tokenExpiresIn, String clientId, String nonce, OAuthMockProfile profile) {
+            ZonedDateTime now = ZonedDateTime.now().truncatedTo(ChronoUnit.SECONDS);
+            ZonedDateTime expiry = now.plus(tokenExpiresIn);
+
+            JwsBuilder builder = JwsBuilder.create(
+                            UUID.randomUUID().toString(),
+                            issuer,
+                            expiry,
+                            now,
+                            now,
+                            profile.subject(),
+                            JeapAuthenticationContext.USER)
+                    .withRsaKey(privateKey)
+                    .withAudiences(clientId)
+                    .withUserRoles(profile.userRoles().toArray(String[]::new))
+                    .withClaim("roles", profile.userRoles())
+                    .withClaim("given_name", profile.givenName())
+                    .withClaim("family_name", profile.familyName())
+                    .withClaim("name", profile.tokenName())
+                    .withClaim("preferred_username", profile.preferredUsername())
+                    .withClaim(CLAIM_LOCALE, profile.locale());
+            if (nonce != null && !nonce.isBlank()) {
+                builder.withClaim("nonce", nonce);
+                profile.idTokenClaims().forEach(builder::withClaim);
+            } else {
+                profile.accessTokenClaims().forEach(builder::withClaim);
+            }
+            return builder.build();
         }
 
         private OAuthMockProfile resolveProfileFromUserInfoRequest(Request request) {

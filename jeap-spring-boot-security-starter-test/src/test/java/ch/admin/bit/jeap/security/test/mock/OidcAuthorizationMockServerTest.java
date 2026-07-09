@@ -39,6 +39,10 @@ class OidcAuthorizationMockServerTest {
                 .withSubject("test-user")
                 .withPreferredUsername("test-user")
                 .withEmail("test-user@example.org")
+                .withGivenName("Test")
+                .withFamilyName("User")
+                .withName("Test User")
+                .withLocale("de")
                 .withScope("openid profile roles")
                 .withUserRoles(List.of("jeap_@system_#read"))
                 .withAccessTokenClaims(Map.of("custom_access", "a1"))
@@ -105,10 +109,18 @@ class OidcAuthorizationMockServerTest {
             assertThat(accessJwt.getJWTClaimsSet().getAudience()).contains(clientId);
             assertThat((List<String>) accessJwt.getJWTClaimsSet().getClaim("userroles")).contains("jeap_@system_#read");
             assertThat(accessJwt.getJWTClaimsSet().getStringClaim("custom_access")).isEqualTo("a1");
+            assertThat(accessJwt.getJWTClaimsSet().getStringClaim("given_name")).isEqualTo("Test");
+            assertThat(accessJwt.getJWTClaimsSet().getStringClaim("family_name")).isEqualTo("User");
+            assertThat(accessJwt.getJWTClaimsSet().getStringClaim("preferred_username")).isEqualTo("test-user");
+            assertThat(accessJwt.getJWTClaimsSet().getStringClaim("locale")).isEqualTo("de");
 
             SignedJWT idJwt = SignedJWT.parse(idToken);
             assertThat(idJwt.getJWTClaimsSet().getStringClaim("nonce")).isEqualTo(nonce);
             assertThat(idJwt.getJWTClaimsSet().getStringClaim("custom_id")).isEqualTo("i1");
+            assertThat(idJwt.getJWTClaimsSet().getStringClaim("given_name")).isEqualTo("Test");
+            assertThat(idJwt.getJWTClaimsSet().getStringClaim("family_name")).isEqualTo("User");
+            assertThat(idJwt.getJWTClaimsSet().getStringClaim("preferred_username")).isEqualTo("test-user");
+            assertThat(idJwt.getJWTClaimsSet().getStringClaim("locale")).isEqualTo("de");
 
             HttpResponse<String> userInfo = httpClient.send(
                     HttpRequest.newBuilder(URI.create(issuer + "/oauth2/userinfo")).GET().build(),
@@ -119,6 +131,9 @@ class OidcAuthorizationMockServerTest {
             assertThat(userInfoJson)
                     .containsEntry("sub", "test-user")
                     .containsEntry("preferred_username", "test-user")
+                    .containsEntry("given_name", "Test")
+                    .containsEntry("family_name", "User")
+                    .containsEntry("locale", "de")
                     .containsEntry("department", "IT");
         } finally {
             server.stop();
