@@ -143,10 +143,16 @@ OidcAuthorizationMockServer mockServer = OidcAuthorizationMockServer
         .builder(18081, "/mock-idp", "http://localhost:18080")
         .withDefaultClientId("my-client-id")
         .withUserRoles(List.of("jeap_@mysystem_#read"))
+        .withRoleProfile("admin", List.of("jeap_@mysystem_#write"))
         .build();
 
 mockServer.start();
 ```
+
+You can switch roles per test without starting another server instance:
+
+- set the active profile in test code: `mockServer.setActiveProfile("admin")`;
+- call `mockServer.reset()` between tests to clear runtime state and restore the default profile.
 
 Endpoints under the configured base path:
 

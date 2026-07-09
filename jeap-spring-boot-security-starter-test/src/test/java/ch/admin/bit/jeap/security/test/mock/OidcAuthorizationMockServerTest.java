@@ -125,6 +125,51 @@ class OidcAuthorizationMockServerTest {
         }
     }
 
+    @Test
+    @SuppressWarnings("unchecked")
+    void supportsRoleProfilesWithResettableTestBaseline() throws IOException, InterruptedException, ParseException {
+        int port = freePort();
+        String basePath = "/mock-idp";
+        String issuer = "http://localhost:" + port + basePath;
+        String redirectUri = "http://localhost/callback";
+
+        OidcAuthorizationMockServer server = OidcAuthorizationMockServer.builder(port, basePath, "http://localhost:8080")
+                .withDefaultClientId("test-client")
+                .withUserRoles(List.of("jeap_@system_#read"))
+                .withRoleProfile("admin", List.of("jeap_@system_#admin"))
+                .build();
+
+        HttpClient httpClient = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.NEVER).build();
+        try {
+            server.start();
+
+            String defaultCodeVerifier = "default-code-verifier";
+            String defaultCode = requestAuthorizationCode(httpClient, issuer, redirectUri, defaultCodeVerifier);
+            String defaultTokenResponse = exchangeToken(httpClient, issuer, "test-client", defaultCode, defaultCodeVerifier);
+            SignedJWT defaultAccessJwt = SignedJWT.parse((String) parseJson(defaultTokenResponse).get("access_token"));
+            assertThat((List<String>) defaultAccessJwt.getJWTClaimsSet().getClaim("userroles"))
+                    .containsExactly("jeap_@system_#read");
+
+            server.setActiveProfile("admin");
+            String activeCodeVerifier = "active-code-verifier";
+            String activeCode = requestAuthorizationCode(httpClient, issuer, redirectUri, activeCodeVerifier);
+            String activeTokenResponse = exchangeToken(httpClient, issuer, "test-client", activeCode, activeCodeVerifier);
+            SignedJWT activeAccessJwt = SignedJWT.parse((String) parseJson(activeTokenResponse).get("access_token"));
+            assertThat((List<String>) activeAccessJwt.getJWTClaimsSet().getClaim("userroles"))
+                    .containsExactly("jeap_@system_#admin");
+
+            server.reset();
+            String afterResetCodeVerifier = "after-reset-code-verifier";
+            String afterResetCode = requestAuthorizationCode(httpClient, issuer, redirectUri, afterResetCodeVerifier);
+            String afterResetTokenResponse = exchangeToken(httpClient, issuer, "test-client", afterResetCode, afterResetCodeVerifier);
+            SignedJWT afterResetAccessJwt = SignedJWT.parse((String) parseJson(afterResetTokenResponse).get("access_token"));
+            assertThat((List<String>) afterResetAccessJwt.getJWTClaimsSet().getClaim("userroles"))
+                    .containsExactly("jeap_@system_#read");
+        } finally {
+            server.stop();
+        }
+    }
+
     private static int freePort() throws IOException {
         try (ServerSocket socket = new ServerSocket(0)) {
             return socket.getLocalPort();
@@ -153,6 +198,43 @@ class OidcAuthorizationMockServerTest {
             }
         }
         throw new IllegalStateException("Missing query parameter: " + key);
+    }
+
+    private static String requestAuthorizationCode(HttpClient httpClient, String issuer, String redirectUri, String codeVerifier)
+            throws IOException, InterruptedException {
+        String codeChallenge = s256(codeVerifier);
+        String authorizeUrl = issuer + "/oauth2/authorize"
+                + "?redirect_uri=" + enc(redirectUri)
+                + "&state=" + enc("state-" + codeVerifier)
+                + "&nonce=" + enc("nonce-" + codeVerifier)
+                + "&code_challenge=" + enc(codeChallenge)
+                + "&code_challenge_method=S256";
+
+        HttpResponse<String> authorize = httpClient.send(
+                HttpRequest.newBuilder(URI.create(authorizeUrl)).GET().build(),
+                HttpResponse.BodyHandlers.ofString());
+
+        assertThat(authorize.statusCode()).isEqualTo(302);
+        String location = authorize.headers().firstValue("Location").orElseThrow();
+        return extractQueryParam(location, "code");
+    }
+
+    private static String exchangeToken(HttpClient httpClient, String issuer, String clientId, String code, String codeVerifier)
+            throws IOException, InterruptedException {
+        String form = "grant_type=authorization_code"
+                + "&code=" + enc(code)
+                + "&code_verifier=" + enc(codeVerifier)
+                + "&client_id=" + enc(clientId);
+
+        HttpResponse<String> token = httpClient.send(
+                HttpRequest.newBuilder(URI.create(issuer + "/oauth2/token"))
+                        .header("Content-Type", "application/x-www-form-urlencoded")
+                        .POST(HttpRequest.BodyPublishers.ofString(form))
+                        .build(),
+                HttpResponse.BodyHandlers.ofString());
+
+        assertThat(token.statusCode()).isEqualTo(200);
+        return token.body();
     }
 
     private static Map<String, Object> parseJson(String json) throws ParseException {

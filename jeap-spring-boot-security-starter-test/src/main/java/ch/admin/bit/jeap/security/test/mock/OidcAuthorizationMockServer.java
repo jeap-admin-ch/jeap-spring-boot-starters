@@ -42,6 +42,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 public class OidcAuthorizationMockServer {
 
     private static final List<String> DEFAULT_USER_ROLES = List.of("jme_@person_#read", "jme_@person_#write");
+    private static final String DEFAULT_PROFILE_NAME = "default";
     private static final String DEFAULT_CLIENT_ID = "jme-jeap-nivel-quadrel-project-template";
     private static final String DEFAULT_SUBJECT = "mock-user";
     private static final String DEFAULT_PREFERRED_USERNAME = "mock-user";
@@ -54,7 +55,7 @@ public class OidcAuthorizationMockServer {
     private final WireMockServer server;
     private final RSAKey privateKey;
     private final RSAKey publicKey;
-    private final OAuthMockProfile profile;
+    private final Map<String, OAuthMockProfile> profiles;
 
     private final String issuer;
     private final String configPath;
@@ -62,8 +63,11 @@ public class OidcAuthorizationMockServer {
     private final String authorizePath;
     private final String tokenPath;
     private final String userInfoPath;
+    private final String defaultProfileName;
 
     private final Map<String, AuthCodeRecord> authCodes = new ConcurrentHashMap<>();
+    private final Map<String, OAuthMockProfile> profilesByAccessToken = new ConcurrentHashMap<>();
+    private volatile String activeProfileName;
 
     public OidcAuthorizationMockServer(int port, String basePath, String allowedOrigin) {
         this(builder(port, basePath, allowedOrigin));
@@ -73,7 +77,9 @@ public class OidcAuthorizationMockServer {
         String normalizedBasePath = builder.basePath.startsWith(PATH_DELIMITER) ? builder.basePath : PATH_DELIMITER + builder.basePath;
         this.allowedOrigin = builder.allowedOrigin;
         this.issuer = "http://localhost:" + builder.port + normalizedBasePath;
-        this.profile = builder.profile();
+        this.profiles = builder.profiles();
+        this.defaultProfileName = builder.defaultProfileName;
+        this.activeProfileName = defaultProfileName;
 
         this.configPath = normalizedBasePath + "/.well-known/openid-configuration";
         this.jwksPath = normalizedBasePath + "/.well-known/jwks.json";
@@ -116,7 +122,16 @@ public class OidcAuthorizationMockServer {
      */
     public void reset() {
         authCodes.clear();
+        profilesByAccessToken.clear();
+        activeProfileName = defaultProfileName;
         server.resetRequests();
+    }
+
+    /**
+     * Sets the active profile used for subsequent authorize requests.
+     */
+    public void setActiveProfile(String profileName) {
+        this.activeProfileName = resolveProfile(profileName).name();
     }
 
     private void registerRoutes() {
@@ -132,7 +147,7 @@ public class OidcAuthorizationMockServer {
                 .willReturn(ResponseDefinitionBuilder.responseDefinition().withTransformers(OAuthDynamicTransformer.NAME)));
     }
 
-    private SignedJWT createToken(Duration tokenExpiresIn, String clientId, String nonce) {
+    private SignedJWT createToken(Duration tokenExpiresIn, String clientId, String nonce, OAuthMockProfile profile) {
         ZonedDateTime now = ZonedDateTime.now().truncatedTo(ChronoUnit.SECONDS);
         ZonedDateTime expiry = now.plus(tokenExpiresIn);
 
@@ -168,6 +183,8 @@ public class OidcAuthorizationMockServer {
         private String email = DEFAULT_EMAIL;
         private String scope = DEFAULT_SCOPE;
         private List<String> userRoles = DEFAULT_USER_ROLES;
+        private String defaultProfileName = DEFAULT_PROFILE_NAME;
+        private final Map<String, List<String>> roleProfiles = new HashMap<>();
         private final Map<String, Object> accessTokenClaims = new HashMap<>();
         private final Map<String, Object> idTokenClaims = new HashMap<>();
         private final Map<String, Object> userInfoClaims = new HashMap<>();
@@ -230,6 +247,26 @@ public class OidcAuthorizationMockServer {
         }
 
         /**
+         * Adds a named role profile. The profile inherits all non-role settings from the builder defaults.
+         */
+        public Builder withRoleProfile(String profileName, List<String> userRoles) {
+            String normalizedProfileName = requireNotBlank(profileName, "profileName");
+            if (userRoles == null || userRoles.isEmpty()) {
+                throw new IllegalArgumentException("userRoles must not be null or empty");
+            }
+            roleProfiles.put(normalizedProfileName, List.copyOf(userRoles));
+            return this;
+        }
+
+        /**
+         * Sets which profile name is active when the server starts and after {@link OidcAuthorizationMockServer#reset()}.
+         */
+        public Builder withDefaultProfile(String profileName) {
+            this.defaultProfileName = requireNotBlank(profileName, "profileName");
+            return this;
+        }
+
+        /**
          * Adds custom claims to access tokens.
          */
         public Builder withAccessTokenClaims(Map<String, Object> claims) {
@@ -266,8 +303,9 @@ public class OidcAuthorizationMockServer {
             return new OidcAuthorizationMockServer(this);
         }
 
-        private OAuthMockProfile profile() {
-            return new OAuthMockProfile(
+        private Map<String, OAuthMockProfile> profiles() {
+            OAuthMockProfile defaultProfile = new OAuthMockProfile(
+                    DEFAULT_PROFILE_NAME,
                     defaultClientId,
                     subject,
                     preferredUsername,
@@ -277,6 +315,14 @@ public class OidcAuthorizationMockServer {
                     Map.copyOf(accessTokenClaims),
                     Map.copyOf(idTokenClaims),
                     Map.copyOf(userInfoClaims));
+            Map<String, OAuthMockProfile> configuredProfiles = new HashMap<>();
+            configuredProfiles.put(defaultProfile.name(), defaultProfile);
+            roleProfiles.forEach((profileName, roles) -> configuredProfiles.put(
+                    profileName, defaultProfile.withNameAndRoles(profileName, roles)));
+            if (!configuredProfiles.containsKey(defaultProfileName)) {
+                throw new IllegalArgumentException("Unknown default profile: " + defaultProfileName);
+            }
+            return Map.copyOf(configuredProfiles);
         }
 
         private static String requireNotBlank(String value, String field) {
@@ -288,6 +334,7 @@ public class OidcAuthorizationMockServer {
     }
 
     private record OAuthMockProfile(
+            String name,
             String defaultClientId,
             String subject,
             String preferredUsername,
@@ -298,9 +345,23 @@ public class OidcAuthorizationMockServer {
             Map<String, Object> idTokenClaims,
             Map<String, Object> userInfoClaims
     ) {
+        OAuthMockProfile withNameAndRoles(String profileName, List<String> roles) {
+            return new OAuthMockProfile(
+                    profileName,
+                    defaultClientId,
+                    subject,
+                    preferredUsername,
+                    email,
+                    scope,
+                    List.copyOf(roles),
+                    accessTokenClaims,
+                    idTokenClaims,
+                    userInfoClaims
+            );
+        }
     }
 
-    private record AuthCodeRecord(String codeChallenge, String nonce, long expiresAt) {
+    private record AuthCodeRecord(String codeChallenge, String nonce, String profileName, long expiresAt) {
         boolean expired() {
             return System.currentTimeMillis() > expiresAt;
         }
@@ -387,9 +448,14 @@ public class OidcAuthorizationMockServer {
             String state = queryParameter(request, "state");
             String codeChallenge = queryParameter(request, "code_challenge");
             String nonce = queryParameter(request, "nonce");
+            OAuthMockProfile requestedProfile = resolveProfile(activeProfileName);
 
             String code = UUID.randomUUID().toString();
-            authCodes.put(code, new AuthCodeRecord(codeChallenge, nonce, System.currentTimeMillis() + Duration.ofMinutes(10).toMillis()));
+            authCodes.put(code, new AuthCodeRecord(
+                    codeChallenge,
+                    nonce,
+                    requestedProfile.name(),
+                    System.currentTimeMillis() + Duration.ofMinutes(10).toMillis()));
 
             String location = redirectUri
                     + (redirectUri.contains("?") ? "&" : "?")
@@ -412,19 +478,20 @@ public class OidcAuthorizationMockServer {
 
             String code = form.get("code");
             String codeVerifier = form.get("code_verifier");
-            String clientId = form.getOrDefault("client_id", profile.defaultClientId());
 
             AuthCodeRecord authCodeRecord = authCodes.remove(code);
             if (authCodeRecord == null || authCodeRecord.expired()) {
                 return json(400, Map.of(ERROR_KEY, "invalid_grant"));
             }
+            OAuthMockProfile tokenProfile = resolveProfile(authCodeRecord.profileName());
             if (authCodeRecord.codeChallenge != null && !authCodeRecord.codeChallenge.isBlank()
                     && (codeVerifier == null || !authCodeRecord.codeChallenge.equals(s256Challenge(codeVerifier)))) {
                 return json(400, Map.of(ERROR_KEY, "invalid_grant"));
             }
+            String clientId = form.getOrDefault("client_id", tokenProfile.defaultClientId());
 
-            SignedJWT accessToken = createToken(Duration.ofHours(1), clientId, null);
-            SignedJWT idToken = createToken(Duration.ofHours(1), clientId, authCodeRecord.nonce());
+            SignedJWT accessToken = createToken(Duration.ofHours(1), clientId, null, tokenProfile);
+            SignedJWT idToken = createToken(Duration.ofHours(1), clientId, authCodeRecord.nonce(), tokenProfile);
 
             long expiresIn;
             try {
@@ -438,7 +505,8 @@ public class OidcAuthorizationMockServer {
             response.put("id_token", idToken.serialize());
             response.put("token_type", "bearer");
             response.put("expires_in", expiresIn);
-            response.put("scope", profile.scope());
+            response.put("scope", tokenProfile.scope());
+            profilesByAccessToken.put(accessToken.serialize(), tokenProfile);
             return json(200, response);
         }
 
@@ -446,15 +514,28 @@ public class OidcAuthorizationMockServer {
             if (!"GET".equalsIgnoreCase(request.getMethod().value())) {
                 return response(405, null);
             }
+            OAuthMockProfile resolvedProfile = resolveProfileFromUserInfoRequest(request);
             Map<String, Object> userInfo = new HashMap<>();
-            userInfo.put("sub", profile.subject());
+            userInfo.put("sub", resolvedProfile.subject());
             userInfo.put("name", "Mock User");
-            userInfo.put("preferred_username", profile.preferredUsername());
-            userInfo.put("email", profile.email());
-            userInfo.put("userroles", profile.userRoles());
-            userInfo.put("bproles", Map.of("default", profile.userRoles()));
-            userInfo.putAll(profile.userInfoClaims());
+            userInfo.put("preferred_username", resolvedProfile.preferredUsername());
+            userInfo.put("email", resolvedProfile.email());
+            userInfo.put("userroles", resolvedProfile.userRoles());
+            userInfo.put("bproles", Map.of("default", resolvedProfile.userRoles()));
+            userInfo.putAll(resolvedProfile.userInfoClaims());
             return json(200, userInfo);
+        }
+
+        private OAuthMockProfile resolveProfileFromUserInfoRequest(Request request) {
+            String authorization = request.getHeader("Authorization");
+            if (authorization == null || authorization.isBlank() || !authorization.startsWith("Bearer ")) {
+                return resolveProfile(activeProfileName);
+            }
+            String accessToken = authorization.substring("Bearer ".length()).trim();
+            if (accessToken.isEmpty()) {
+                return resolveProfile(activeProfileName);
+            }
+            return profilesByAccessToken.getOrDefault(accessToken, resolveProfile(activeProfileName));
         }
 
         private Response json(int status, Map<String, ?> body) {
@@ -499,5 +580,13 @@ public class OidcAuthorizationMockServer {
             }
             return request.queryParameter(name).firstValue();
         }
+    }
+
+    private OAuthMockProfile resolveProfile(String profileName) {
+        OAuthMockProfile resolvedProfile = profiles.get(profileName);
+        if (resolvedProfile == null) {
+            throw new IllegalArgumentException("Unknown profile: " + profileName);
+        }
+        return resolvedProfile;
     }
 }
