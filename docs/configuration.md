@@ -20,7 +20,7 @@ See [Security starter](jeap-spring-boot-security-starter.md).
 | `auth-servers[*]`                              | —                                        | List of trusted auth servers (same fields)           |
 | `b2b-gateway.issuer` / `.jwk-set-uri`          | —                                        | B2B gateway issuer / JWKS endpoint                   |
 | `b2b-gateway.authentication-contexts`          | `[B2B]`                                  | Allowed contexts for the B2B gateway                 |
-| `introspection.mode`                           | `NONE`                                   | `NONE`/`EXPLICIT`/`ALWAYS`/`LIGHTWEIGHT`/`CUSTOM`    |
+| `introspection.mode`                           | — (unset; introspection disabled)        | `NONE`/`EXPLICIT`/`ALWAYS`/`LIGHTWEIGHT`/`CUSTOM`    |
 
 Current-user endpoint: `jeap.security.oauth2.current-user-endpoint.enabled`,
 `jeap.security.oauth2.current-user-endpoint.path` (`/api/current-user`).

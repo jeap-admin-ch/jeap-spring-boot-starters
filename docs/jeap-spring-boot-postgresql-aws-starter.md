@@ -67,18 +67,18 @@ jeap:
       region: eu-central-2
 ```
 
-| Property                                                      | Default        | Description                                                      |
-|---------------------------------------------------------------|----------------|------------------------------------------------------------------|
-| `jeap.postgresql.aws.enabled`                                 | `false`        | Enable the starter                                               |
-| `jeap.datasource.url`                                         | inferred       | Full JDBC URL of the read/write endpoint                         |
-| `jeap.datasource.username`                                    | `{app}_db_rwa` | DB username (inferred from `spring.application.name`)            |
-| `jeap.datasource.password`                                    | —              | Set only locally; if set, IAM token auth is disabled             |
-| `jeap.datasource.aws.region`                                  | `eu-central-2` | AWS region of the database                                       |
-| `jeap.datasource.aws.hostname`                                | —              | RDS endpoint host (used to build the URL when `url` unset)       |
-| `jeap.datasource.aws.port`                                    | `5432`         | RDS port                                                         |
-| `jeap.datasource.aws.database-name`                           | `{app}_db`     | Database name (inferred from app name if omitted)                |
-| `jeap.datasource.aws.wrapper.target-data-source-properties.*` | see below      | Properties passed to the wrapper's target datasource (camelCase) |
-| `jeap.datasource.hikari.*`                                    | see below      | HikariCP pool tuning for the primary (writer)                    |
+| Property                                                      | Default        | Description                                                                                                    |
+|---------------------------------------------------------------|----------------|----------------------------------------------------------------------------------------------------------------|
+| `jeap.postgresql.aws.enabled`                                 | `false`        | Enable the starter                                                                                             |
+| `jeap.datasource.url`                                         | inferred       | Full JDBC URL of the read/write endpoint                                                                       |
+| `jeap.datasource.username`                                    | `{app}_db_rwa` | DB username (inferred from `spring.application.name`)                                                          |
+| `jeap.datasource.password`                                    | —              | Only used for local H2 testing; ignored when the AWS wrapper is active (IAM token auth is always used for RDS) |
+| `jeap.datasource.aws.region`                                  | `eu-central-2` | AWS region of the database                                                                                     |
+| `jeap.datasource.aws.hostname`                                | —              | RDS endpoint host (used to build the URL when `url` unset)                                                     |
+| `jeap.datasource.aws.port`                                    | `5432`         | RDS port                                                                                                       |
+| `jeap.datasource.aws.database-name`                           | `{app}_db`     | Database name (inferred from app name if omitted)                                                              |
+| `jeap.datasource.aws.wrapper.target-data-source-properties.*` | see below      | Properties passed to the wrapper's target datasource (camelCase)                                               |
+| `jeap.datasource.hikari.*`                                    | see below      | HikariCP pool tuning for the primary (writer)                                                                  |
 
 Starter-applied Hikari defaults for the primary pool: `schema=data`, `maximum-pool-size=4`,
 `minimum-idle=0`, `keepalive-time=120000`, `pool-name=hikari-cp-rw`, `max-lifetime=840000`. JPA's
@@ -114,8 +114,9 @@ targets and routes read-only top-level transactions to the replica. The routing 
 slightly stale data (on the PROD application platform the `AuroraReplicaLag` is roughly 15 ms). Route
 to a replica only for use cases that tolerate this — dashboards, UIs, non-time-critical read
 endpoints — and never for read-after-write patterns where a consumer must immediately see just-written
-data. Using more than one read replica is currently discouraged, because replicas are not updated in
-lockstep and can diverge from each other.
+data. This starter wires a single reader `DataSource` per application; if the reader endpoint fronts
+multiple physical Aurora replicas, consecutive reads can still land on different replicas, and since
+replicas are not updated in lockstep they can return mutually inconsistent (diverging) data.
 
 | Property                                    | Default       | Description                                        |
 |---------------------------------------------|---------------|----------------------------------------------------|

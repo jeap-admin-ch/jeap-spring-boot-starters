@@ -27,6 +27,10 @@ The Maven parent is `ch.admin.bit.jeap:jeap-internal-spring-boot-parent`, which 
 ./mvnw test -pl jeap-spring-boot-security-starter-it-webmvc -Dtest=SimpleRoleAuthorizationWebmvcIT#testGetAuth_whenWithUserRoleAuthRead_thenAccessGranted
 ```
 
+`jeap-spring-boot-vault-starter`'s tests need a local Vault instance: `cd jeap-spring-boot-vault-starter/docker
+&& docker-compose up` starts one and provisions a test secret (see `docker/vault-test-config.sh`);
+`VaultTestApp` (Spring profile `vault`) injects that secret and fails to start if it can't.
+
 ## Architecture
 
 ### Module Organization
@@ -50,19 +54,19 @@ The project uses a multi-module Maven structure with these categories:
 
 ### Starters
 
-| Module                    | Purpose                                                                  | Config Prefix                           |
-|---------------------------|--------------------------------------------------------------------------|-----------------------------------------|
-| `application-starter`     | Frontend route handling + DB pooling defaults; bundles `logging-starter` | —                                       |
-| `logging-starter`         | Structured JSON logging with tracing                                     | `jeap.logging.*`                        |
-| `monitoring-starter`      | Prometheus/Micrometer metrics                                            | `jeap.monitor.*`                        |
-| `security-starter`        | OAuth2 resource server, role authorization                               | `jeap.security.oauth2.resourceserver.*` |
-| `security-client-starter` | OAuth2 client configuration                                              | `jeap.security.oauth2.client.*`         |
-| `featureflag-starter`     | Feature flags via config properties + Togglz                             | —                                       |
-| `object-storage-starter`  | S3 client configuration                                                  | —                                       |
-| `postgresql-aws-starter`  | PostgreSQL config for AWS RDS (multiple cluster types)                   | —                                       |
-| `vault-starter`           | HashiCorp Vault secrets management                                       | Spring Cloud Vault config               |
-| `web-config-starter`      | HTTP caching + frontend security headers                                 | —                                       |
-| `swagger-starter`         | OpenAPI specs + Swagger UI                                               | `jeap.swagger.*`                        |
+| Module                    | Purpose                                                                  | Config Prefix                                                                                |
+|---------------------------|--------------------------------------------------------------------------|----------------------------------------------------------------------------------------------|
+| `application-starter`     | Frontend route handling + DB pooling defaults; bundles `logging-starter` | —                                                                                            |
+| `logging-starter`         | Structured JSON logging with tracing                                     | `jeap.logging.*`                                                                             |
+| `monitoring-starter`      | Prometheus/Micrometer metrics                                            | `jeap.monitor.*`                                                                             |
+| `security-starter`        | OAuth2 resource server, role authorization                               | `jeap.security.oauth2.resourceserver.*`                                                      |
+| `security-client-starter` | OAuth2 client configuration                                              | `spring.security.oauth2.client.*` (standard Spring Boot properties, no jeap-specific prefix) |
+| `featureflag-starter`     | Feature flags via config properties + Togglz                             | —                                                                                            |
+| `object-storage-starter`  | S3 client configuration                                                  | `jeap.s3.client.*`                                                                           |
+| `postgresql-aws-starter`  | PostgreSQL config for AWS RDS (multiple cluster types)                   | `jeap.datasource.*`                                                                          |
+| `vault-starter`           | HashiCorp Vault secrets management                                       | `jeap.vault.*` (mapped onto Spring Cloud Vault config)                                       |
+| `web-config-starter`      | HTTP caching + frontend security headers                                 | `jeap.web.headers.*`                                                                         |
+| `swagger-starter`         | OpenAPI specs + Swagger UI                                               | `jeap.swagger.*`                                                                             |
 
 ## Code Patterns
 
@@ -84,9 +88,10 @@ public class ModuleProperties {
 ### Package Structure
 
 All code under `ch.admin.bit.jeap.[domain].*`:
-- `*.configuration` - Auto-configuration classes
+- `*.configuration` - Auto-configuration classes, including custom Spring `Condition` implementations
+  (e.g. `SemanticAuthorizationCondition`, `JeapOAuth2ResourceCondition` in `security-starter`) — there is
+  no separate `.condition` package
 - `*.properties` - Configuration properties classes
-- `*.condition` - Custom Spring Condition implementations
 
 ### Testing Patterns
 
@@ -106,6 +111,9 @@ User-facing documentation for *consuming* the starters lives in [README.md](READ
 full module table) and the focused topic files under [docs/](docs/) (one topic per file). When you
 change public behaviour or a configuration property, update the matching `docs/*.md` file and the
 documentation index in the README.
+
+Validate that files under `docs/*.md` are valid MDX Markdown compatible with a Docusaurus site. Also
+validate that Mermaid diagrams in the Markdown files use correct Mermaid syntax.
 
 ## Versioning & Conventions
 

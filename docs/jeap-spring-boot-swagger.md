@@ -54,7 +54,7 @@ springdoc derives from the request would be `http://...`. `HttpsServerBaseUrlCon
 
 If springdoc actuator exposure is on and the jEAP monitoring `ActuatorSecurity` class is on the
 classpath, `ActuatorSwaggerConfig` adds a `GroupedOpenApi` named `Actuator` matching the actuator base
-path, titled "Monitoring Endpunkte", protected by a `prometheus` HTTP-basic security scheme.
+path, titled "Monitoring Endpoints", protected by a `prometheus` HTTP-basic security scheme.
 
 ## Properties
 

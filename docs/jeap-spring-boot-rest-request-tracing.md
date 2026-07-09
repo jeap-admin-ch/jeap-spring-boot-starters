@@ -56,14 +56,14 @@ Request attributes are included only if their name matches a prefix in `attribut
 
 Prefix: `jeap.rest.tracing` (defaults from `tracer.properties`).
 
-| Property                           | Type           | Default                                                           | Description                                            |
-|------------------------------------|----------------|-------------------------------------------------------------------|--------------------------------------------------------|
-| `header-masked`                    | `List<String>` | `Authorization, Cookie, Set-Cookie, Set-Cookie2, x-jwt-assertion` | Headers whose values are masked as `***`               |
-| `header-blacklist`                 | `List<String>` | (empty)                                                           | Headers excluded from traces entirely                  |
-| `attributes-whitelist`             | `List<String>` | `org.springframework.web.servlet.HandlerMapping`                  | Request-attribute name prefixes to include             |
-| `application-name`                 | `String`       | `${spring.application.name}`                                      | Name sent as `JEAP-APPLICATION-NAME` on outgoing calls |
-| `uri-filter-pattern`               | `Pattern`      | `.*/actuator/.*`                                                  | URIs excluded from security tracing                    |
-| `full-response-details-in-message` | `boolean`      | `false`                                                           | Include full response details in the trace message     |
+| Property                           | Type           | Default                                                           | Description                                                                                                              |
+|------------------------------------|----------------|-------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------|
+| `header-masked`                    | `List<String>` | `Authorization, Cookie, Set-Cookie, Set-Cookie2, x-jwt-assertion` | Headers whose values are masked as `***`                                                                                 |
+| `header-blacklist`                 | `List<String>` | (empty)                                                           | Headers excluded from traces entirely                                                                                    |
+| `attributes-whitelist`             | `List<String>` | `org.springframework.web.servlet.HandlerMapping`                  | Request-attribute name prefixes to include                                                                               |
+| `application-name`                 | `String`       | `${spring.application.name}`                                      | Name sent as `JEAP-APPLICATION-NAME` on outgoing calls                                                                   |
+| `uri-filter-pattern`               | `Pattern`      | `.*/actuator/.*`                                                  | URIs excluded from tracing; read both by `ServletRequestSecurityTracer` and by the logging starter's `RestRequestLogger` |
+| `full-response-details-in-message` | `boolean`      | `false`                                                           | Include full response details in the trace message                                                                       |
 
 Whether trace *logs* are produced is governed by the log level of the tracer logger (the logging
 starter logs after responding at `DEBUG` and additionally on receipt at `TRACE`):

@@ -38,11 +38,11 @@ class ActuatorSwaggerConfig {
 
     private void changeInfo(OpenAPI openAPI) {
         openAPI.getInfo().setContact(null);
-        openAPI.getInfo().setTitle("Monitoring Endpunkte");
-        openAPI.getInfo().setDescription("Monitoring Endpunkte des Spring Actuator");
+        openAPI.getInfo().setTitle("Monitoring Endpoints");
+        openAPI.getInfo().setDescription("Monitoring endpoints of the Spring Actuator");
         if (openAPI.getExternalDocs() != null) {
-            openAPI.getExternalDocs().setDescription("Monitoring im Blueprint Microservice");
-            openAPI.getExternalDocs().setUrl("https://confluence.bit.admin.ch/display/JEAP/Monitoring");
+            openAPI.getExternalDocs().setDescription("Monitoring in the Blueprint Microservice");
+            openAPI.getExternalDocs().setUrl("https://jeap-admin-ch.github.io/docs/building-blocks/spring-boot-starters/jeap-spring-boot-starters/jeap-spring-boot-monitoring-starter");
         }
         openAPI.addSecurityItem(new SecurityRequirement().addList("prometheus"));
     }

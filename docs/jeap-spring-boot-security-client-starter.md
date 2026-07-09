@@ -24,7 +24,7 @@ There are two horizontal cases:
 </dependency>
 ```
 
-This starter comes transitively with `jeap-spring-boot-security-starter`; since version 18.0.0 it is
+This starter comes transitively with `jeap-spring-boot-security-starter`; since version 17.43.0 it is
 also available as the standalone dependency above. It supports the Spring WebMvc stack. The jEAP
 guideline is to use the Spring `RestClient` (introduced in Spring 6.1); `RestTemplate` is not
 supported.

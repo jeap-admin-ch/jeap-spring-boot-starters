@@ -84,7 +84,7 @@ metrics, all surfaced on the Prometheus endpoint:
 | `jeap_spring_app`                       | Multi-gauge | `name`                                                             | The Spring application name (value always 1) — correlates platform app name with the Spring app name. |
 | `jeap_dependency_version`               | Multi-gauge | `name`, `version`                                                  | One row per detected dependency (value 1) for central version checks.                                 |
 | `jeap_java_version`                     | Multi-gauge | `version`, `vmversion`, `vendor`, `runtimeversion`, `classversion` | The running Java version.                                                                             |
-| `jeap_relation` (`jeap_relation_total`) | Counter     | `producer`, `consumer`, `datapoint`, `technology`                  | Incoming REST relations between services (producer = this app, consumer = caller, datapoint = URI).   |
+| `jeap_relation` (`jeap_relation_total`) | Counter     | `producer`, `consumer`, `datapoint`, `technology`, `method`        | Incoming REST relations between services (producer = this app, consumer = caller, datapoint = URI).   |
 | `jeap_rest_endpoint_without_jwt`        | Counter     | `producer`, `datapoint`, `method`, `status`, `auth`                | REST endpoints reached without a jEAP JWT (helps find unauthenticated access).                        |
 | `jeap_trusted_cert`                     | Multi-gauge | `subject`, `serial`, `from`, `to`                                  | Days until each trust-store certificate expires (0 if unknown).                                       |
 
@@ -95,7 +95,7 @@ limit is reached, new label combinations are dropped.
 |---------------------------------------------------------------------|---------|-----------------------------------------------------------------------------------|
 | `jeap.health.metric.update-rate-seconds`                            | `120`   | Health-metric refresh interval, in seconds. `-1` disables the metric.             |
 | `jeap.health.metric.contributor-metrics.enabled`                    | `false` | Export per-contributor health as `health_indicator_status`.                       |
-| `jeap.monitor.metrics.truststore.enabled`                           | `true`  | Export `jeap_trusted_cert` metrics (only when `javax.net.ssl.trustStore` is set). |
+| `jeap.monitor.metrics.truststore.enabled`                           | `true`  | Export `jeap_trusted_cert` metrics (only when both `javax.net.ssl.trustStore` and `javax.net.ssl.trustStorePassword` are set). |
 | `jeap.monitor.metrics.rest.maximum-allowable-jeap-relation-metrics` | `2000`  | Cardinality cap for `jeap_relation`.                                              |
 | `jeap.monitor.metrics.security.maximum-allowable-metrics`           | `1000`  | Cardinality cap for `jeap_rest_endpoint_without_jwt`.                             |
 

@@ -49,11 +49,11 @@ runtime. The choice is **not** driven by Spring profiles but by `JeapLogConfigur
 a Logback context listener that reads context properties bound from Spring (`jeap.logging.platform`,
 `spring.application.name`, `spring.boot.admin.client.*`) plus the `rollingLogFile` Spring profile.
 
-| Format        | Selected when                      | Output                                                                                          |
-|---------------|------------------------------------|-------------------------------------------------------------------------------------------------|
-| `consoletext` | default (no platform set)          | Human-readable console text, pattern `%d %-5level [${app},traceId,spanId] %logger{35} - %msg%n` |
-| `cloudwatch`  | `jeap.logging.platform=cloudwatch` | Structured JSON for AWS CloudWatch, incl. ECS container metadata                                |
-| `rhos`        | `jeap.logging.platform=rhos`       | Structured JSON for RHOS / OpenShift                                                            |
+| Format        | Selected when                      | Output                                                                                                                         |
+|---------------|------------------------------------|--------------------------------------------------------------------------------------------------------------------------------|
+| `consoletext` | default (no platform set)          | Human-readable console text, pattern `%d %highlight(%-5level) [${app},%X{traceId:-},%X{spanId:-}] %cyan(%logger{35}) - %msg%n` |
+| `cloudwatch`  | `jeap.logging.platform=cloudwatch` | Structured JSON for AWS CloudWatch, incl. ECS container metadata                                                               |
+| `rhos`        | `jeap.logging.platform=rhos`       | Structured JSON for RHOS / OpenShift                                                                                           |
 
 In addition, a secondary `ROLLING_FILE` appender is added (alongside the main appender) when the
 `rollingLogFile` Spring profile is active, or when a Spring Boot Admin client is configured
