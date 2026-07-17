@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [24.0.0] - 2026-07-17
+
+### Added
+
+- Provide the official WireMock Spring Boot integration without exposing WireMock's Jetty dependencies, replacing direct WireMock standalone dependencies across all modules.
+
 ## [23.15.0] - 2026-07-15
 
 ### Changed

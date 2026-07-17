@@ -23,6 +23,36 @@ what you want when the test sets the `Authentication` itself (e.g. MockMvc). Imp
 `DisableJeapPermitAllSecurityConfiguration` to suppress it, or `DisableJeapSecurityStarterAutoConfiguration`
 to disable the security starter's auto-configuration entirely.
 
+## WireMock Spring Boot integration
+
+The test-support module includes WireMock's official Spring Boot integration. It uses the standalone
+distribution so WireMock's Jetty dependencies do not conflict with the application's dependency
+versions. Consumers do not need an additional WireMock dependency or a `wiremock-jetty12` exclusion.
+
+Spring Cloud 2025.1 removed `spring-cloud-contract-wiremock`. Replace its
+`@AutoConfigureWireMock` annotation with `@EnableWireMock`; a random port is used by default:
+
+```java
+import com.github.tomakehurst.wiremock.WireMockServer;
+import org.wiremock.spring.EnableWireMock;
+import org.wiremock.spring.InjectWireMock;
+
+@SpringBootTest
+@EnableWireMock
+class MyIntegrationTest {
+
+    @InjectWireMock
+    WireMockServer wireMockServer;
+
+    @Value("${wiremock.server.baseUrl}")
+    String wireMockBaseUrl;
+}
+```
+
+The integration publishes `wiremock.server.baseUrl` and `wiremock.server.port`. Use
+`@ConfigureWireMock` inside `@EnableWireMock` to change these property names, configure a fixed port,
+load mappings or run named WireMock instances.
+
 ## Which approach for which test
 
 | Test kind                                                                 | Supply the token via                                                                              |

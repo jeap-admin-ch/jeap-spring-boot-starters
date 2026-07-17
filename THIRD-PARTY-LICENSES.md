@@ -222,6 +222,8 @@ Apache License Version 2.0
  * Togglz - Spring Security integration - [org.togglz:togglz-spring-security](https://www.togglz.org/togglz-spring-security/)
  * Swagger UI - [org.webjars:swagger-ui](https://www.webjars.org)
  * WireMock - [org.wiremock:wiremock-standalone](http://wiremock.org)
+ * wiremock-spring-boot - [org.wiremock.integrations:wiremock-spring-boot](https://github.com/wiremock/wiremock-spring-boot)
+ * wiremock-spring-boot-standalone - [org.wiremock.integrations:wiremock-spring-boot-standalone](https://github.com/wiremock/wiremock-spring-boot)
  * org.xmlunit:xmlunit-core - [org.xmlunit:xmlunit-core](https://www.xmlunit.org/)
  * SnakeYAML - [org.yaml:snakeyaml](https://bitbucket.org/snakeyaml/snakeyaml)
  * AWS Java SDK :: Annotations - [software.amazon.awssdk:annotations](https://aws.amazon.com/sdkforjava/core/annotations)
