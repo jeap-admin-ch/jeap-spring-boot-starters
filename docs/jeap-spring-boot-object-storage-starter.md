@@ -4,7 +4,7 @@
 S3-compatible object storage. Object storage keeps data as unstructured *objects* in a flat,
 virtually unlimited repository — ideal for cloud-native applications that need to store files,
 backups or archives at scale. The starter targets Amazon S3 in production and works equally with
-S3-compatible providers such as LocalStack / MinIO for local development, so the same application
+S3-compatible providers such as RustFS for local development, so the same application
 code runs everywhere. The configuration prefix is `jeap.s3.client`.
 
 ## How it works
@@ -16,7 +16,7 @@ The auto-configuration `S3ClientConfiguration` is active when `jeap.s3.client.en
   pinned to ignore system properties and environment variables, as a workaround for an AWS SDK proxy
   issue (aws-sdk-java-v2 #4728).
 - **Path-style access** — `pathStyleAccessEnabled(true)` is set on the service configuration, which
-  is what S3-compatible providers (LocalStack, MinIO) require.
+  is what S3-compatible providers (RustFS) require.
 - **Endpoint override** — when `endpoint-url` is set, it is applied as an endpoint override. The URL
   may include the protocol; if it does not, `tls` decides between `https://` and `http://`.
 - **Credentials** — if both `access-key` and `secret-key` are set, static credentials are used;
@@ -36,7 +36,7 @@ jeap:
   s3:
     client:
       region: us-east-1
-      endpoint-url: localhost:4566   # LocalStack; omit on AWS
+      endpoint-url: localhost:4566   # RustFS; omit on AWS
       access-key: ${ACCESS_KEY}      # omit on AWS (use IAM)
       secret-key: ${SECRET_KEY}      # omit on AWS (use IAM)
       tls: false                     # http for local docker; true (default) on AWS
@@ -49,7 +49,7 @@ jeap:
 | `jeap.s3.client.endpoint-url` | —            | Base URL (host[:port], protocol optional) of the S3 provider. Do not set on AWS |
 | `jeap.s3.client.access-key`   | —            | Static access key; usually omitted on AWS (IAM is used instead)                 |
 | `jeap.s3.client.secret-key`   | —            | Static secret key; usually omitted on AWS                                       |
-| `jeap.s3.client.tls`          | `true`       | Use HTTPS; set `false` only for local LocalStack/Docker over HTTP               |
+| `jeap.s3.client.tls`          | `true`       | Use HTTPS; set `false` only for local RustFS/Docker over HTTP                   |
 
 On the various platforms these properties may be set automatically, or the SDK may already be
 preconfigured — check the platform-specific documentation before setting them by hand. The
@@ -80,7 +80,7 @@ public class S3BucketService {
 ## Common patterns and pitfalls
 
 - **AWS vs. local** — on AWS, set only `region` (and rely on IAM); locally, set `endpoint-url`,
-  `tls: false` and static keys for LocalStack/MinIO. The same code path serves both.
+  `tls: false` and static keys for RustFS. The same code path serves both.
 - **Region required** — the default `AWS_GLOBAL` is rarely what you want against a regional bucket;
   set an explicit region that is a valid AWS SDK `Region` value.
 - **Path-style only** — the starter always uses path-style access, which is necessary for

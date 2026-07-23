@@ -49,7 +49,7 @@ public class S3ClientProperties {
 
     /**
      * If set to false it will connect to endpointUrl through http instead of https. This is
-     * needed only for local development where S3 is provided through docker (localstack).
+     * needed only for local development where S3 is provided through docker (RustFS).
      */
     private boolean tls = true;
 
