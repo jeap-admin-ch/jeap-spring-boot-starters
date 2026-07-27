@@ -24,12 +24,16 @@ import java.util.stream.Stream;
 @Slf4j
 class SpringBootActuatorEndpointActivator implements EnvironmentPostProcessor {
 
-    private static final String CONFIG_FILE = "jeap-actuator-spring-boot.properties";
+    private static final List<String> DEFAULT_CONFIG_FILES = List.of(
+            "jeap-actuator.properties",
+            "jeap-monitoring.properties");
+    private static final String ADMIN_ENDPOINT_CONFIG_FILE = "jeap-actuator-spring-boot.properties";
     private static final String ENABLE_ENDPOINT_BY_ID_TEMPLATE = "management.endpoint.%s.enabled";
 
     @Override
     public void postProcessEnvironment(ConfigurableEnvironment environment, @NonNull SpringApplication application) {
-        if (environment.getProperty(MonitoringConfig.ENABLE_ADMIN_ENDPOINTS_PROPERTY, Boolean.class, false)) {
+        DEFAULT_CONFIG_FILES.forEach(configFile -> loadProperties(environment, configFile));
+        if (Boolean.parseBoolean(environment.getProperty(MonitoringConfig.ENABLE_ADMIN_ENDPOINTS_PROPERTY, "false"))) {
             enableSpringBootActuatorProperties(environment);
             enableAdditionalPermittedEndpoints(environment);
             enableLogfileAccessForLogfileEndpoint(environment);
@@ -37,10 +41,14 @@ class SpringBootActuatorEndpointActivator implements EnvironmentPostProcessor {
     }
 
     @SneakyThrows
-    private void enableSpringBootActuatorProperties(ConfigurableEnvironment environment) {
+    private void loadProperties(ConfigurableEnvironment environment, String configFile) {
         PropertiesPropertySourceLoader loader = new PropertiesPropertySourceLoader();
-        Resource resource = new ClassPathResource(CONFIG_FILE);
-        loader.load(CONFIG_FILE, resource).forEach(environment.getPropertySources()::addLast);
+        Resource resource = new ClassPathResource(configFile);
+        loader.load(configFile, resource).forEach(environment.getPropertySources()::addLast);
+    }
+
+    private void enableSpringBootActuatorProperties(ConfigurableEnvironment environment) {
+        loadProperties(environment, ADMIN_ENDPOINT_CONFIG_FILE);
     }
 
     private void enableAdditionalPermittedEndpoints(ConfigurableEnvironment environment) {
@@ -71,7 +79,7 @@ class SpringBootActuatorEndpointActivator implements EnvironmentPostProcessor {
                 .map(this::toEndpointId)
                 .flatMap(Optional::stream)
                 .map(this::toEndpointEnablingPropertyName)
-                .collect(Collectors.toMap( Function.identity(), p -> (Object) "true"));
+                .collect(Collectors.toMap(Function.identity(), p -> (Object) "true"));
     }
 
     private Optional<String> toEndpointId(Class<?> endPointClass) {

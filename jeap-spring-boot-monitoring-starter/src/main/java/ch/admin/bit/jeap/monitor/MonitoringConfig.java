@@ -5,16 +5,12 @@ import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.boot.micrometer.metrics.autoconfigure.MetricsAspectsAutoConfiguration;
-import org.springframework.context.annotation.PropertySource;
 
 /**
  * Configuration for monitoring starter
  */
 @AutoConfiguration(before = MetricsAspectsAutoConfiguration.class)
 @ConfigurationProperties(prefix = "jeap.monitor")
-@PropertySource(value = {
-        "classpath:jeap-actuator.properties",
-        "classpath:jeap-monitoring.properties"})
 @Data
 class MonitoringConfig {
 

@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [24.5.0] - 2026-07-28
+
+### Changed
+
+- Load the existing monitoring and Actuator defaults early through
+  `SpringBootActuatorEndpointActivator`, while retaining lower precedence than application
+  configuration. Our working assumption is that loading these defaults later via
+  `@PropertySource` allowed Spring Boot 4 to evaluate the Prometheus auto-configuration before the
+  endpoint was enabled, so `/actuator/prometheus` was not registered and requests fell through to
+  the application's OAuth security chain. The existing `management.endpoint.<id>.enabled`
+  properties remain unchanged for backwards compatibility.
+
 ## [24.4.0] - 2026-07-25
 
 ### Changed

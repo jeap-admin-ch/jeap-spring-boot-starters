@@ -38,7 +38,8 @@ stored encrypted, e.g. with bcrypt.
 ## Endpoints
 
 Endpoints are disabled by default and selectively enabled (`management.endpoints.enabled-by-default=false`,
-JMX exposure excluded, web exposure `*`). Security is wired by the `ActuatorSecurity` filter chain at
+JMX exposure excluded, web exposure `*`). These defaults are loaded early during environment
+post-processing so that endpoint auto-configuration can evaluate them. Security is wired by the `ActuatorSecurity` filter chain at
 high precedence (`HIGHEST_PRECEDENCE + 9`), with two in-memory Basic-auth users.
 
 | Endpoint                                                                                    | Path                   | Default access                                                                                               |
