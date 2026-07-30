@@ -9,6 +9,7 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionStatus;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
@@ -42,8 +43,15 @@ public class ReadReplicaAwareTransactionManager implements PlatformTransactionMa
     private final boolean routeTransactionsToReadReplica;
     private final Supplier<MeterRegistry> meterRegistrySupplier;
 
-    private Counter readReplicaCounter;
-    private Counter readWriteCounter;
+    /**
+     * The counters are created lazily, as the {@link MeterRegistry} cannot be resolved yet when this transaction
+     * manager is created early in the spring context lifecycle. Both counters are held in a single immutable,
+     * volatile field such that they are always published together: transactions may be started concurrently by
+     * multiple threads as soon as the application accepts work, and a partially initialized state would lead to
+     * NullPointerExceptions failing those transactions.
+     */
+    private volatile TransactionCounters transactionCounters;
+    private final AtomicBoolean counterInitializationFailureLogged = new AtomicBoolean();
 
     public ReadReplicaAwareTransactionManager(PlatformTransactionManager delegate,
                                               boolean routeTransactionsToReadReplica,
@@ -53,15 +61,23 @@ public class ReadReplicaAwareTransactionManager implements PlatformTransactionMa
         this.meterRegistrySupplier = meterRegistrySupplier;
     }
 
-    private void initCounters() {
-        if (readReplicaCounter == null) {
-            this.readReplicaCounter = Counter.builder(JEAP_AWS_DB_TRANSACTION_READREPLICA)
-                    .description("Transactions routed to read replicas")
-                    .register(meterRegistrySupplier.get());
-            this.readWriteCounter = Counter.builder(JEAP_AWS_DB_TRANSACTION_RW)
-                    .description("Writer instance transactions")
-                    .register(meterRegistrySupplier.get());
+    private TransactionCounters getOrCreateCounters() {
+        TransactionCounters existingCounters = transactionCounters;
+        if (existingCounters != null) {
+            return existingCounters;
         }
+        MeterRegistry meterRegistry = meterRegistrySupplier.get();
+        // Concurrent initialization is harmless: the meter registry returns the already registered meter for a
+        // meter id that has been registered before, i.e. all threads end up using the same counter instances.
+        TransactionCounters createdCounters = new TransactionCounters(
+                Counter.builder(JEAP_AWS_DB_TRANSACTION_READREPLICA)
+                        .description("Transactions routed to read replicas")
+                        .register(meterRegistry),
+                Counter.builder(JEAP_AWS_DB_TRANSACTION_RW)
+                        .description("Writer instance transactions")
+                        .register(meterRegistry));
+        transactionCounters = createdCounters;
+        return createdCounters;
     }
 
     @Override
@@ -108,11 +124,23 @@ public class ReadReplicaAwareTransactionManager implements PlatformTransactionMa
     }
 
     private void updateMetric(boolean readReplica) {
-        initCounters();
+        TransactionCounters counters;
+        try {
+            counters = getOrCreateCounters();
+        } catch (RuntimeException e) {
+            // Counting transactions must never make transaction handling fail. Resolving the meter registry can
+            // fail while the spring context is still starting up, in which case the counters are created on a
+            // later transaction.
+            if (counterInitializationFailureLogged.compareAndSet(false, true)) {
+                log.debug("Unable to create the transaction counters, transactions will not be counted until the " +
+                          "meter registry is available.", e);
+            }
+            return;
+        }
         if (readReplica) {
-            readReplicaCounter.increment();
+            counters.readReplica().increment();
         } else {
-            readWriteCounter.increment();
+            counters.readWrite().increment();
         }
     }
 
@@ -170,5 +198,8 @@ public class ReadReplicaAwareTransactionManager implements PlatformTransactionMa
     private static void clearTransactionThreadLocals() {
         TOP_LEVEL_TRANSACTION_READ_ONLY.remove();
         TOP_LEVEL_TRANSACTION_ROUTED_TO_READ_REPLICA.remove();
+    }
+
+    private record TransactionCounters(Counter readReplica, Counter readWrite) {
     }
 }
