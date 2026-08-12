@@ -21,6 +21,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.servlet.resource.ResourceHttpRequestHandler;
 
 import java.util.List;
 import java.util.Optional;
@@ -41,6 +42,7 @@ class ServletRequestSecurityTracerTest {
     }
 
     private static final String BEST_MATCHING_PATTERN_ATTRIBUTE_NAME = "org.springframework.web.servlet.HandlerMapping.bestMatchingPattern";
+    private static final String BEST_MATCHING_HANDLER_ATTRIBUTE_NAME = "org.springframework.web.servlet.HandlerMapping.bestMatchingHandler";
     private static final String CONTEXT = "/test-context";
 
     @Mock
@@ -104,6 +106,7 @@ class ServletRequestSecurityTracerTest {
         HttpServletRequest requestMock = mock(HttpServletRequest.class);
         HttpServletResponse responseMock = mock(HttpServletResponse.class);
         when(requestMock.getAttribute(FrontendRouteRequestMarker.FRONTEND_ROUTE_ATTRIBUTE)).thenReturn(Boolean.FALSE);
+        when(requestMock.getAttribute(BEST_MATCHING_HANDLER_ATTRIBUTE_NAME)).thenReturn(new Object());
         when(requestMock.getAttribute(BEST_MATCHING_PATTERN_ATTRIBUTE_NAME)).thenReturn("/api/foo/{id}");
         when(requestMock.getMethod()).thenReturn("GET");
         when(responseMock.getStatus()).thenReturn(200);
@@ -112,6 +115,44 @@ class ServletRequestSecurityTracerTest {
 
         verify(restSecurityResponseListener).onResponse(restResponseSecurityTraceCaptor.capture());
         assertThat(restResponseSecurityTraceCaptor.getValue().requestUriPattern()).isEqualTo("/api/foo/{id}");
+    }
+
+    @SneakyThrows
+    @Test
+    void doFilterInternal_staticResourceRequest_restSecurityResponseListenerNotCalled() {
+        doFilterInternalWithHandler(new ResourceHttpRequestHandler());
+
+        verify(restSecurityResponseListener, never()).onResponse(any(RestResponseSecurityTrace.class));
+    }
+
+    @SneakyThrows
+    @Test
+    void doFilterInternal_customResourceHandlerSubclassRequest_restSecurityResponseListenerNotCalled() {
+        doFilterInternalWithHandler(new CustomResourceHttpRequestHandler());
+
+        verify(restSecurityResponseListener, never()).onResponse(any(RestResponseSecurityTrace.class));
+    }
+
+    @SneakyThrows
+    @Test
+    void doFilterInternal_controllerHandlerRequest_restSecurityResponseListenerCalled() {
+        doFilterInternalWithHandler(new Object());
+
+        verify(restSecurityResponseListener).onResponse(restResponseSecurityTraceCaptor.capture());
+        assertThat(restResponseSecurityTraceCaptor.getValue().requestUriPattern()).isEqualTo("/api/foo");
+    }
+
+    @SneakyThrows
+    private void doFilterInternalWithHandler(Object handler) {
+        HttpServletRequest requestMock = mock(HttpServletRequest.class);
+        HttpServletResponse responseMock = mock(HttpServletResponse.class);
+        when(requestMock.getAttribute(FrontendRouteRequestMarker.FRONTEND_ROUTE_ATTRIBUTE)).thenReturn(null);
+        when(requestMock.getAttribute(BEST_MATCHING_HANDLER_ATTRIBUTE_NAME)).thenReturn(handler);
+        lenient().when(requestMock.getAttribute(BEST_MATCHING_PATTERN_ATTRIBUTE_NAME)).thenReturn("/api/foo");
+        lenient().when(requestMock.getMethod()).thenReturn("GET");
+        lenient().when(responseMock.getStatus()).thenReturn(200);
+
+        servletRequestSecurityTracer.doFilterInternal(requestMock, responseMock, mock(FilterChain.class));
     }
 
     @SneakyThrows
@@ -131,6 +172,7 @@ class ServletRequestSecurityTracerTest {
         HttpServletRequest requestMock = mock(HttpServletRequest.class);
         HttpServletResponse responseMock = mock(HttpServletResponse.class);
         when(requestMock.getAttribute(FrontendRouteRequestMarker.FRONTEND_ROUTE_ATTRIBUTE)).thenReturn(null);
+        when(requestMock.getAttribute(BEST_MATCHING_HANDLER_ATTRIBUTE_NAME)).thenReturn(null);
         if (isRestRequest && (requestUriPattern != null)) {
             when(requestMock.getAttribute(BEST_MATCHING_PATTERN_ATTRIBUTE_NAME)).thenReturn(requestUriPattern);
         } else {
@@ -157,6 +199,10 @@ class ServletRequestSecurityTracerTest {
             verify(restSecurityResponseListener, never()).onResponse(any(RestResponseSecurityTrace.class));
         }
 
+    }
+
+
+    static class CustomResourceHttpRequestHandler extends ResourceHttpRequestHandler {
     }
 
 }

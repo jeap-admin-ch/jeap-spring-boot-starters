@@ -9,11 +9,15 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
-- SPA frontend routes are no longer counted as REST endpoints called without a JWT bearer token:
-  requests answered with `index.html` by the `FrontendRouteRedirectExceptionHandler` of the application
-  starter are marked as frontend routes and excluded from the security tracing feeding the metric
-  `jeap_rest_endpoint_without_jwt`. Applications serving frontend routes with their own handler can mark
-  such requests using the new `FrontendRouteRequestMarker` of `jeap-spring-boot-rest-request-tracing`.
+- Requests not reaching a backend endpoint are no longer counted as REST endpoints called without a JWT
+  bearer token in the metric `jeap_rest_endpoint_without_jwt`:
+  - SPA deep links answered with `index.html` by the `FrontendRouteRedirectExceptionHandler` of the
+    application starter are marked as frontend routes and excluded from the security tracing.
+    Applications serving frontend routes with their own handler can mark such requests using the new
+    `FrontendRouteRequestMarker` of `jeap-spring-boot-rest-request-tracing`.
+  - Requests served by the static resource handler - the SPA entry point on the application root, its
+    assets, and paths not matching any handler - are excluded as well. Responses produced by a backend
+    endpoint are still traced, including the ones with status 404.
 
 ## [24.12.0] - 2026-08-12
 

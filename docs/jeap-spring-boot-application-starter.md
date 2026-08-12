@@ -78,9 +78,10 @@ A request served with `index.html` is additionally marked as a frontend route (r
 not reach a backend endpoint, so they are excluded from the security tracing behind the
 `jeap_rest_endpoint_without_jwt` metric of the
 [monitoring starter](jeap-spring-boot-monitoring-starter.md) — SPA deep links without a JWT no longer
-raise "endpoint called without a JWT bearer token" alerts. Applications that serve frontend routes with
-a handler of their own instead of `FrontendRouteRedirectExceptionHandler` should mark such requests
-themselves:
+raise "endpoint called without a JWT bearer token" alerts. The SPA entry point itself and its assets are
+excluded by the same metric as well, as they are served by the static resource handler. Applications
+that serve frontend routes with a handler of their own instead of
+`FrontendRouteRedirectExceptionHandler` should mark such requests themselves:
 
 ```java
 FrontendRouteRequestMarker.markAsFrontendRoute(request); // ServletRequest or WebRequest

@@ -33,6 +33,18 @@ class ServletRequestSecurityTracer extends OncePerRequestFilter {
      */
     private static final String BEST_MATCHING_PATTERN_ATTRIBUTE = "org.springframework.web.servlet.HandlerMapping.bestMatchingPattern";
 
+    /**
+     * See org.springframework.web.servlet.HandlerMapping.BEST_MATCHING_HANDLER_ATTRIBUTE -
+     * using a String attribute name here to avoid a dependency on spring-webmvc
+     */
+    private static final String BEST_MATCHING_HANDLER_ATTRIBUTE = "org.springframework.web.servlet.HandlerMapping.bestMatchingHandler";
+
+    /**
+     * Name of the spring-webmvc handler serving static resources, i.e. the entry point of a single page application
+     * and its assets
+     */
+    private static final String RESOURCE_HANDLER_CLASS_NAME = "org.springframework.web.servlet.resource.ResourceHttpRequestHandler";
+
     private final Pattern filterPattern;
     private final Optional<RestSecurityResponseListener> restSecurityResponseListener;
 
@@ -51,15 +63,29 @@ class ServletRequestSecurityTracer extends OncePerRequestFilter {
         try {
             filterChain.doFilter(request, response);
         } finally {
-            // Requests answered with the entry point of a single page application did not target a backend endpoint
+            // Requests answered with a frontend route or a static resource (e.g. the entry point of a single page
+            // application and its assets) did not target a backend endpoint
             // -> do not trace them as endpoints called without authentication
-            if (!FrontendRouteRequestMarker.isFrontendRoute(request)) {
+            if (!FrontendRouteRequestMarker.isFrontendRoute(request) && !isStaticResourceRequest(request)) {
                 String requestPathPattern = getRequestPathPattern(request);
                 if (StringUtils.hasText(requestPathPattern)) {
                     traceRequest(request.getMethod(), requestPathPattern, response.getStatus());
                 }
             }
         }
+    }
+
+    private boolean isStaticResourceRequest(HttpServletRequest request) {
+        Object handler = request.getAttribute(BEST_MATCHING_HANDLER_ATTRIBUTE);
+        if (handler == null) {
+            return false;
+        }
+        for (Class<?> handlerClass = handler.getClass(); handlerClass != null; handlerClass = handlerClass.getSuperclass()) {
+            if (RESOURCE_HANDLER_CLASS_NAME.equals(handlerClass.getName())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private String getRequestPathPattern(HttpServletRequest request) {

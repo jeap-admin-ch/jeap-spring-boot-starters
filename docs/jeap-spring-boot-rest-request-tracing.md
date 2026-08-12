@@ -28,7 +28,9 @@ its servlet filters:
 - **`ServletRequestSecurityTracer`** — a lowest-precedence filter that traces the request *after* the
   security context is established (so authentication is known), emitting `RestResponseSecurityTrace` to
   an optional `RestSecurityResponseListener`. It skips `uri-filter-pattern` matches, 401/403
-  responses and requests marked as frontend routes (see below).
+  responses, requests marked as frontend routes (see below) and requests served by the spring-webmvc
+  static resource handler (`ResourceHttpRequestHandler` — the SPA entry point, its assets and paths
+  matching no handler), so that only requests actually reaching a backend endpoint are traced.
 - **`FrontendRouteRequestMarker`** — marks a request as a single-page-application route, i.e. a request
   answered with the SPA entry point (`index.html`) instead of by a backend endpoint. Marked requests are
   excluded from the security tracing above, so SPA deep links do not show up as endpoints called without
