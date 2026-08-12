@@ -1,5 +1,6 @@
 package ch.admin.bit.jeap.rest.tracing.security;
 
+import ch.admin.bit.jeap.rest.tracing.FrontendRouteRequestMarker;
 import ch.admin.bit.jeap.rest.tracing.TracerConfiguration;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -50,9 +51,13 @@ class ServletRequestSecurityTracer extends OncePerRequestFilter {
         try {
             filterChain.doFilter(request, response);
         } finally {
-            String requestPathPattern = getRequestPathPattern(request);
-            if (StringUtils.hasText(requestPathPattern)) {
-                traceRequest(request.getMethod(), requestPathPattern, response.getStatus());
+            // Requests answered with the entry point of a single page application did not target a backend endpoint
+            // -> do not trace them as endpoints called without authentication
+            if (!FrontendRouteRequestMarker.isFrontendRoute(request)) {
+                String requestPathPattern = getRequestPathPattern(request);
+                if (StringUtils.hasText(requestPathPattern)) {
+                    traceRequest(request.getMethod(), requestPathPattern, response.getStatus());
+                }
             }
         }
     }

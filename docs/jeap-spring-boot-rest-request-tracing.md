@@ -27,8 +27,15 @@ its servlet filters:
   elapsed time). Async dispatches are skipped.
 - **`ServletRequestSecurityTracer`** — a lowest-precedence filter that traces the request *after* the
   security context is established (so authentication is known), emitting `RestResponseSecurityTrace` to
-  an optional `RestSecurityResponseListener`. It skips `uri-filter-pattern` matches and 401/403
-  responses.
+  an optional `RestSecurityResponseListener`. It skips `uri-filter-pattern` matches, 401/403
+  responses and requests marked as frontend routes (see below).
+- **`FrontendRouteRequestMarker`** — marks a request as a single-page-application route, i.e. a request
+  answered with the SPA entry point (`index.html`) instead of by a backend endpoint. Marked requests are
+  excluded from the security tracing above, so SPA deep links do not show up as endpoints called without
+  a JWT. The application starter's `FrontendRouteRedirectExceptionHandler` marks such requests
+  automatically; applications with their own frontend route handler can call
+  `FrontendRouteRequestMarker.markAsFrontendRoute(request)` (accepting a `ServletRequest` or a
+  `WebRequest`) themselves.
 - **`ServletStoreUserFilter`** — present only when the jEAP security `JeapAuthenticationToken` is on the
   classpath; stores the token subject as a request attribute so `RestRequestTracer` can report `user`.
 - **`AddSenderSystemHeaderToRestClient`** — a `RestClientCustomizer` (when `RestClient.Builder` is on

@@ -1,11 +1,14 @@
 package ch.admin.bit.jeap.rest.tracing.security;
 
+import ch.admin.bit.jeap.rest.tracing.FrontendRouteRequestMarker;
 import ch.admin.bit.jeap.rest.tracing.TracerConfiguration;
+import jakarta.servlet.DispatcherType;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -85,10 +88,49 @@ class ServletRequestSecurityTracerTest {
     }
 
     @SneakyThrows
+    @Test
+    void doFilterInternal_frontendRouteRequest_restSecurityResponseListenerNotCalled() {
+        HttpServletRequest requestMock = mock(HttpServletRequest.class);
+        when(requestMock.getAttribute(FrontendRouteRequestMarker.FRONTEND_ROUTE_ATTRIBUTE)).thenReturn(Boolean.TRUE);
+
+        servletRequestSecurityTracer.doFilterInternal(requestMock, mock(HttpServletResponse.class), mock(FilterChain.class));
+
+        verify(restSecurityResponseListener, never()).onResponse(any(RestResponseSecurityTrace.class));
+    }
+
+    @SneakyThrows
+    @Test
+    void doFilterInternal_requestNotMarkedAsFrontendRoute_restSecurityResponseListenerCalled() {
+        HttpServletRequest requestMock = mock(HttpServletRequest.class);
+        HttpServletResponse responseMock = mock(HttpServletResponse.class);
+        when(requestMock.getAttribute(FrontendRouteRequestMarker.FRONTEND_ROUTE_ATTRIBUTE)).thenReturn(Boolean.FALSE);
+        when(requestMock.getAttribute(BEST_MATCHING_PATTERN_ATTRIBUTE_NAME)).thenReturn("/api/foo/{id}");
+        when(requestMock.getMethod()).thenReturn("GET");
+        when(responseMock.getStatus()).thenReturn(200);
+
+        servletRequestSecurityTracer.doFilterInternal(requestMock, responseMock, mock(FilterChain.class));
+
+        verify(restSecurityResponseListener).onResponse(restResponseSecurityTraceCaptor.capture());
+        assertThat(restResponseSecurityTraceCaptor.getValue().requestUriPattern()).isEqualTo("/api/foo/{id}");
+    }
+
+    @SneakyThrows
+    @Test
+    void doFilterInternal_asyncDispatch_restSecurityResponseListenerNotCalled() {
+        HttpServletRequest requestMock = mock(HttpServletRequest.class);
+        when(requestMock.getDispatcherType()).thenReturn(DispatcherType.ASYNC);
+
+        servletRequestSecurityTracer.doFilterInternal(requestMock, mock(HttpServletResponse.class), mock(FilterChain.class));
+
+        verify(restSecurityResponseListener, never()).onResponse(any(RestResponseSecurityTrace.class));
+    }
+
+    @SneakyThrows
     private void doFilterInternal(String requestUriPattern, boolean isRestRequest, int statusCode, boolean traceRequest) {
         String method = "POST";
         HttpServletRequest requestMock = mock(HttpServletRequest.class);
         HttpServletResponse responseMock = mock(HttpServletResponse.class);
+        when(requestMock.getAttribute(FrontendRouteRequestMarker.FRONTEND_ROUTE_ATTRIBUTE)).thenReturn(null);
         if (isRestRequest && (requestUriPattern != null)) {
             when(requestMock.getAttribute(BEST_MATCHING_PATTERN_ATTRIBUTE_NAME)).thenReturn(requestUriPattern);
         } else {

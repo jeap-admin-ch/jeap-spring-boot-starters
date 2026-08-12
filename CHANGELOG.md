@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- SPA frontend routes are no longer counted as REST endpoints called without a JWT bearer token:
+  requests answered with `index.html` by the `FrontendRouteRedirectExceptionHandler` of the application
+  starter are marked as frontend routes and excluded from the security tracing feeding the metric
+  `jeap_rest_endpoint_without_jwt`. Applications serving frontend routes with their own handler can mark
+  such requests using the new `FrontendRouteRequestMarker` of `jeap-spring-boot-rest-request-tracing`.
+
 ## [24.12.0] - 2026-08-12
 
 ### Changed

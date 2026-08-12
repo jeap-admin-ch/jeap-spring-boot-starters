@@ -1,5 +1,6 @@
 package ch.admin.bit.jeap.starter.application.web;
 
+import ch.admin.bit.jeap.rest.tracing.FrontendRouteRequestMarker;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
@@ -39,6 +40,9 @@ public class FrontendRouteRedirectExceptionHandler extends ResponseEntityExcepti
     protected ResponseEntity<Object> handleNoResourceFoundException(NoResourceFoundException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
         // If the request looks like a frontend route, return index.html
         if (mightBeFrontendRoute(request)) {
+            // Mark the request as a frontend route, i.e. as a request not targeting a backend endpoint, to exclude it
+            // from the security tracing detecting endpoints being called without a JWT bearer token
+            FrontendRouteRequestMarker.markAsFrontendRoute(request);
             return new ResponseEntity<>(new ClassPathResource("/static/index.html"), headers, 200);
         }
         // Otherwise, generate a 404 NOT FOUND response

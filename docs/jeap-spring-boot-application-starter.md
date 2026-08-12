@@ -72,6 +72,20 @@ public class MyControllerAdvice extends FrontendRouteRedirectExceptionHandler {
 Pass a custom set of non-frontend path parts to the constructor to override the `api`/`actuator`
 defaults.
 
+A request served with `index.html` is additionally marked as a frontend route (request attribute
+`ch.admin.bit.jeap.rest.tracing.frontendRoute`, set via `FrontendRouteRequestMarker` from
+[`jeap-spring-boot-rest-request-tracing`](jeap-spring-boot-rest-request-tracing.md)). Such requests did
+not reach a backend endpoint, so they are excluded from the security tracing behind the
+`jeap_rest_endpoint_without_jwt` metric of the
+[monitoring starter](jeap-spring-boot-monitoring-starter.md) — SPA deep links without a JWT no longer
+raise "endpoint called without a JWT bearer token" alerts. Applications that serve frontend routes with
+a handler of their own instead of `FrontendRouteRedirectExceptionHandler` should mark such requests
+themselves:
+
+```java
+FrontendRouteRequestMarker.markAsFrontendRoute(request); // ServletRequest or WebRequest
+```
+
 ### Other defaults
 
 The starter also raises `server.max-http-request-header-size` to `64KB` (large auth headers / tokens).

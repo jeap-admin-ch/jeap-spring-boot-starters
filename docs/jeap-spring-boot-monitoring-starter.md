@@ -92,6 +92,13 @@ metrics, all surfaced on the Prometheus endpoint:
 The two REST counters are cardinality-capped to protect Prometheus from a label explosion: once the
 limit is reached, new label combinations are dropped.
 
+`jeap_rest_endpoint_without_jwt` counts requests that were not filtered out by
+`jeap.rest.tracing.uri-filter-pattern` (default: actuator endpoints), did not answer with 401/403 and
+were not marked as a single-page-application route. Requests answered with the SPA entry point
+(`index.html`) by the application starter's `FrontendRouteRedirectExceptionHandler` are marked as
+frontend routes and therefore excluded — see
+[SPA frontend route handling](jeap-spring-boot-application-starter.md#frontend-route-handling).
+
 | Property                                                            | Default | Description                                                                       |
 |---------------------------------------------------------------------|---------|-----------------------------------------------------------------------------------|
 | `jeap.health.metric.update-rate-seconds`                            | `120`   | Health-metric refresh interval, in seconds. `-1` disables the metric.             |
