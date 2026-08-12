@@ -16,7 +16,6 @@
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-common</artifactId>
-            <version>${springdoc-openapi.version}</version>
         </dependency>
         <dependency>
             <groupId>ch.admin.bit.jeap</groupId>

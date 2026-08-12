@@ -39,7 +39,6 @@
         <dependency>
             <groupId>org.wiremock.integrations</groupId>
             <artifactId>wiremock-spring-boot-standalone</artifactId>
-            <version>${wiremock-spring-boot.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -60,7 +59,6 @@
         <dependency>
             <groupId>org.junit-pioneer</groupId>
             <artifactId>junit-pioneer</artifactId>
-            <version>${junit-pioneer.version}</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
