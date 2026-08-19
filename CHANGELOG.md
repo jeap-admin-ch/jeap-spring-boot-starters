@@ -11,6 +11,11 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Update parent from 8.13.0 to 9.0.0
 
+### Fixed
+
+- Fix failing token introspection when a client id contains colons by URL-encoding the client id and secret before
+  using them as basic auth credentials (see RFC 6749).
+
 ## [24.18.0] - 2026-08-19
 
 ### Changed

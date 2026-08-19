@@ -11,6 +11,8 @@ import org.springframework.security.oauth2.server.resource.introspection.SpringO
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestOperations;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 @Slf4j
@@ -43,10 +45,15 @@ class DelegatingToSpringJeapTokenIntrospector implements JeapTokenIntrospector {
 
     private RestOperations createRestOperations(JeapTokenIntrospectorConfiguration config) {
         RestTemplateBuilder restTemplateBuilder = new RestTemplateBuilder();
+        // RFC 6749 section 2.3.1 requires the client credentials to be form-urlencoded before they are used as
+        // basic auth username and password. This also allows for client ids containing colons, which basic auth
+        // would otherwise not permit.
         return restTemplateBuilder
                 .connectTimeout(config.connectTimeout())
                 .readTimeout(config.readTimeout())
-                .interceptors(new BasicAuthenticationInterceptor(config.clientId(), config.clientSecret()))
+                .interceptors(new BasicAuthenticationInterceptor(
+                        URLEncoder.encode(config.clientId(), StandardCharsets.UTF_8),
+                        URLEncoder.encode(config.clientSecret(), StandardCharsets.UTF_8)))
                 .build();
     }
 

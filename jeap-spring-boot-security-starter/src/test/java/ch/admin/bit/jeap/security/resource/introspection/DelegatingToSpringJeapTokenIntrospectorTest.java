@@ -9,6 +9,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
@@ -69,6 +71,36 @@ class DelegatingToSpringJeapTokenIntrospectorTest {
         assertThat(attributes.get("scope")).isEqualTo(List.of("openid", "email"));
     }
 
+
+    @Test
+    void introspect_withUrnClientIdContainingColons_shouldAuthenticateWithUrlEncodedCredentials() {
+        // As required by RFC 6749 section 2.3.1, the client credentials must be form-urlencoded before they are used
+        // as basic auth username and password. This also enables URN-style client ids containing colons.
+        final String urnClientId = "urn:example:some-resource-server";
+        final String secretWithSpecialChars = "some+secret:with?special&chars";
+        stubFor(post(urlEqualTo(INTROSPECTION_PATH))
+                .withBasicAuth(
+                        URLEncoder.encode(urnClientId, StandardCharsets.UTF_8),
+                        URLEncoder.encode(secretWithSpecialChars, StandardCharsets.UTF_8))
+                .withRequestBody(containing("token=" + VALID_TOKEN))
+                .willReturn(aResponse()
+                        .withStatus(HttpStatus.OK.value())
+                        .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                        .withBody("""
+                                { "active": true }
+                                """)
+                )
+        );
+        JeapTokenIntrospectorConfiguration config = createIntrospectorConfig(issuer, urnClientId, secretWithSpecialChars);
+        JeapTokenIntrospector tokenIntrospector = new DelegatingToSpringJeapTokenIntrospector(config);
+
+        // Call the introspector
+        Map<String, Object> attributes = tokenIntrospector.introspect(VALID_TOKEN);
+
+        // Assert that a request with the url-encoded credentials was made and introspection succeeded
+        verify(postRequestedFor(urlEqualTo(INTROSPECTION_PATH)));
+        assertThat(attributes.get("active")).isEqualTo(true);
+    }
 
     @Test
     void introspect_withInvalidToken_shouldThrowIntrospectionInvalidTokenException() {
@@ -166,11 +198,15 @@ class DelegatingToSpringJeapTokenIntrospectorTest {
 
 
     private JeapTokenIntrospectorConfiguration createIntrospectorConfig(String issuer) {
+        return createIntrospectorConfig(issuer, CLIENT_ID, CLIENT_SECRET);
+    }
+
+    private JeapTokenIntrospectorConfiguration createIntrospectorConfig(String issuer, String clientId, String clientSecret) {
         return new JeapTokenIntrospectorConfiguration(
                 issuer,
                 issuer + INTROSPECTION_PATH,
-                CLIENT_ID,
-                CLIENT_SECRET,
+                clientId,
+                clientSecret,
                 INTROSPECTOR_TIMEOUT,
                 INTROSPECTOR_TIMEOUT
         );
