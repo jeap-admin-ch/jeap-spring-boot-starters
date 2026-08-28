@@ -7,7 +7,7 @@
     <parent>
         <groupId>ch.admin.bit.jeap</groupId>
         <artifactId>jeap-spring-boot-starters</artifactId>
-        <version>24.23.0-SNAPSHOT</version>
+        <version>24.23.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>jeap-spring-boot-postgresql-aws-starter</artifactId>
@@ -33,6 +33,10 @@
                 <!-- URL connection client (JDK default, no dependencies) is added as dependency -->
                 <exclusion>
                     <groupId>software.amazon.awssdk</groupId>
+                    <artifactId>apache-client</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>software.amazon.awssdk</groupId>
                     <artifactId>apache5-client</artifactId>
                 </exclusion>
                 <exclusion>
@@ -45,6 +49,10 @@
             <groupId>software.amazon.jdbc</groupId>
             <artifactId>aws-advanced-jdbc-wrapper</artifactId>
             <exclusions>
+                <exclusion>
+                    <groupId>software.amazon.awssdk</groupId>
+                    <artifactId>apache-client</artifactId>
+                </exclusion>
                 <exclusion>
                     <groupId>software.amazon.awssdk</groupId>
                     <artifactId>apache5-client</artifactId>
