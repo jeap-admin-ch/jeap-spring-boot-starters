@@ -1,19 +1,27 @@
 package ch.admin.bit.jeap.security.it.resource;
 
 import com.nimbusds.jwt.JWT;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.springframework.http.HttpStatus;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.Matchers.equalTo;
 
-public class AbstractTokenIntrospectionIT extends TokenIntrospectionITBase {
+/**
+ * Token introspection tests. The test methods are annotated here, so that stack-specific subclasses only need to
+ * provide the application context, which allows running these tests unchanged against differently configured contexts.
+ */
+public abstract class AbstractTokenIntrospectionIT extends TokenIntrospectionITBase {
 
     protected AbstractTokenIntrospectionIT(int serverPort, String context) {
         super(serverPort, context);
     }
 
+    @Test
     protected void testGetAuth_whenNoRolesInTokenAndReadRoleInActiveIntrospectionResponse_ThenReadRoleInAuthenticationAndAccessGranted() {
         final JWT jwt = createBearerToken(null);
         final List<String> userroles = List.of(SEMANTIC_AUTH_READ_ROLE); // grants access to /auth
@@ -27,6 +35,7 @@ public class AbstractTokenIntrospectionIT extends TokenIntrospectionITBase {
         verifyTokenIntrospectionRequest(1);
     }
 
+    @Test
     protected void testGetAuth_whenReadRoleInTokenAndActiveIntrospectionResponse_ThenReadRoleInAuthenticationAndAccessGranted() {
         final List<String> userroles = List.of(SEMANTIC_AUTH_READ_ROLE); // grants access to /auth
         final JWT jwt = createBearerToken(Map.of(USER_ROLES_CLAIM_NAME, userroles));
@@ -40,6 +49,7 @@ public class AbstractTokenIntrospectionIT extends TokenIntrospectionITBase {
         verifyTokenIntrospectionRequest(1);
     }
 
+    @Test
     protected void testGetAuth_whenNoRolesInTokenAndReadRoleInNonActiveIntrospectionResponse_ThenUnauthorized() {
         final JWT jwt = createBearerToken(null);
         final List<String> userroles = List.of(SEMANTIC_AUTH_READ_ROLE); // grants access to /auth
@@ -49,6 +59,7 @@ public class AbstractTokenIntrospectionIT extends TokenIntrospectionITBase {
         verifyTokenIntrospectionRequest(1);
     }
 
+    @Test
     protected void testGetAuth_whenReadRoleInTokenAndNonActiveIntrospectionResponse_ThenUnauthorized() {
         final List<String> userroles = List.of(SEMANTIC_AUTH_READ_ROLE); // grants access to /auth
         final JWT jwt = createBearerToken(Map.of(USER_ROLES_CLAIM_NAME, userroles));
@@ -58,6 +69,7 @@ public class AbstractTokenIntrospectionIT extends TokenIntrospectionITBase {
         verifyTokenIntrospectionRequest(1);
     }
 
+    @Test
     protected void testGetAuth_whenNoRolesInTokenAndNoRolesInActiveIntrospectionResponse_ThenAccessDenied() {
         final JWT jwt = createBearerToken(null);
         stubTokenIntrospectionRequest(jwt, true, null);
@@ -66,6 +78,7 @@ public class AbstractTokenIntrospectionIT extends TokenIntrospectionITBase {
         verifyTokenIntrospectionRequest(1);
     }
 
+    @Test
     protected void testGetAuth_whenNoRolesInTokenAndNoRolesInInactiveIntrospectionResponse_ThenUnauthorized() {
         final JWT jwt = createBearerToken(null);
         stubTokenIntrospectionRequest(jwt, false, null);
@@ -74,6 +87,7 @@ public class AbstractTokenIntrospectionIT extends TokenIntrospectionITBase {
         verifyTokenIntrospectionRequest(1);
     }
 
+    @Test
     protected void testGetAuth_whenIntrospectionRequestError_ThenInternalServerError() {
         final JWT jwt = createBearerToken(null);
         stubTokenIntrospectionErrorResponseRequest();
@@ -82,6 +96,8 @@ public class AbstractTokenIntrospectionIT extends TokenIntrospectionITBase {
         verifyTokenIntrospectionRequest(1);
     }
 
+    @Test
+    @Timeout(value = 5, unit = TimeUnit.SECONDS)
     protected void testGetAuth_whenIntrospectionRequestTimesOut_ThenInternalServerError() {
         final JWT jwt = createBearerToken(null);
         stubTokenIntrospectionRequestWithDelayedResponse(jwt, 2000); // longer than the configured introspection timeouts

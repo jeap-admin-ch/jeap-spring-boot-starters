@@ -4,13 +4,14 @@ import ch.admin.bit.jeap.security.it.resource.AbstractTokenIntrospectionDisabled
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.server.LocalServerPort;
 
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT, properties = { "server.port=8032"})
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @SuppressWarnings("java:S2699") // asserts are in the super class methods, but sonar does not get it
 class TokenIntrospectionDisabledOnAuthServerWebmvcIT extends AbstractTokenIntrospectionDisabledOnAuthServerIT {
 
-    protected TokenIntrospectionDisabledOnAuthServerWebmvcIT(@Value("${server.port}") int serverPort, @Value("${spring.application.name}") String context) {
+    protected TokenIntrospectionDisabledOnAuthServerWebmvcIT(@LocalServerPort int serverPort, @Value("${spring.application.name}") String context) {
         super(serverPort, context);
     }
 

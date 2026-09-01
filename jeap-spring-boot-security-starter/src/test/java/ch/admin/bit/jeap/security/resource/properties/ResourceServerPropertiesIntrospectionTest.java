@@ -33,6 +33,7 @@ class ResourceServerPropertiesIntrospectionTest {
         List<AuthorizationServerConfigProperties> authServers = resourceServerProperties.getAuthServers();
 
         assertThat(resourceServerProperties.getIntrospection().getMode()).isEqualTo(IntrospectionMode.ALWAYS);
+        assertThat(resourceServerProperties.getStrictAudienceValidation()).isEqualTo(StrictAudienceValidationMode.WARN);
 
         assertThat(authServer.getIntrospection().getClientId()).isEqualTo("myId");
         assertThat(authServer.getIntrospection().getClientSecret()).isEqualTo("mySecret");
@@ -46,7 +47,7 @@ class ResourceServerPropertiesIntrospectionTest {
 
         assertThat(authServers).hasSize(2);
         AuthorizationServerConfigProperties authServersFirst = authServers.getFirst();
-        assertThat(authServersFirst.getIntrospection().getClientId()).isEqualTo("myFirstId");
+        assertThat(authServersFirst.getIntrospection().getClientId()).isEqualTo("test-resource"); // derived from the resource id
         assertThat(authServersFirst.getIntrospection().getClientSecret()).isEqualTo("myFirstSecret");
         assertThat(authServersFirst.getIntrospection().getUri()).isEqualTo("https://custom-uri/introspection-uri/protocol/openid-connect/token/introspect");
         assertThat(authServersFirst.getIntrospection().getMode()).isNull();
@@ -115,7 +116,7 @@ class ResourceServerPropertiesIntrospectionTest {
         ResourceServerProperties props = new ResourceServerProperties();
         setIntrospectionMode(props, IntrospectionMode.ALWAYS);
         props.setAuthorizationServer(getAuthorizationServerConfigProperties(null));
-        props.validate();
+        props.initialize();
         assertThat(props.getAuthorizationServer().getIntrospection().getUri()).isEqualTo("issuer/protocol/openid-connect/token/introspect");
     }
 
@@ -138,11 +139,50 @@ class ResourceServerPropertiesIntrospectionTest {
     }
 
     @Test
-    void loadIntrospectionProperties_IntrospectionPropertiesWithoutClientId_ThrowException() {
+    void loadIntrospectionProperties_IntrospectionPropertiesWithoutClientIdAndWithoutResourceId_ThrowException() {
         ResourceServerProperties props = new ResourceServerProperties();
         setIntrospectionMode(props, IntrospectionMode.ALWAYS);
         props.setAuthorizationServer(getAuthorizationServerConfigProperties(null, null, "some-secret", null));
-        assertThatThrownBy(props::validate).hasMessage("client-id must be provided");
+        assertThatThrownBy(props::initialize).hasMessage("client-id must be provided");
+    }
+
+    @Test
+    void loadIntrospectionProperties_IntrospectionPropertiesWithoutClientId_ClientIdDerivedFromResourceId() {
+        ResourceServerProperties props = new ResourceServerProperties();
+        props.setResourceId("my-resource");
+        props.setApplicationName("my-app");
+        setIntrospectionMode(props, IntrospectionMode.ALWAYS);
+        props.setAuthorizationServer(getAuthorizationServerConfigProperties(null, null, "some-secret", null));
+        props.initialize();
+        assertThat(props.getAuthorizationServer().getIntrospection().getClientId()).isEqualTo("my-resource");
+    }
+
+    @Test
+    void loadIntrospectionProperties_IntrospectionPropertiesWithoutClientIdAndWithoutResourceId_ClientIdDerivedFromApplicationName() {
+        ResourceServerProperties props = new ResourceServerProperties();
+        props.setApplicationName("my-app");
+        setIntrospectionMode(props, IntrospectionMode.ALWAYS);
+        props.setAuthorizationServer(getAuthorizationServerConfigProperties(null, null, "some-secret", null));
+        props.initialize();
+        assertThat(props.getAuthorizationServer().getIntrospection().getClientId()).isEqualTo("my-app");
+    }
+
+    @Test
+    void loadIntrospectionProperties_IntrospectionPropertiesWithClientId_ConfiguredClientIdTakesPrecedenceOverResourceId() {
+        ResourceServerProperties props = new ResourceServerProperties();
+        props.setResourceId("my-resource");
+        props.setApplicationName("my-app");
+        setIntrospectionMode(props, IntrospectionMode.ALWAYS);
+        props.setAuthorizationServer(getAuthorizationServerConfigProperties(null, "some-client-id", "some-secret", null));
+        props.initialize();
+        assertThat(props.getAuthorizationServer().getIntrospection().getClientId()).isEqualTo("some-client-id");
+    }
+
+    @Test
+    void strictAudienceValidation_DefaultsToOff() {
+        ResourceServerProperties props = new ResourceServerProperties();
+        props.initialize();
+        assertThat(props.getStrictAudienceValidation()).isEqualTo(StrictAudienceValidationMode.OFF);
     }
 
     @Test

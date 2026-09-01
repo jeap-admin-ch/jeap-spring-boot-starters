@@ -18,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ActiveProfiles("introspection-lightweight") // 'lightweight' introspection-mode from profile is overridden with 'custom' below
 @EnableConfigurationProperties(ResourceServerProperties.class)
 @SpringBootTest(classes = CustomConditionJeapIntrospectionTest.MvcJeapIntrospectionConfigurationUnconditional.class,
-                properties = {"jeap.security.resourceserver.introspection.mode=custom"})
+                properties = {"jeap.security.oauth2.resourceserver.introspection.mode=custom"})
 class CustomConditionJeapIntrospectionTest {
 
     private static final String ISSUER_INTROSPECTION_OK = "https://keycloak/auth/realm/introspection-ok";
@@ -42,6 +42,7 @@ class CustomConditionJeapIntrospectionTest {
         assertThat(introspectedJwt.getClaimAsBoolean("introspected")).isTrue();
     }
 
+    @SuppressWarnings("SameParameterValue")
     private Jwt createJwt(String issuer) {
         return Jwt.withTokenValue("dummy")
                 .header("dummy-header", "dummy-value") // at least one header required

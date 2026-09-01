@@ -25,11 +25,16 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMoc
 
 public class OAuth2MockServer {
 
+    /**
+     * The client id the mock server expects as basic auth user name on token introspection requests.
+     */
+    public static final String CLIENT_ID = "test-client-id";
+
+    @SuppressWarnings("java:S1075") // fixed route of the mock server, not a URI that needs to be configurable
     private static final String DEFAULT_JWKS_PATH = "/protocol/openid-connect/certs";
     private static final String DEFAULT_CONFIG_PATH = "/.well-known/openid-configuration";
     private static final String DEFAULT_TOKEN_PATH = "/token";
     private static final String DEFAULT_INTROSPECTION_PATH = "/token/introspect";
-    private static final String CLIENT_ID = "test-client-id";
     private static final String CLIENT_SECRET = "test-client-secret";
 
     private final String basePath;

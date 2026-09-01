@@ -29,12 +29,13 @@ import java.util.List;
 public class ResourceServerProperties {
 
     /**
-     * Name of the resource, used for tokens with restricted audience
+     * Name of this resource, checked against the audience ('aud' claim) of access tokens.
+     * Defaults to the application name if not set explicitly.
      */
     private String resourceId;
 
     /**
-     * Name of the application, used if no resource was defined
+     * Name of the application, used as default for the resource id if it was not set explicitly.
      */
     @Value("${spring.application.name}")
     private String applicationName;
@@ -43,6 +44,14 @@ public class ResourceServerProperties {
      * Name of the system to check against in semantic roles. Setting this activates semantic role authorization.
      */
     private String systemName;
+
+    /**
+     * Controls how access tokens in the USER and SYS contexts that do not specify an audience ('aud' claim missing or
+     * empty) are treated: OFF (default) accepts them as valid for every resource (legacy behaviour), ON rejects them,
+     * and WARN accepts them but logs a warning for each token that would be rejected in mode ON (migration aid).
+     * This setting does not impact tokens in the B2B context which remain not audience-checked.
+     */
+    private StrictAudienceValidationMode strictAudienceValidation = StrictAudienceValidationMode.OFF;
 
     /**
      * Introspection configuration on the resource level.
@@ -72,10 +81,6 @@ public class ResourceServerProperties {
      */
     List<@Valid AuthorizationServerConfigProperties> authServers;
 
-    public String getAudience() {
-        return StringUtils.hasText(resourceId) ? resourceId : applicationName;
-    }
-
     /**
      * Get all auth server configurations configured by these configuration properties.
      *
@@ -96,33 +101,60 @@ public class ResourceServerProperties {
     }
 
     @PostConstruct
+    public void initialize() {
+        applyDefaults();
+        validate();
+    }
+
+    /**
+     * Complete the configuration with derived defaults: the resource id defaults to the application name, and if
+     * introspection is active, the introspection configurations of the auth servers get their introspection uri
+     * derived from the issuer and the resource id set as default client id.
+     */
+    public void applyDefaults() {
+        if (!StringUtils.hasText(resourceId)) {
+            resourceId = applicationName;
+        }
+        if (isIntrospectionActive()) {
+            getAllAuthServerConfigurations().stream()
+                    .filter(config -> config.getIntrospection() != null)
+                    .forEach(config -> config.getIntrospection().applyDefaults(config.getIssuer(), resourceId));
+        }
+    }
+
+    private IntrospectionMode getIntrospectionMode() {
+        return introspection != null ? introspection.getMode() : null;
+    }
+
+    private boolean isIntrospectionActive() {
+        IntrospectionMode introspectionMode = getIntrospectionMode();
+        return introspectionMode != null && introspectionMode.doesActivateIntrospection();
+    }
+
     @SuppressWarnings("java:S3776")
     public void validate() {
         log.info("Validating resource server properties for resource id {}", resourceId);
-        IntrospectionMode introspectionMode = introspection != null ? introspection.getMode() : null;
+        IntrospectionMode introspectionMode = getIntrospectionMode();
         if (introspectionMode == null) {
             for (AuthorizationServerConfigProperties config : getAllAuthServerConfigurations()) {
                 if (config.getIntrospection() != null) {
                     throw new IllegalArgumentException(config.getIssuer() + ": introspection has not been activated but introspection configurations have been provided. Did you forget to activate introspection by setting an introspection mode?");
                 }
             }
-
-        } else if (IntrospectionMode.NONE.equals(introspectionMode)) {
-            for (AuthorizationServerConfigProperties config : getAllAuthServerConfigurations()) {
-                if (config.getIntrospection() != null) {
-                    log.warn("{}: introspection disabled with introspection mode \"NONE\", but introspection configurations provided.", config.getIssuer());
-                }
-            }
-
-        } else {
+        } else if (introspectionMode.doesActivateIntrospection()) {
             for (AuthorizationServerConfigProperties config : getAllAuthServerConfigurations()) {
                 if (config.getIntrospection() == null) {
                     throw new IllegalArgumentException(config.getIssuer() + ": introspection configuration must be defined when introspection mode is activated.");
                 }
                 config.getIntrospection().validate(config.getIssuer());
             }
+        } else {
+            for (AuthorizationServerConfigProperties config : getAllAuthServerConfigurations()) {
+                if (config.getIntrospection() != null) {
+                    log.warn("{}: introspection disabled with introspection mode \"{}\", but introspection configurations provided.", config.getIssuer(), introspectionMode);
+                }
+            }
         }
-
     }
 
 }

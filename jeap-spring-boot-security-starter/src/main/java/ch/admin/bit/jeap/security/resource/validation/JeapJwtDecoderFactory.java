@@ -3,7 +3,6 @@ package ch.admin.bit.jeap.security.resource.validation;
 import ch.admin.bit.jeap.security.resource.introspection.JeapJwtIntrospection;
 import ch.admin.bit.jeap.security.resource.properties.AuthorizationServerConfigProperties;
 import ch.admin.bit.jeap.security.resource.properties.AuthorizationServerConfiguration;
-import ch.admin.bit.jeap.security.resource.properties.IntrospectionMode;
 import ch.admin.bit.jeap.security.resource.properties.IntrospectionProperties;
 import ch.admin.bit.jeap.security.resource.properties.ResourceServerProperties;
 import ch.admin.bit.jeap.security.resource.validation.IssuerJwtDecoder.IssuerJwtDecoderBuilder;
@@ -42,19 +41,22 @@ public class JeapJwtDecoderFactory {
         IssuerJwtDecoderBuilder issuerJwtDecoderBuilder = IssuerJwtDecoder.builder();
         DecoderCreator<JwtDecoder> decoderCreator = DecoderCreator::createServletDecoder;
         resourceServerProperties.getAllAuthServerConfigurations().forEach(authConfig -> {
-            var decoder = createDecoder(authConfig, resourceServerProperties.getAudience(), decoderCreator);
+            var decoder = createDecoder(authConfig, decoderCreator);
             decoder = addIntrospectionIfConfigured(decoder, authConfig);
             issuerJwtDecoderBuilder.issuerDecoder(authConfig.getIssuer(), decoder);
         });
         return issuerJwtDecoderBuilder.build();
     }
 
-    private <T> T createDecoder(AuthorizationServerConfiguration authServerConfig, String audience, DecoderCreator<T> creator) {
+    private <T> T createDecoder(AuthorizationServerConfiguration authServerConfig, DecoderCreator<T> creator) {
         JwtTimestampValidator timestampValidator = new JwtTimestampValidator(Duration.ofSeconds(30));
-        AudienceJwtValidator audienceValidator = new AudienceJwtValidator(audience);
+        AudienceJwtValidator audienceValidator = new AudienceJwtValidator(
+                resourceServerProperties.getResourceId(), resourceServerProperties.getStrictAudienceValidation());
         String issuer = authServerConfig.getIssuer();
         ContextIssuerJwtValidator issuerValidator = new ContextIssuerJwtValidator(authServerConfig.getAuthenticationContexts(), issuer);
-        OAuth2TokenValidator<Jwt> jwtValidator = new DelegatingOAuth2TokenValidator<>(timestampValidator, audienceValidator, issuerValidator);
+        // Fail fast in the order timestamps -> context/issuer -> audience
+        DelegatingOAuth2TokenValidator<Jwt> jwtValidator = new DelegatingOAuth2TokenValidator<>(timestampValidator, issuerValidator, audienceValidator);
+        jwtValidator.setFailOnError(true);
         String jwkSetUri = authServerConfig.getJwkSetUri();
         var claimSetConverter = lookupClaimSetConverter(authServerConfig);
         return creator.create(jwkSetUri, jwtValidator, claimSetConverter, new JwksTimeoutConfiguration(
@@ -85,8 +87,7 @@ public class JeapJwtDecoderFactory {
             return jwtDecoder;
         }
         IntrospectionProperties introspectionProperties = authServerConfig.getIntrospection();
-        IntrospectionMode introspectionMode = introspectionProperties != null ? introspectionProperties.getMode() : null;
-        if (introspectionMode == IntrospectionMode.NONE) {
+        if (introspectionProperties != null && introspectionProperties.isIntrospectionDeactivated()) {
             // Introspection disabled on the auth server level
             return jwtDecoder;
         }

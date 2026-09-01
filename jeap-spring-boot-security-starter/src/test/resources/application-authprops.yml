@@ -7,12 +7,18 @@ jeap:
       resourceserver:
         resource-id: "test-resource"
         system-name: "test-system"
+        # deliberately unquoted: YAML parses 'on' as a boolean, which must still bind to the enum value ON
+        strict-audience-validation: on
         authorization-server:
           issuer: "http://keycloak/auth/realm"
+          jwks-connect-timeout-in-millis: 3000
+          jwks-read-timeout-in-millis: 4000
         b2b-gateway:
           issuer: "http://b2b/auth"
           jwk-set-uri: "http://b2b/.well-known/jwks.json"
           claim-set-converter-name: "test-b2b-converter"
+          jwks-connect-timeout-in-millis: 1000
+          jwks-read-timeout-in-millis: 2000
         auth-servers:
           - issuer: "http://keycloak2/auth/realm"
             claim-set-converter-name: "test-keycloak2-converter"

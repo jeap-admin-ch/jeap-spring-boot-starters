@@ -4,12 +4,13 @@ import ch.admin.bit.jeap.security.it.resource.AbstractLightweightTokenIntrospect
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.server.LocalServerPort;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT, properties = { "server.port=8031" })
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @SuppressWarnings("java:S2699") // asserts are in the super class methods, but sonar does not get it
 class LightweightTokenIntrospectionWebmvcIT extends AbstractLightweightTokenIntrospectionIT {
 
-    protected LightweightTokenIntrospectionWebmvcIT(@Value("${server.port}") int serverPort, @Value("${spring.application.name}") String context) {
+    protected LightweightTokenIntrospectionWebmvcIT(@LocalServerPort int serverPort, @Value("${spring.application.name}") String context) {
         super(serverPort, context);
     }
 

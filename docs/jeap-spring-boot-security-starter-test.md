@@ -117,8 +117,9 @@ with `JwsBuilder` (`ch.admin.bit.jeap.security.test.jws`). Use a factory method 
 `createValidFromNow(subject, context, validity, temporalUnit)` or
 `createValidForFixedLongPeriod(subject, context)` — then chain `withIssuer(...)`, `withAudiences(...)`,
 `withUserRoles(...)`, `withBusinessPartnerRoles(...)`, `withClaim(...)`, `withRsaKey(...)` and `build()`
-to obtain a `SignedJWT`. Useful constants: `DEFAULT_ISSUER = http://localhost/auth`,
-`B2B_ISSUER = http://localhost/b2b/auth`.
+to obtain a `SignedJWT`. Without `withAudiences(...)` the token has no `aud` claim; `withEmptyAudience()`
+mints one with an explicitly empty `aud` claim (`"aud": []`) instead. Useful constants:
+`DEFAULT_ISSUER = http://localhost/auth`, `B2B_ISSUER = http://localhost/b2b/auth`.
 
 `JwsBuilderFactory` pre-populates a `JwsBuilder` with the test auth-server signing key, so the token
 matches the mock JWKS endpoint: `createBuilder(...)`, `createValidFromNowBuilder(...)` and

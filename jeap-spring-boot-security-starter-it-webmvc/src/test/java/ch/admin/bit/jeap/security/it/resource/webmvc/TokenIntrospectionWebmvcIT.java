@@ -1,60 +1,42 @@
 package ch.admin.bit.jeap.security.it.resource.webmvc;
 
+import ch.admin.bit.jeap.security.it.mockserver.OAuth2MockServer;
 import ch.admin.bit.jeap.security.it.resource.AbstractTokenIntrospectionIT;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.Nested;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.server.LocalServerPort;
 
-import java.util.concurrent.TimeUnit;
+/**
+ * Runs the token introspection tests of {@link AbstractTokenIntrospectionIT} once with an explicitly configured
+ * introspection client id and once with the introspection client id derived from the resource id. The test methods
+ * live in the shared base class, the nested classes only provide the differently configured application contexts.
+ */
+class TokenIntrospectionWebmvcIT {
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT, properties = { "server.port=8030"})
-@SuppressWarnings("java:S2699") // asserts are in the super class methods, but sonar does not get it
-class TokenIntrospectionWebmvcIT extends AbstractTokenIntrospectionIT {
-
-    protected TokenIntrospectionWebmvcIT(@Value("${server.port}") int serverPort, @Value("${spring.application.name}") String context) {
-        super(serverPort, context);
+    /**
+     * Introspection client id explicitly configured in the 'resource-introspection' profile.
+     */
+    @Nested
+    @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+    class ExplicitIntrospectionClientId extends AbstractTokenIntrospectionIT {
+        ExplicitIntrospectionClientId(@LocalServerPort int serverPort, @Value("${spring.application.name}") String context) {
+            super(serverPort, context);
+        }
     }
 
-    @Test
-    protected void testGetAuth_whenNoRolesInTokenAndReadRoleInActiveIntrospectionResponse_ThenReadRoleInAuthenticationAndAccessGranted() {
-       super.testGetAuth_whenNoRolesInTokenAndReadRoleInActiveIntrospectionResponse_ThenReadRoleInAuthenticationAndAccessGranted();
-    }
-
-    @Test
-    protected void testGetAuth_whenReadRoleInTokenAndActiveIntrospectionResponse_ThenReadRoleInAuthenticationAndAccessGranted() {
-        super.testGetAuth_whenReadRoleInTokenAndActiveIntrospectionResponse_ThenReadRoleInAuthenticationAndAccessGranted();
-    }
-
-    @Test
-    protected void testGetAuth_whenNoRolesInTokenAndReadRoleInNonActiveIntrospectionResponse_ThenUnauthorized() {
-        super.testGetAuth_whenNoRolesInTokenAndReadRoleInNonActiveIntrospectionResponse_ThenUnauthorized();
-    }
-
-    @Test
-    protected void testGetAuth_whenReadRoleInTokenAndNonActiveIntrospectionResponse_ThenUnauthorized() {
-        super.testGetAuth_whenReadRoleInTokenAndNonActiveIntrospectionResponse_ThenUnauthorized();
-    }
-
-    @Test
-    protected void testGetAuth_whenNoRolesInTokenAndNoRolesInActiveIntrospectionResponse_ThenAccessDenied() {
-        super.testGetAuth_whenNoRolesInTokenAndNoRolesInActiveIntrospectionResponse_ThenAccessDenied();
-    }
-
-    @Test
-    protected void testGetAuth_whenNoRolesInTokenAndNoRolesInInactiveIntrospectionResponse_ThenUnauthorized() {
-        super.testGetAuth_whenNoRolesInTokenAndNoRolesInInactiveIntrospectionResponse_ThenUnauthorized();
-    }
-
-    @Test
-    protected void testGetAuth_whenIntrospectionRequestError_ThenInternalServerError() {
-        super.testGetAuth_whenIntrospectionRequestError_ThenInternalServerError();
-    }
-
-    @Test
-    @Timeout(value = 5, unit = TimeUnit.SECONDS)
-    protected void testGetAuth_whenIntrospectionRequestTimesOut_ThenInternalServerError() {
-        super.testGetAuth_whenIntrospectionRequestTimesOut_ThenInternalServerError();
+    /**
+     * No introspection client id configured -> the resource id must be used as the introspection client id,
+     * i.e. the resource id must match the client id expected by the OAuth2 mock server.
+     */
+    @Nested
+    @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {
+            "jeap.security.oauth2.resourceserver.authorization-server.introspection.client-id=",
+            "jeap.security.oauth2.resourceserver.resource-id=" + OAuth2MockServer.CLIENT_ID})
+    class IntrospectionClientIdDerivedFromResourceId extends AbstractTokenIntrospectionIT {
+        IntrospectionClientIdDerivedFromResourceId(@LocalServerPort int serverPort, @Value("${spring.application.name}") String context) {
+            super(serverPort, context);
+        }
     }
 
 }

@@ -7,18 +7,17 @@ import org.springframework.context.annotation.ConditionContext;
 import org.springframework.core.type.AnnotatedTypeMetadata;
 
 /**
- * Matches if the application has been configured with a resource server introspection mode that activates introspection.
+ * Matches if the configured resource server introspection mode does not delegate the introspection decision to a
+ * custom introspection condition bean, i.e. if the built-in introspection condition applies.
  */
-public class JeapTokenIntrospectionEnabled implements Condition {
-
-    static final String RESOURCE_SERVER_INTROSPECTION_MODE_PROPERTY = "jeap.security.oauth2.resourceserver.introspection.mode";
+class JeapIntrospectionModeNotCustom implements Condition {
 
     @Override
     public boolean matches(ConditionContext conditionContext, AnnotatedTypeMetadata annotatedTypeMetadata) {
         return Binder.get(conditionContext.getEnvironment())
-                .bind(RESOURCE_SERVER_INTROSPECTION_MODE_PROPERTY, IntrospectionMode.class)
-                .map(IntrospectionMode::doesActivateIntrospection)
-                .orElse(false);
+                .bind(JeapTokenIntrospectionEnabled.RESOURCE_SERVER_INTROSPECTION_MODE_PROPERTY, IntrospectionMode.class)
+                .map(mode -> mode != IntrospectionMode.CUSTOM)
+                .orElse(true);
     }
 
 }

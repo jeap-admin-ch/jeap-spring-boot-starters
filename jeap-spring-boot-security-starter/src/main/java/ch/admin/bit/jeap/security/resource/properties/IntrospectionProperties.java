@@ -17,8 +17,10 @@ public class IntrospectionProperties {
     String uri;
 
     /**
-     * ID of the confidential client to access the token introspection endpoint.
-     * Required if introspection is not disabled.
+     * ID of the confidential client to access the token introspection endpoint. Optional.
+     * If not set, the resource id of this resource server is used (jeap.security.oauth2.resourceserver.resource-id,
+     * defaulting to spring.application.name), as the Keycloak setup requires the introspection client id to be
+     * identical to the resource id.
      */
     String clientId;
 
@@ -43,10 +45,47 @@ public class IntrospectionProperties {
      */
     IntrospectionMode mode;
 
+    /**
+     * Whether these properties disable introspection for the authorization server they belong to, i.e. whether an
+     * introspection mode that does not activate introspection (NONE) has been configured. No mode configured means "not
+     * disabled", as the introspection mode is then the one configured on the resource server level.
+     */
+    public boolean isIntrospectionDeactivated() {
+        return mode != null && !mode.doesActivateIntrospection();
+    }
+
+    /**
+     * Complete these introspection properties with derived defaults for the values that have not been configured:
+     * the introspection uri is derived from the issuer uri and the client id defaults to the resource id.
+     * Does nothing if introspection is disabled for this authorization server.
+     *
+     * @param issuerUri   The issuer uri of the authorization server these introspection properties belong to.
+     * @param resourceId  The resource server's resource id.
+     */
+    public void applyDefaults(String issuerUri, String resourceId) {
+        if (isIntrospectionDeactivated()) {
+            return;
+        }
+        if (!StringUtils.hasText(this.uri) && StringUtils.hasText(issuerUri)) {
+            this.uri = ensureTrailingSlash(issuerUri) + INTROSPECTION_URL_SUFFIX;
+            log.info("No token introspection URI specified for issuer '{}'. Using issuer uri to derive the introspection uri '{}'", issuerUri, this.uri);
+        }
+        if (!StringUtils.hasText(this.clientId) && StringUtils.hasText(resourceId)) {
+            this.clientId = resourceId;
+            log.info("No token introspection client id specified for issuer '{}'. Using the resource id '{}' as introspection client id.", issuerUri, this.clientId);
+        }
+    }
+
+    /**
+     * Validate these introspection properties. Expects the defaults to have been applied already (see
+     * {@link #applyDefaults(String, String)}).
+     *
+     * @param issuerUri The issuer uri of the authorization server these introspection properties belong to.
+     */
     public void validate(String issuerUri) {
-        log.info("Validating introspection properties for issuer {}.", uri);
-        if (mode == IntrospectionMode.NONE) {
-            // Introspection is disabled -> no need to validate the properties
+        log.info("Validating introspection properties for issuer {}.", issuerUri);
+        if (isIntrospectionDeactivated()) {
+            // no need to validate the properties
             return;
         }
         if (mode != null) {
@@ -54,10 +93,6 @@ public class IntrospectionProperties {
                     Configuring an introspection mode other than 'NONE' is not supported on the authorization server level. \
                     Please remove the introspection mode '%s' from the authorization server configuration for the issuer '%s' \
                     or set the mode to 'NONE'.""".formatted(mode, issuerUri));
-        }
-        if (!StringUtils.hasText(this.uri)) {
-            this.uri = ensureTrailingSlash(issuerUri) + INTROSPECTION_URL_SUFFIX;
-            log.info("No token introspection URI specified for issuer '{}'. Using issuer uri to derive the introspection uri '{}'", issuerUri, this.uri);
         }
         if (!StringUtils.hasText(this.clientId)) {
             throw new IllegalArgumentException("client-id must be provided");

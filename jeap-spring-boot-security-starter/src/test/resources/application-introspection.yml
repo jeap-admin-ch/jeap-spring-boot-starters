@@ -7,6 +7,7 @@ jeap:
       resourceserver:
         resource-id: "test-resource"
         system-name: "test-system"
+        strict-audience-validation: warn
         introspection:
           mode: always
         authorization-server:
@@ -24,7 +25,7 @@ jeap:
           - issuer: "https://custom-uri/auth/realm"
             claim-set-converter-name: "test-keycloak2-converter"
             introspection:
-              client-id: myFirstId
+              # no client-id -> derived from the resource id
               client-secret: myFirstSecret
               uri: https://custom-uri/introspection-uri/protocol/openid-connect/token/introspect
           - issuer: "https://other-custom-uri/auth/realm"

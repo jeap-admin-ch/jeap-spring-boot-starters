@@ -5,12 +5,16 @@ import ch.admin.bit.jeap.security.resource.token.JeapAuthenticationContext;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
+import com.nimbusds.jose.JWSObject;
 import com.nimbusds.jose.JWSSigner;
+import com.nimbusds.jose.Payload;
 import com.nimbusds.jose.crypto.RSASSASigner;
 import com.nimbusds.jose.jwk.RSAKey;
+import com.nimbusds.jwt.JWTClaimNames;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 
+import java.text.ParseException;
 import java.time.Duration;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -45,6 +49,7 @@ public class JwsBuilder {
     private final Set<String> userRoles = new LinkedHashSet<>();
     private final Map<String, Set<String>> businessPartnerRoles = new HashMap<>();
     private RSAKey rsaKey;
+    private boolean emptyAudience;
 
     /**
      * Create a builder instance with the given mandatory claim values.
@@ -99,6 +104,9 @@ public class JwsBuilder {
     }
 
     public SignedJWT build() {
+        if (emptyAudience && !audiences.isEmpty()) {
+            throw new IllegalStateException("An empty audience cannot be combined with audiences.");
+        }
         if (!audiences.isEmpty()) {
             jwtClaimSetBuilder.audience(new ArrayList<>(audiences));
         }
@@ -119,6 +127,17 @@ public class JwsBuilder {
 
     public JwsBuilder withAudiences(String... audiences) {
         this.audiences.addAll(asList(audiences));
+        return this;
+    }
+
+    /**
+     * Make the token carry an 'aud' claim with an empty audience list ("aud": []) instead of no 'aud' claim at all,
+     * which is what a token gets when no audiences are given. Cannot be combined with {@link #withAudiences(String...)}.
+     *
+     * @return The builder.
+     */
+    public JwsBuilder withEmptyAudience() {
+        this.emptyAudience = true;
         return this;
     }
 
@@ -175,13 +194,13 @@ public class JwsBuilder {
     }
 
     public JwsBuilder withBusinessPartnerRoles(String businessPartner, String... roles) {
-        Set<String> currentRoles = businessPartnerRoles.computeIfAbsent(businessPartner, k -> new HashSet<>());
+        Set<String> currentRoles = businessPartnerRoles.computeIfAbsent(businessPartner, _ -> new HashSet<>());
         currentRoles.addAll(asList(roles));
         return this;
     }
 
     public JwsBuilder withBusinessPartnerRoles(String businessPartner, SemanticApplicationRole... roles) {
-        Set<String> currentRoles = businessPartnerRoles.computeIfAbsent(businessPartner, k -> new HashSet<>());
+        Set<String> currentRoles = businessPartnerRoles.computeIfAbsent(businessPartner, _ -> new HashSet<>());
         Arrays.stream(roles)
                 .map(SemanticApplicationRole::toString)
                 .forEach(currentRoles::add);
@@ -203,13 +222,29 @@ public class JwsBuilder {
         try {
             RSAKey jwkRsaKey = getRsaKey();
             JWSSigner signer = new RSASSASigner(jwkRsaKey);
-            SignedJWT signedJWT = new SignedJWT(
-                    new JWSHeader.Builder(JWSAlgorithm.RS512).keyID(jwkRsaKey.getKeyID()).build(), jwtClaimsSet);
+            JWSHeader header = new JWSHeader.Builder(JWSAlgorithm.RS512).keyID(jwkRsaKey.getKeyID()).build();
+            if (emptyAudience) {
+                return signWithEmptyAudience(header, jwtClaimsSet, signer);
+            }
+            SignedJWT signedJWT = new SignedJWT(header, jwtClaimsSet);
             signedJWT.sign(signer);
             return signedJWT;
-        } catch (JOSEException e) {
+        } catch (JOSEException | ParseException e) {
             throw new IllegalStateException("An unexpected JOSE exception ocurred", e);
         }
+    }
+
+    /**
+     * JWTClaimsSet omits an empty audience list when serializing the claims. To get a token with "aud": [] the empty
+     * 'aud' claim is therefore added to the JSON payload directly, and the signed JWS is then parsed into a SignedJWT.
+     */
+    private static SignedJWT signWithEmptyAudience(JWSHeader header, JWTClaimsSet jwtClaimsSet, JWSSigner signer)
+            throws JOSEException, ParseException {
+        Map<String, Object> claims = jwtClaimsSet.toJSONObject();
+        claims.put(JWTClaimNames.AUDIENCE, List.of());
+        JWSObject jwsObject = new JWSObject(header, new Payload(claims));
+        jwsObject.sign(signer);
+        return SignedJWT.parse(jwsObject.serialize());
     }
 
     private RSAKey getRsaKey()  {

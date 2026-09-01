@@ -5,6 +5,7 @@ import ch.admin.bit.jeap.security.resource.token.JeapAuthenticationContext;
 import com.nimbusds.jose.JWSVerifier;
 import com.nimbusds.jose.crypto.RSASSAVerifier;
 import com.nimbusds.jose.jwk.RSAKey;
+import com.nimbusds.jwt.JWTClaimNames;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import org.junit.jupiter.api.Test;
@@ -18,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 
 public class JwsBuilderTest {
 
@@ -154,6 +156,49 @@ public class JwsBuilderTest {
         assertThat(claimSet.getNotBeforeTime().toInstant()).isEqualTo(JwsBuilder.FIXED_PERIOD_NBF.toInstant());
         assertThat(claimSet.getExpirationTime().toInstant()).isEqualTo(JwsBuilder.FIXED_PERIOD_EXP.toInstant());
         assertThat(claimSet.getIssueTime().toInstant()).isEqualTo(JwsBuilder.FIXED_PERIOD_IAT.toInstant());
+    }
+
+    @Test
+    void testBuild_whenNoAudiences_thenNoAudClaim() throws Exception {
+        final SignedJWT jws = JwsBuilder.createValidForFixedLongPeriod(SUBJECT, CONTEXT).withRsaKey(getRsaKey()).build();
+
+        final JWTClaimsSet claimSet = SignedJWT.parse(jws.serialize()).getJWTClaimsSet();
+        assertThat(claimSet.getClaims()).doesNotContainKey(JWTClaimNames.AUDIENCE);
+    }
+
+    @Test
+    void testBuild_whenEmptyAudience_thenEmptyAudClaim() throws Exception {
+        final RSAKey rsaKey = getRsaKey();
+
+        final SignedJWT jws = JwsBuilder.createValidForFixedLongPeriod(SUBJECT, CONTEXT).
+                withUserRoles(ROLE_A).
+                withEmptyAudience().
+                withRsaKey(rsaKey).
+                build();
+
+        // Check deserialization and signature
+        final SignedJWT deserializedJws = SignedJWT.parse(jws.serialize());
+        assertThat(deserializedJws.verify(new RSASSAVerifier(rsaKey.toPublicJWK()))).isTrue();
+        // Check the empty 'aud' claim is present, and the other claims are unaffected
+        assertThat(deserializedJws.getPayload().toString()).contains("\"aud\":[]");
+        final JWTClaimsSet claimSet = deserializedJws.getJWTClaimsSet();
+        assertThat(claimSet.getClaims()).containsEntry(JWTClaimNames.AUDIENCE, List.of());
+        assertThat(claimSet.getAudience()).isEmpty();
+        assertThat(claimSet.getSubject()).isEqualTo(SUBJECT);
+        assertThat(claimSet.getIssuer()).isEqualTo(JwsBuilder.DEFAULT_ISSUER);
+        assertThat(claimSet.getStringClaim(JeapAuthenticationContext.getContextJwtClaimName())).isEqualTo(CONTEXT.name());
+        assertThat(claimSet.getStringListClaim("userroles")).containsExactly(ROLE_A);
+        assertThat(claimSet.getExpirationTime().toInstant()).isEqualTo(JwsBuilder.FIXED_PERIOD_EXP.toInstant());
+    }
+
+    @Test
+    void testBuild_whenEmptyAudienceCombinedWithAudiences_thenThrows() {
+        final JwsBuilder builder = JwsBuilder.createValidForFixedLongPeriod(SUBJECT, CONTEXT).
+                withAudiences(AUDIENCE_A).
+                withEmptyAudience().
+                withRsaKey(getRsaKey());
+
+        assertThatIllegalStateException().isThrownBy(builder::build);
     }
 
     @Test

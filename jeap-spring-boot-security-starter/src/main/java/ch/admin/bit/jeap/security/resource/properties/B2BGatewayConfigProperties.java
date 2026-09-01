@@ -65,6 +65,8 @@ public class B2BGatewayConfigProperties implements AuthorizationServerConfigurat
         configProperties.setJwkSetUri(jwkSetUri);
         configProperties.setAuthenticationContexts(Set.copyOf(authenticationContexts));
         configProperties.setClaimSetConverterName(claimSetConverterName);
+        configProperties.setJwksConnectTimeoutInMillis(jwksConnectTimeoutInMillis);
+        configProperties.setJwksReadTimeoutInMillis(jwksReadTimeoutInMillis);
         configProperties.setIntrospection(introspection);
         return configProperties;
     }

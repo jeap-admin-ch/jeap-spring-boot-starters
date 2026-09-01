@@ -47,7 +47,8 @@ For every incoming token the resource server enforces the jEAP token requirement
 
 - the signature algorithm is `RS256`/`RS512` — `alg=none` and weak algorithms are rejected;
 - the `iss` (issuer) claim matches a configured authorization server, and the signing key fits that issuer;
-- the `aud` (audience) claim matches the service's `resource-id` (or `spring.application.name`);
+- the `aud` (audience) claim contains the service's `resource-id`,  for details see
+  [Audience validation](#audience-validation)
 - the authentication context (`ctx`) of the token is allowed for that authorization server.
 
 On success the `Authentication` placed in the `SecurityContext` is a `JeapAuthenticationToken`
@@ -65,8 +66,9 @@ jeap:
           issuer: https://keycloak.example.ch/auth/realms/myrealm
 ```
 
-`jwk-set-uri` defaults to `{issuer}/protocol/openid-connect/certs`. The default audience is
-`spring.application.name`; set `resource-id` when tokens carry a restricted audience.
+`jwk-set-uri` defaults to `{issuer}/protocol/openid-connect/certs`. Set `resource-id` when tokens carry
+a restricted audience. The default audience is`spring.application.name`. See
+[Audience validation](#audience-validation) for how tokens without an `aud` claim are treated.
 
 ### Multiple authorization servers and the B2B gateway
 
@@ -88,6 +90,59 @@ jeap:
           jwk-set-uri: https://b2b-gw.example.ch/certs
 ```
 
+### Audience validation
+
+The expected audience of a token is the service's `resource-id`, defaulting to `spring.application.name`.
+Tokens in the `USER` and `SYS` contexts whose `aud` claim does not contain that audience are rejected.
+Tokens in the `B2B` context are never audience-checked, because the B2B gateway cannot restrict the
+audience of the tokens it issues.
+
+`strict-audience-validation` controls how tokens *without* an `aud` claim (missing or empty) are treated in the `USER`
+and `SYS` contexts:
+
+| Mode   | Token without `aud` claim                                                                       |
+|--------|-------------------------------------------------------------------------------------------------|
+| `off`  | Accepted — the token is considered valid for every resource (legacy behaviour, current default) |
+| `warn` | Accepted, but a warning identifying the token (issuer, subject, client id, context) is logged   |
+| `on`   | Rejected — a token that does not address this resource is not valid for it                      |
+
+```yaml
+jeap:
+  security:
+    oauth2:
+      resourceserver:
+        strict-audience-validation: on
+```
+
+Strict audience validation (`on`) will become the default in a future release. To migrate, switch to
+`warn` first and search the logs for `strict-audience-validation=warn` to find the clients that still
+request tokens without an audience; once no warnings show up anymore, switch to `on`.
+
+### Token introspection
+
+With an `introspection.mode` set on the resource server level, every trusted auth server needs an
+`introspection` configuration (or `introspection.mode: NONE` to exclude it). The introspection endpoint
+defaults to `{issuer}/protocol/openid-connect/token/introspect` and the introspection client id defaults
+to the `resource-id` (Keycloak requires the introspection client id to be identical to the resource id.
+Therefore, usually only the `client-secret` has to be configured:
+
+```yaml
+jeap:
+  security:
+    oauth2:
+      resourceserver:
+        introspection:
+          mode: always
+        authorization-server:
+          issuer: https://keycloak.example.ch/auth/realms/myrealm
+          introspection:
+            client-secret: ${INTROSPECTION_CLIENT_SECRET}
+```
+
+With `introspection.mode: custom`, the application must provide exactly one `JeapJwtIntrospectionCondition`
+bean deciding per token whether it needs to be introspected; with any other mode, a custom condition bean
+fails the application startup, as it would not be used.
+
 ### Customizing the filter chain
 
 By default the starter protects all URIs with OAuth2 (plus CORS and CSRF). To expose a public API,
@@ -102,24 +157,36 @@ HTTP session management.
 
 Prefix: `jeap.security.oauth2.resourceserver`.
 
-| Property                                              | Default                                  | Description                                                                               |
-|-------------------------------------------------------|------------------------------------------|-------------------------------------------------------------------------------------------|
-| `resource-id`                                         | —                                        | Expected audience for tokens with a restricted audience                                   |
-| `application-name`                                    | `${spring.application.name}`             | Default expected audience when `resource-id` is unset                                     |
-| `system-name`                                         | —                                        | System name; **setting it activates semantic-role authorization**                         |
-| `authorization-server.issuer`                         | —                                        | Token issuer (shortcut for a single auth server)                                          |
-| `authorization-server.jwk-set-uri`                    | `{issuer}/protocol/openid-connect/certs` | JWKS endpoint for signing certificates                                                    |
-| `authorization-server.authentication-contexts`        | `[USER, SYS]`                            | Allowed contexts for this auth server                                                     |
-| `authorization-server.jwks-connect-timeout-in-millis` | `15000`                                  | Connect timeout for fetching the JWKS                                                     |
-| `authorization-server.jwks-read-timeout-in-millis`    | `15000`                                  | Read timeout for fetching the JWKS                                                        |
-| `b2b-gateway.issuer` / `b2b-gateway.jwk-set-uri`      | —                                        | B2B gateway issuer and JWKS endpoint (both required)                                      |
-| `b2b-gateway.authentication-contexts`                 | `[B2B]`                                  | Allowed contexts for the B2B gateway                                                      |
-| `auth-servers[*]`                                     | —                                        | List of additional auth servers (same fields as `authorization-server`)                   |
-| `introspection.mode`                                  | —                                        | Resource-level introspection mode (`NONE`, `EXPLICIT`, `ALWAYS`, `LIGHTWEIGHT`, `CUSTOM`) |
-| `log-user-access`                                     | `false`                                  | Register a filter that logs each authenticated user's access                              |
-| `log.authentication-failure.enabled`                  | `false`                                  | Log failed authentications (invalid/missing bearer tokens)                                |
-| `log.access-denied.enabled`                           | `false`                                  | Log authorization failures (authenticated but not permitted)                              |
-| `log.access-denied.debug`                             | `false`                                  | Add debug detail to denied-request logs (needs the line above)                            |
+| Property                                                       | Default                                             | Description                                                                                                                         |
+|----------------------------------------------------------------|-----------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------|
+| `resource-id`                                                  | `${spring.application.name}`                        | Id of this resource, checked against the `aud` claim of access tokens                                                               |
+| `strict-audience-validation`                                   | `off`                                               | `USER`/`SYS` tokens without `aud` claim: `off` accepts, `warn` accepts and logs, `on` rejects                                       |
+| `system-name`                                                  | —                                                   | System name; **setting it activates semantic-role authorization**                                                                   |
+| `introspection.mode`                                           | —                                                   | Resource-level introspection mode (`NONE`, `EXPLICIT`, `ALWAYS`, `LIGHTWEIGHT`, `CUSTOM`)                                           |
+| `authorization-server.issuer`                                  | —                                                   | Token issuer (shortcut for a single auth server, required)                                                                          |
+| `authorization-server.jwk-set-uri`                             | `{issuer}/protocol/openid-connect/certs`            | JWKS endpoint for signing certificates                                                                                              |
+| `authorization-server.authentication-contexts`                 | `[USER, SYS]`                                       | Allowed contexts for this auth server                                                                                               |
+| `authorization-server.claim-set-converter-name`                | —                                                   | Bean name of a custom claim set converter (`Converter<Map<String, Object>, Map<String, Object>>`) applied to the decoded JWT claims |
+| `authorization-server.jwks-connect-timeout-in-millis`          | `15000`                                             | Connect timeout for fetching the JWKS                                                                                               |
+| `authorization-server.jwks-read-timeout-in-millis`             | `15000`                                             | Read timeout for fetching the JWKS                                                                                                  |
+| `authorization-server.introspection.uri`                       | `{issuer}/protocol/openid-connect/token/introspect` | Token introspection endpoint of this auth server                                                                                    |
+| `authorization-server.introspection.client-id`                 | `resource-id`                                       | Confidential client used for introspection (identical to the resource id in the Keycloak setup)                                     |
+| `authorization-server.introspection.client-secret`             | —                                                   | Secret of the introspection client (required when introspection is active)                                                          |
+| `authorization-server.introspection.connect-timeout-in-millis` | `15000`                                             | Connect timeout for token introspection requests                                                                                    |
+| `authorization-server.introspection.read-timeout-in-millis`    | `15000`                                             | Read timeout for token introspection requests                                                                                       |
+| `authorization-server.introspection.mode`                      | —                                                   | Set to `NONE` to exclude this auth server from introspection (the only value accepted here)                                         |
+| `auth-servers[*].*`                                            | —                                                   | List of additional auth servers (same fields as `authorization-server`)                                                             |
+| `b2b-gateway.issuer`                                           | —                                                   | B2B gateway issuer (required)                                                                                                       |
+| `b2b-gateway.jwk-set-uri`                                      | —                                                   | B2B gateway JWKS endpoint (required, not derived from the issuer)                                                                   |
+| `b2b-gateway.authentication-contexts`                          | `[B2B]`                                             | Allowed contexts for the B2B gateway                                                                                                |
+| `b2b-gateway.claim-set-converter-name`                         | —                                                   | Bean name of a custom claim set converter for B2B tokens                                                                            |
+| `b2b-gateway.jwks-connect-timeout-in-millis`                   | `15000`                                             | Connect timeout for fetching the JWKS                                                                                               |
+| `b2b-gateway.jwks-read-timeout-in-millis`                      | `15000`                                             | Read timeout for fetching the JWKS                                                                                                  |
+| `b2b-gateway.introspection.*`                                  | —                                                   | Same fields as `authorization-server.introspection.*`                                                                               |
+| `log-user-access`                                              | `false`                                             | Register a filter that logs each authenticated user's access                                                                        |
+| `log.authentication-failure.enabled`                           | `false`                                             | Log failed authentications (invalid/missing bearer tokens)                                                                          |
+| `log.access-denied.enabled`                                    | `false`                                             | Log authorization failures (authenticated but not permitted)                                                                        |
+| `log.access-denied.debug`                                      | `false`                                             | Add debug detail to denied-request logs (needs `log.access-denied.enabled`)                                                         |
 
 ### Current-user endpoint
 
