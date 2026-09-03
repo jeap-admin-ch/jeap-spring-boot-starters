@@ -18,7 +18,7 @@ public class JeapTokenIntrospectionEnabled implements Condition {
         return Binder.get(conditionContext.getEnvironment())
                 .bind(RESOURCE_SERVER_INTROSPECTION_MODE_PROPERTY, IntrospectionMode.class)
                 .map(IntrospectionMode::doesActivateIntrospection)
-                .orElse(false);
+                .orElseGet(() -> false);
     }
 
 }

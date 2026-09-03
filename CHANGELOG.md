@@ -12,6 +12,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Error responses from paths handled by `jeap-spring-boot-web-config-starter` now use
   `Cache-Control: no-store` instead of inheriting long-lived caching based on the request suffix.
   Cacheable responses now also emit standards-compliant HTTP dates in the `Expires` header.
+- Resolve the built-in introspection conditions' fallback with `BindResult.orElseGet` instead of `orElse` so that the
+  unboxed result is non-null by contract, addressing a SonarQube null-pointer finding. No behavior change.
 
 ## [24.27.0] - 2026-09-03
 

@@ -17,7 +17,7 @@ class JeapIntrospectionModeNotCustom implements Condition {
         return Binder.get(conditionContext.getEnvironment())
                 .bind(JeapTokenIntrospectionEnabled.RESOURCE_SERVER_INTROSPECTION_MODE_PROPERTY, IntrospectionMode.class)
                 .map(mode -> mode != IntrospectionMode.CUSTOM)
-                .orElse(true);
+                .orElseGet(() -> true);
     }
 
 }
