@@ -11,9 +11,11 @@ import org.springframework.boot.test.system.CapturedOutput;
 import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.time.Duration;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -191,6 +193,55 @@ class ResourceServerPropertiesIntrospectionTest {
         setIntrospectionMode(props, IntrospectionMode.ALWAYS);
         props.setAuthorizationServer(getAuthorizationServerConfigProperties(null, "some-client-id", null, null));
         assertThatThrownBy(props::validate).hasMessage("client-secret must be provided");
+    }
+
+    @Test
+    void cacheProperties_defaults() {
+        IntrospectionCacheProperties cache = new IntrospectionProperties().getCache();
+        assertThat(cache.isEnabled()).isFalse();
+        assertThat(cache.getMaximumSize()).isEqualTo(1000);
+        assertThat(cache.getTimeToLive()).isEqualTo(Duration.ofMinutes(5));
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = IntrospectionMode.class, names = {"NONE"}, mode = EnumSource.Mode.EXCLUDE)
+    void validate_cacheEnabledWithAnyIntrospectionMode_validatesSuccessfully(IntrospectionMode introspectionMode) {
+        // Caching is orthogonal to the introspection mode, it is configurable independently of the mode
+        ResourceServerProperties props = createPropsWithCacheEnabled(introspectionMode);
+        assertThatCode(props::validate).doesNotThrowAnyException();
+    }
+
+    @Test
+    void validate_cacheEnabledWithMaximumSizeZero_throwsException() {
+        ResourceServerProperties props = createPropsWithCacheEnabled(IntrospectionMode.LIGHTWEIGHT);
+        props.getAuthorizationServer().getIntrospection().getCache().setMaximumSize(0);
+        assertThatThrownBy(props::validate).hasMessage("issuer: introspection cache maximum-size must be greater than 0 if the cache is enabled.");
+    }
+
+    @Test
+    void validate_cacheEnabledWithTimeToLiveZero_throwsException() {
+        ResourceServerProperties props = createPropsWithCacheEnabled(IntrospectionMode.LIGHTWEIGHT);
+        props.getAuthorizationServer().getIntrospection().getCache().setTimeToLive(Duration.ZERO);
+        assertThatThrownBy(props::validate).hasMessage("issuer: introspection cache time-to-live must be a positive duration if the cache is enabled.");
+    }
+
+    @Test
+    void validate_cacheDisabledWithInvalidCacheParameters_validatesSuccessfully() {
+        ResourceServerProperties props = createPropsWithCacheEnabled(IntrospectionMode.LIGHTWEIGHT);
+        IntrospectionCacheProperties cache = props.getAuthorizationServer().getIntrospection().getCache();
+        cache.setEnabled(false);
+        cache.setMaximumSize(0);
+        cache.setTimeToLive(Duration.ZERO);
+        assertThatCode(props::validate).doesNotThrowAnyException();
+    }
+
+    private static ResourceServerProperties createPropsWithCacheEnabled(IntrospectionMode introspectionMode) {
+        ResourceServerProperties props = new ResourceServerProperties();
+        setIntrospectionMode(props, introspectionMode);
+        AuthorizationServerConfigProperties authServer = getAuthorizationServerConfigProperties("my-uri");
+        authServer.getIntrospection().getCache().setEnabled(true);
+        props.setAuthorizationServer(authServer);
+        return props;
     }
 
     private static AuthorizationServerConfigProperties getAuthorizationServerConfigProperties(String introspectionUri) {

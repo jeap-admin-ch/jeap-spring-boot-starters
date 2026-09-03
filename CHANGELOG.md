@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [24.31.0] - 2026-09-09
+
+### Added
+
+- Optional local caching of token introspection responses, configurable per authorization server and independently
+  of the introspection mode (`...introspection.cache.enabled`, `.maximum-size`, `.time-to-live`; disabled by default)
+  and backed by Caffeine. Whether the introspection responses may be cached is up to the application: only the
+  transparent introspection enriching a token is served from the cache, explicit validity checks
+  (`JeapJwtIntrospection.isValid`) always query the introspection endpoint and update the cache with the result.
+  Cached responses are unmodifiable, never outlive the token or the response's own `exp`, and are keyed by issuer,
+  `jti` and a SHA-256 hash of the token value; tokens without `jti` are not cached. Applications can replace the
+  default cache by providing a `JeapTokenIntrospectionCacheFactory` bean. Added a new metric for cache lookups:
+  `jeap.security.token.introspection.cache.lookups` (tags `issuer`, `result`). For analyzing the caching behavior,
+  cache lookups and changes of the cache content are logged on level `trace` of the logger
+  `ch.admin.bit.jeap.security.resource.introspection`. Note that Caffeine on the classpath makes Spring Boot's cache
+  auto-configuration select Caffeine for applications using `@EnableCaching` without an explicit `spring.cache.type`
+  advising otherwise.
+
 ## [24.30.0] - 2026-09-09
 
 ### Changed

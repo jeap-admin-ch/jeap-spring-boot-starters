@@ -163,6 +163,18 @@ class LightweightJeapIntrospectionTest {
                 isInstanceOf(JeapIntrospectionUnknownIssuerException.class);
     }
 
+    @Test
+    void testIntrospectIfNeeded_WhenTokenWithoutIssuer_ThenThrowsJeapIntrospectionUnknownIssuerException() {
+        final Jwt jwtWithoutIssuer = Jwt.withTokenValue("dummy")
+                .header("dummy-header", "dummy-value")
+                .subject("1234567890")
+                .claim(ROLES_PRUNED_CHARS_CLAIM, 10000)
+                .build();
+        assertThatThrownBy(() -> jwtIntrospection.introspectIfNeeded(jwtWithoutIssuer)).
+                isInstanceOf(JeapIntrospectionUnknownIssuerException.class).
+                hasMessage("The issuer 'null' is unknown: The token has no issuer claim (iss).");
+    }
+
     private Jwt createLightweightJwt(String issuer) {
         return createJwt(issuer, true);
     }

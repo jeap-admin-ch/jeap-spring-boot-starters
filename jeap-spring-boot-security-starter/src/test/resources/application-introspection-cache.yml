@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: "test-app"
+jeap:
+  security:
+    oauth2:
+      resourceserver:
+        resource-id: "test-resource"
+        introspection:
+          mode: LIGHTWEIGHT
+        authorization-server:
+          issuer: "https://keycloak/auth/realm/cached"
+          introspection:
+            client-id: myAuthId
+            client-secret: myAuthSecret
+            cache:
+              enabled: true
+              maximum-size: 100
+              time-to-live: 1m
+        auth-servers:
+          - issuer: "https://keycloak/auth/realm/uncached"
+            introspection:
+              client-id: myOtherId
+              client-secret: myOtherSecret

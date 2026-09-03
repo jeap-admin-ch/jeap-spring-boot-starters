@@ -1,7 +1,9 @@
 package ch.admin.bit.jeap.security.resource.properties;
 
+import jakarta.validation.Valid;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.util.StringUtils;
 
 @Data
@@ -46,12 +48,26 @@ public class IntrospectionProperties {
     IntrospectionMode mode;
 
     /**
+     * Local caching of the token introspection responses of this authorization server. Disabled by default.
+     */
+    @Valid
+    @NestedConfigurationProperty
+    IntrospectionCacheProperties cache = new IntrospectionCacheProperties();
+
+    /**
      * Whether these properties disable introspection for the authorization server they belong to, i.e. whether an
      * introspection mode that does not activate introspection (NONE) has been configured. No mode configured means "not
      * disabled", as the introspection mode is then the one configured on the resource server level.
      */
     public boolean isIntrospectionDeactivated() {
         return mode != null && !mode.doesActivateIntrospection();
+    }
+
+    /**
+     * Whether the introspection responses of the authorization server these properties belong to are to be cached.
+     */
+    public boolean isCacheEnabled() {
+        return cache != null && cache.isEnabled();
     }
 
     /**
@@ -83,11 +99,11 @@ public class IntrospectionProperties {
      * @param issuerUri The issuer uri of the authorization server these introspection properties belong to.
      */
     public void validate(String issuerUri) {
-        log.info("Validating introspection properties for issuer {}.", issuerUri);
         if (isIntrospectionDeactivated()) {
             // no need to validate the properties
             return;
         }
+        log.info("Validating introspection properties for issuer {}.", issuerUri);
         if (mode != null) {
             throw new IllegalStateException("""
                     Configuring an introspection mode other than 'NONE' is not supported on the authorization server level. \
@@ -99,6 +115,9 @@ public class IntrospectionProperties {
         }
         if (!StringUtils.hasText(this.clientSecret)) {
             throw new IllegalArgumentException("client-secret must be provided");
+        }
+        if (cache != null) {
+            cache.validate(issuerUri);
         }
     }
 

@@ -49,14 +49,16 @@ public class JeapJwtIntrospection {
     }
 
     /**
-     * Check if the JWT is valid by introspecting it.
+     * Check if the JWT is valid by introspecting it on the authorization server. This check never serves a cached
+     * introspection response, but brings the token introspection cache up to date with its result.
      *
      * @param jwt The JWT to be checked
      * @return true if the JWT is valid, false otherwise (including if the introspection failed)
      */
     public boolean isValid(Jwt jwt) {
         try {
-            jwtIntrospector.introspect(jwt);
+            // A validity check must always query the authorization server.
+            jwtIntrospector.introspectFresh(jwt);
             // If no exception is thrown, the token is valid
             jeapTokenIntrospectionMetrics.ifPresent(metrics ->
                     metrics.recordValidityCheck(jwt, true));
@@ -80,7 +82,7 @@ public class JeapJwtIntrospection {
         introspectionAttributes.forEach( (attribute, value) ->
                 // Don't overwrite existing claims, only add new ones.
                 // -> This keeps normalizations applied to claims by spring security/jose intact.
-                jwtClaims.computeIfAbsent(attribute, k -> value));
+                jwtClaims.computeIfAbsent(attribute, _ -> value));
         return new Jwt(jwt.getTokenValue(), jwt.getIssuedAt(), jwt.getExpiresAt(), jwt.getHeaders(), jwtClaims);
     }
 

@@ -1,6 +1,7 @@
 package ch.admin.bit.jeap.security.it.resource.webmvc;
 
 import ch.admin.bit.jeap.security.it.mockserver.OAuth2MockServer;
+import ch.admin.bit.jeap.security.it.resource.AbstractTokenIntrospectionCachingIT;
 import ch.admin.bit.jeap.security.it.resource.AbstractTokenIntrospectionIT;
 import org.junit.jupiter.api.Nested;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,6 +22,19 @@ class TokenIntrospectionWebmvcIT {
     @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
     class ExplicitIntrospectionClientId extends AbstractTokenIntrospectionIT {
         ExplicitIntrospectionClientId(@LocalServerPort int serverPort, @Value("${spring.application.name}") String context) {
+            super(serverPort, context);
+        }
+    }
+
+    /**
+     * Introspection responses cached: the introspection mode 'always' of the 'resource-introspection' profile with the
+     * token introspection cache enabled for the authorization server.
+     */
+    @Nested
+    @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {
+            "jeap.security.oauth2.resourceserver.authorization-server.introspection.cache.enabled=true"})
+    class CachedIntrospection extends AbstractTokenIntrospectionCachingIT {
+        CachedIntrospection(@LocalServerPort int serverPort, @Value("${spring.application.name}") String context) {
             super(serverPort, context);
         }
     }

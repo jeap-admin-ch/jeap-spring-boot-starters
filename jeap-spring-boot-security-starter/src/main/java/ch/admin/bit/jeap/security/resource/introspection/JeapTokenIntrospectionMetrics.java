@@ -6,6 +6,7 @@ import io.micrometer.core.instrument.Timer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.jwt.Jwt;
 
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
@@ -16,9 +17,11 @@ class JeapTokenIntrospectionMetrics {
     private static final String METRIC_INTROSPECTION_CONDITIONAL_INTROSPECTIONS = METRIC_INTROSPECTION + ".conditional.introspections";
     private static final String METRIC_INTROSPECTION_VALIDITY_CHECKS = METRIC_INTROSPECTION + ".validity.checks";
     private static final String METRIC_INTROSPECTION_REQUESTS = METRIC_INTROSPECTION + ".endpoint.requests";
+    private static final String METRIC_INTROSPECTION_CACHE_LOOKUPS = METRIC_INTROSPECTION + ".cache.lookups";
     private static final String TAG_ISSUER = "issuer";
     private static final String TAG_ACTIVE = "active";
     private static final String TAG_INTROSPECTED = "introspected";
+    private static final String TAG_RESULT = "result";
     private static final String VALUE_UNKNOWN = "unknown";
 
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
@@ -38,6 +41,14 @@ class JeapTokenIntrospectionMetrics {
                 registry.counter(METRIC_INTROSPECTION_VALIDITY_CHECKS,
                                 TAG_ISSUER, getIssuer(jwt),
                                 TAG_ACTIVE, Boolean.toString(active))
+                                .increment());
+    }
+
+    void recordCacheLookup(Jwt jwt, CacheLookupResult result) {
+        meterRegistry.ifPresent(registry ->
+                registry.counter(METRIC_INTROSPECTION_CACHE_LOOKUPS,
+                                TAG_ISSUER, getIssuer(jwt),
+                                TAG_RESULT, result.tagValue())
                                 .increment());
     }
 
@@ -74,6 +85,19 @@ class JeapTokenIntrospectionMetrics {
 
     private static String getIssuer(Jwt jwt) {
         return jwt.getIssuer() != null ? jwt.getIssuer().toString() : VALUE_UNKNOWN;
+    }
+
+    /**
+     * The result of a token introspection cache lookup: the response has been served from the cache (HIT), the token
+     * had to be introspected on the introspection endpoint (MISS), or the cache has been skipped because the token
+     * cannot be cached (SKIPPED).
+     */
+    enum CacheLookupResult {
+        HIT, MISS, SKIPPED;
+
+        String tagValue() {
+            return name().toLowerCase(Locale.ROOT);
+        }
     }
 
 }

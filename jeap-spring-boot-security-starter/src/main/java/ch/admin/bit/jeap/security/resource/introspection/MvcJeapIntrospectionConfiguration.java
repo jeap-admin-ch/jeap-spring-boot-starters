@@ -1,7 +1,9 @@
 package ch.admin.bit.jeap.security.resource.introspection;
 
+import ch.admin.bit.jeap.security.resource.introspection.JeapJwtIntrospector.IssuerIntrospection;
 import ch.admin.bit.jeap.security.resource.properties.*;
 import io.micrometer.core.instrument.MeterRegistry;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.*;
@@ -18,6 +20,7 @@ import java.util.stream.Collectors;
 @Conditional(JeapTokenIntrospectionEnabled.class)
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+@Slf4j
 class MvcJeapIntrospectionConfiguration {
 
     @Bean
@@ -33,15 +36,41 @@ class MvcJeapIntrospectionConfiguration {
     }
 
     @Bean
-    JeapJwtIntrospector jeapJwtIntrospector(JeapTokenIntrospectorFactory factory, ResourceServerProperties resourceServerProperties) {
-        Map<String, JeapTokenIntrospector> issuerTokenIntrospectors =
+    @ConditionalOnMissingBean(JeapTokenIntrospectionCacheFactory.class)
+    JeapTokenIntrospectionCacheFactory jeapTokenIntrospectionCacheFactory() {
+        return new CaffeineJeapTokenIntrospectionCacheFactory();
+    }
+
+    @Bean
+    JeapJwtIntrospector jeapJwtIntrospector(JeapTokenIntrospectorFactory factory,
+                                            JeapTokenIntrospectionCacheFactory cacheFactory,
+                                            ResourceServerProperties resourceServerProperties,
+                                            Optional<JeapTokenIntrospectionMetrics> jeapTokenIntrospectionMetrics) {
+        Map<String, IssuerIntrospection> issuerIntrospections =
                 resourceServerProperties.getAllAuthServerConfigurations().stream()
                         .filter(authServerConfig ->
                                 authServerConfig.getIntrospection() != null &&
                                     !authServerConfig.getIntrospection().isIntrospectionDeactivated())
-                        .map(this::toJeapTokenIntrospectorConfiguration)
-                        .collect(Collectors.toMap(JeapTokenIntrospectorConfiguration::issuer, factory::create));
-        return new JeapJwtIntrospector(issuerTokenIntrospectors);
+                        .collect(Collectors.toMap(AuthorizationServerConfiguration::getIssuer,
+                                authServerConfig -> createIssuerIntrospection(authServerConfig, factory, cacheFactory)));
+        return new JeapJwtIntrospector(issuerIntrospections, jeapTokenIntrospectionMetrics);
+    }
+
+    private IssuerIntrospection createIssuerIntrospection(AuthorizationServerConfiguration authServerConfig,
+                                                          JeapTokenIntrospectorFactory factory,
+                                                          JeapTokenIntrospectionCacheFactory cacheFactory) {
+        JeapTokenIntrospector tokenIntrospector = factory.create(toJeapTokenIntrospectorConfiguration(authServerConfig));
+        IntrospectionProperties introspectionProperties = authServerConfig.getIntrospection();
+        if (!introspectionProperties.isCacheEnabled()) {
+            log.info("Token introspection cache is disabled for issuer '{}'.", authServerConfig.getIssuer());
+            return IssuerIntrospection.uncached(tokenIntrospector);
+        }
+        IntrospectionCacheProperties cacheProperties = introspectionProperties.getCache();
+        JeapTokenIntrospectionCacheConfiguration cacheConfiguration = new JeapTokenIntrospectionCacheConfiguration(
+                authServerConfig.getIssuer(), cacheProperties.getMaximumSize(), cacheProperties.getTimeToLive());
+        log.info("Token introspection cache is enabled for issuer '{}' (maximum size {}, time to live {}), using the cache factory {}.",
+                authServerConfig.getIssuer(), cacheConfiguration.maximumSize(), cacheConfiguration.timeToLive(), cacheFactory.getClass().getName());
+        return IssuerIntrospection.cached(tokenIntrospector, cacheFactory.create(cacheConfiguration));
     }
 
     @Bean
