@@ -3,12 +3,17 @@ package ch.admin.bit.jeap.web.configuration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.time.Duration;
+import java.time.Instant;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class AbstractHeadersTest {
 
@@ -52,7 +57,7 @@ class AbstractHeadersTest {
         headers.addHeaders(responseStub, "GET", "/my-234.js");
 
         assertEquals("public, max-age=15778476, must-revalidate", responseStub.get("Cache-Control"));
-        assertEquals("6 months", responseStub.get("Expires"));
+        assertExpiresAfter(responseStub.get("Expires"), Duration.ofSeconds(15778476));
     }
 
     @Test
@@ -61,7 +66,7 @@ class AbstractHeadersTest {
         headers.addHeaders(responseStub, "GET", "/my-234.ong");
 
         assertEquals("public, max-age=604800, must-revalidate", responseStub.get("Cache-Control"));
-        assertEquals("1 week", responseStub.get("Expires"));
+        assertExpiresAfter(responseStub.get("Expires"), Duration.ofDays(7));
     }
 
     @Test
@@ -137,5 +142,12 @@ class AbstractHeadersTest {
             }
         };
         return headers;
+    }
+
+    private static void assertExpiresAfter(String expires, Duration duration) {
+        Instant actual = ZonedDateTime.parse(expires, DateTimeFormatter.RFC_1123_DATE_TIME).toInstant();
+        Instant expected = Instant.now().plus(duration);
+        assertTrue(Duration.between(actual, expected).abs().compareTo(Duration.ofSeconds(2)) <= 0,
+                () -> "Expected expiration around " + expected + " but was " + actual);
     }
 }

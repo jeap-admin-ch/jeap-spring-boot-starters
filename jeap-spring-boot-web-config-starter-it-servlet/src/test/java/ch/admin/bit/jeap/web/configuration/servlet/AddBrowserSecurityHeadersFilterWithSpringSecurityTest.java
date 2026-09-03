@@ -9,6 +9,7 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 import static io.restassured.RestAssured.get;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.springframework.http.HttpHeaders.CACHE_CONTROL;
+import static org.springframework.http.HttpHeaders.EXPIRES;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
         properties = {
@@ -57,6 +58,14 @@ class AddBrowserSecurityHeadersFilterWithSpringSecurityTest {
                 .statusCode(200)
                 .extract().headers().hasHeaderWithName(CONTENT_SECURITY_POLICY);
         assertFalse(hasSomeConsumerAPICspHeader);
+    }
+
+    @Test
+    void expect_error_responses_to_not_be_cached() {
+        get("/missing.js").then()
+                .statusCode(404)
+                .header(CACHE_CONTROL, "no-store")
+                .header(EXPIRES, "0");
     }
 
     @BeforeEach

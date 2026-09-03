@@ -84,6 +84,14 @@ public class AddHeadersFilterWithContextPathTest {
     }
 
     @Test
+    void expect_error_responses_to_not_be_cached() {
+        get("/test/missing.js").then()
+                .statusCode(404)
+                .header(HttpHeaders.CACHE_CONTROL, "no-store")
+                .header(HttpHeaders.EXPIRES, "0");
+    }
+
+    @Test
     void expect_root_resource_to_have_security_headers_configured() {
         get("/test").then()
                 .statusCode(200)

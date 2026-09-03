@@ -19,7 +19,9 @@ class; it also loads `jeap-web-header-defaults.properties` via `@PropertySource`
 
 - **`AddHeadersFilter`** — a `OncePerRequestFilter` that, for `GET`/`HEAD` requests whose path is
   accepted (see path matching below), delegates to `ServletHeaders` (a subclass of `AbstractHeaders`)
-  to set the security and caching headers. Header-setting failures are caught and logged at WARN so a
+  to set the security and caching headers. A response wrapper replaces caching headers with
+  `Cache-Control: no-store` and `Expires: 0` when the response status is 400 or higher, including
+  before `sendError` commits the response. Header-setting failures are caught and logged at WARN so a
   filter error never breaks the response.
 - **`SseAwareEtagHeaderFilter`** — a subclass of Spring's `ShallowEtagHeaderFilter` that adds an `ETag`
   to static resources so the browser can skip re-downloading unchanged bodies. It overrides
@@ -59,11 +61,15 @@ provider and silent token refresh in an iframe keep working. URL values are redu
 
 Set by `AbstractHeaders.addCachingHeaders`, keyed on the request path suffix:
 
-| Path ends with        | `Cache-Control`                                         | Rationale                                                          |
+| Response/path         | `Cache-Control`                                         | Rationale                                                          |
 |-----------------------|---------------------------------------------------------|--------------------------------------------------------------------|
+| status 400 or higher  | `no-store` (`Expires: 0`)                               | Error responses must never become stale CDN or browser entries     |
 | `.html`, `.json`, `/` | `no-cache` (`Expires: 0`)                               | The single `index.html` and translation JSON must never be stale   |
 | `.js`, `.css`         | `public, max-age=15778476, must-revalidate` (~6 months) | Build tools hash these filenames, so a new version means new files |
 | anything else         | `public, max-age=604800, must-revalidate` (1 week)      | Other static resources change rarely but stay revalidated          |
+
+Cacheable responses receive an `Expires` header containing the corresponding expiration as a valid
+HTTP date.
 
 ## Path matching
 

@@ -33,25 +33,50 @@ public class AddHeadersFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,@NonNull FilterChain filterChain) throws ServletException, IOException {
-        try {
-            addHeaders(request, response);
-        } catch (Exception ex) {
-            LOG.warn("Failed to add security and caching headers to response", ex);
+        NoStoreOnErrorResponseWrapper statusAwareResponse = null;
+        HttpServletResponse filteredResponse = response;
+        if (shouldAddHeaders(request)) {
+            statusAwareResponse = new NoStoreOnErrorResponseWrapper(response);
+            filteredResponse = statusAwareResponse;
+            try {
+                addHeaders(request, statusAwareResponse);
+            } catch (Exception ex) {
+                LOG.warn("Failed to add security and caching headers to response", ex);
+            }
         }
-        filterChain.doFilter(request, response);
+
+        boolean filterChainCompleted = false;
+        try {
+            filterChain.doFilter(request, filteredResponse);
+            filterChainCompleted = true;
+        } finally {
+            updateCachingAfterFilterChain(statusAwareResponse, filterChainCompleted);
+        }
+    }
+
+    private void updateCachingAfterFilterChain(NoStoreOnErrorResponseWrapper response, boolean filterChainCompleted) {
+        if (response == null) {
+            return;
+        }
+        try {
+            if (filterChainCompleted) {
+                response.preventCachingIfError();
+            } else {
+                response.preventCaching();
+            }
+        } catch (RuntimeException ex) {
+            LOG.warn("Failed to update caching headers after filter chain processing", ex);
+        }
+    }
+
+    private boolean shouldAddHeaders(HttpServletRequest request) {
+        return config.getHttpMethods().contains(request.getMethod()) &&
+                config.accept(getContextRelativeRequestPath(request));
     }
 
     private void addHeaders(HttpServletRequest request, HttpServletResponse response) {
-        if (config.getHttpMethods().contains(request.getMethod())) {
-            String path = getContextRelativeRequestPath(request);
-            addHeaders(response, request.getMethod(), path);
-        }
-    }
-
-    private void addHeaders(HttpServletResponse response, String method, String path) {
-        if (config.accept(path)) {
-            servletHeaders.addHeaders(response, method, path);
-        }
+        String path = getContextRelativeRequestPath(request);
+        servletHeaders.addHeaders(response, request.getMethod(), path);
     }
 
     private static String getContextRelativeRequestPath(HttpServletRequest req) {

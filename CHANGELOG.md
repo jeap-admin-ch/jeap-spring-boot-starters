@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [24.28.0] - 2026-09-03
+
+### Fixed
+
+- Error responses from paths handled by `jeap-spring-boot-web-config-starter` now use
+  `Cache-Control: no-store` instead of inheriting long-lived caching based on the request suffix.
+  Cacheable responses now also emit standards-compliant HTTP dates in the `Expires` header.
+
 ## [24.27.0] - 2026-09-03
 
 ### Changed

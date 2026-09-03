@@ -25,6 +25,7 @@ import static io.restassured.RestAssured.*;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.http.HttpHeaders.CACHE_CONTROL;
+import static org.springframework.http.HttpHeaders.EXPIRES;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @EnableAutoConfiguration(exclude = {SecurityAutoConfiguration.class, UserDetailsServiceAutoConfiguration.class, ServletWebSecurityAutoConfiguration.class, ActuatorSecurity.class, ManagementWebSecurityAutoConfiguration.class})
@@ -146,6 +147,14 @@ class AddBrowserSecurityHeadersFilterWithoutSpringSecurityTest {
                 .statusCode(200)
                 .header(AbstractHeaders.REFERRER_POLICY, STRICT_ORIGIN_WHEN_CROSS_ORIGIN)
                 .extract().headers().hasHeaderWithName(CACHE_CONTROL);
+    }
+
+    @Test
+    void expect_error_responses_to_not_be_cached() {
+        get("/missing.js").then()
+                .statusCode(404)
+                .header(CACHE_CONTROL, "no-store")
+                .header(EXPIRES, "0");
     }
 
     @Test
