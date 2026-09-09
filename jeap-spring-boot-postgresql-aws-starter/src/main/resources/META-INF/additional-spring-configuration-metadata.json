@@ -16,6 +16,12 @@
       "name": "jeap.datasource.aws.database-name",
       "description": "Name of the database the read-only replica datasource connects to. If empty, the database name is taken from the primary datasource configuration.",
       "type": "java.lang.String"
+    },
+    {
+      "name": "jeap.datasource.aws.wrapper.target-data-source-properties.wrapperDialect",
+      "description": "Database dialect used by the AWS Advanced JDBC Wrapper. Defaults to 'aurora-pg'; set to 'rds-pg' for standard RDS PostgreSQL.",
+      "defaultValue": "aurora-pg",
+      "type": "java.lang.String"
     }
   ],
   "hints": [

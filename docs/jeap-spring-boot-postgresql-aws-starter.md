@@ -84,7 +84,18 @@ Starter-applied Hikari defaults for the primary pool: `schema=data`, `maximum-po
 `minimum-idle=0`, `keepalive-time=120000`, `pool-name=hikari-cp-rw`, `max-lifetime=840000`. JPA's
 `hibernate.default_schema` defaults to `data`. The wrapper target property
 `...wrapper.target-data-source-properties.wrapperPlugins` defaults to
-`auroraConnectionTracker,failover,efm2,iam`.
+`auroraConnectionTracker,failover,efm2,iam`. The wrapper dialect defaults to `aurora-pg`, avoiding
+database-dialect auto-detection for the predominantly used Aurora PostgreSQL setup. Applications using
+standard RDS PostgreSQL must override the dialect with `rds-pg`:
+
+```yaml
+jeap:
+  datasource:
+    aws:
+      wrapper:
+        target-data-source-properties:
+          wrapperDialect: rds-pg
+```
 
 ## Read replicas
 

@@ -16,6 +16,44 @@ class ContextConfigurationTest {
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner();
 
     @Test
+    void configuresAuroraPostgresWrapperDialectByDefault() {
+        wrapperPropertiesContextRunner()
+                .run(context -> {
+                    assertThat(context).hasNotFailed();
+                    assertThat(context).hasBean("dataSource");
+                    assertThat(context).hasBean("replicaDataSource");
+
+                    WrapperTargetDataSourceProperties wrapperProperties = context.getBean(WrapperTargetDataSourceProperties.class);
+                    assertThat(wrapperProperties.getProperty("wrapperDialect")).isEqualTo("aurora-pg");
+                });
+    }
+
+    @Test
+    void allowsOverridingWrapperDialectForStandardRdsPostgres() {
+        wrapperPropertiesContextRunner()
+                .withPropertyValues("jeap.datasource.aws.wrapper.target-data-source-properties.wrapperDialect=rds-pg")
+                .run(context -> {
+                    assertThat(context).hasNotFailed();
+                    assertThat(context.getBean(WrapperTargetDataSourceProperties.class).getProperty("wrapperDialect"))
+                            .isEqualTo("rds-pg");
+                });
+    }
+
+    private ApplicationContextRunner wrapperPropertiesContextRunner() {
+        return contextRunner.withUserConfiguration(TestConfig.class)
+                .withPropertyValues("jeap.postgresql.aws.enabled=true")
+                .withPropertyValues("jeap.datasource.url=jdbc:h2:mem:wrapper-primary")
+                .withPropertyValues("jeap.datasource.username=user")
+                .withPropertyValues("jeap.datasource.password=pass")
+                .withPropertyValues("jeap.datasource.hikari.schema=PUBLIC")
+                .withPropertyValues("jeap.datasource.replica.enabled=true")
+                .withPropertyValues("jeap.datasource.replica.url=jdbc:h2:mem:wrapper-replica")
+                .withPropertyValues("jeap.datasource.replica.username=user")
+                .withPropertyValues("jeap.datasource.replica.password=pass")
+                .withPropertyValues("jeap.datasource.replica.hikari.schema=PUBLIC");
+    }
+
+    @Test
     void contextConfiguredExplicitSpringJdbcDataSourceIsIgnored() {
         contextRunner.withUserConfiguration(TestConfig.class)
                 .withPropertyValues("jeap.postgresql.aws.enabled=true")
