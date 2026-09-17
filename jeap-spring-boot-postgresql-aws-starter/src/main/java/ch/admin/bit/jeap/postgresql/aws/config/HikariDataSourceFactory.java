@@ -4,15 +4,20 @@ import com.zaxxer.hikari.HikariDataSource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.jdbc.autoconfigure.DataSourceProperties;
 import software.amazon.jdbc.ds.AwsWrapperDataSource;
+import software.amazon.jdbc.util.HikariCPSQLException;
 
 @Slf4j
 public class HikariDataSourceFactory {
+
+    private HikariDataSourceFactory() {
+    }
 
     public static HikariDataSource create(DataSourceProperties properties, WrapperTargetDataSourceProperties wrapperTargetDataSourceProperties, String userName, String jdbcUrl) {
         if (!isTestDatabase(jdbcUrl, properties)) {
             log.info("Enabling AWS Advanced Jdbc Wrapper.");
             HikariDataSource ds = new HikariDataSource();
             ds.setUsername(userName);
+            ds.setExceptionOverrideClassName(HikariCPSQLException.class.getName());
             ds.setDataSourceClassName(AwsWrapperDataSource.class.getName());
             ds.addDataSourceProperty("jdbcUrl", jdbcUrl.replace("jdbc:postgresql", "jdbc:aws-wrapper:postgresql"));
             ds.addDataSourceProperty("targetDataSourceClassName", "org.postgresql.ds.PGSimpleDataSource");
@@ -29,7 +34,7 @@ public class HikariDataSourceFactory {
     }
 
     private static boolean isTestDatabase(String jdbcUrl, DataSourceProperties properties) {
-        return jdbcUrl.toLowerCase().contains("jdbc:h2:") || (properties.getDriverClassName() != null && properties.getDriverClassName().equals("org.h2.Driver"));
+        return jdbcUrl.toLowerCase().contains("jdbc:h2:") || "org.h2.Driver".equals(properties.getDriverClassName());
     }
 
 }

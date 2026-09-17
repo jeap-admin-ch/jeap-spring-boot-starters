@@ -11,6 +11,10 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Update parent from 9.7.0 to 9.7.1
 
+### Fixed
+
+- Configure the AWS JDBC Wrapper's HikariCP exception override so recoverable failover connections are not evicted.
+
 ## [25.5.0] - 2026-09-17
 
 ### Changed

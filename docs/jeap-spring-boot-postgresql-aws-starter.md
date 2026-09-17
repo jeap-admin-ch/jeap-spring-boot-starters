@@ -32,7 +32,11 @@ builds a HikariCP datasource. Two ingredients are central:
   wrapper understands the RDS cluster topology and provides IAM authentication and faster failover,
   so an RDS Proxy is no longer required. The default wrapper plugins are
   `auroraConnectionTracker, failover, efm2, iam`. (The wrapper is the default and the only supported
-  mode; the pre-wrapper logic has been removed.)
+  mode; the pre-wrapper logic has been removed.) The starter also configures HikariCP's
+  `exceptionOverrideClassName` with the wrapper-provided `HikariCPSQLException`. This prevents HikariCP
+  from immediately evicting a connection after the wrapper reports the recoverable failover SQL states
+  `08S02` or `08007`, allowing the application to restore its session state and retry the interrupted
+  operation.
 - **IAM authentication** — instead of a password, the application authenticates with a short-lived
   IAM token generated automatically by the wrapper's `iam` plugin. Because the default RDS IAM token
   lifetime is 15 minutes, the starter sets HikariCP `max-lifetime=840000` (14 min) so connections
@@ -144,6 +148,9 @@ replicas are not updated in lockstep they can return mutually inconsistent (dive
 - **`spring.datasource.*` is ignored** — always configure under `jeap.datasource.*`.
 - **Token expiry** — keep Hikari `max-lifetime` below the 15-minute IAM token lifetime (the default
   840000 ms already does this); do not raise it carelessly.
+- **Failover exceptions** — the starter automatically installs the AWS wrapper's HikariCP exception
+  override. Applications should still retry operations interrupted by recoverable failover exceptions
+  after restoring any required database session state.
 - **Local H2** — set a password and `hikari.schema: PUBLIC` (plus the matching
   `hibernate.default_schema`), since the wrapper and IAM auth do not apply locally.
 - **open-in-view** — Spring Boot enables `spring.jpa.open-in-view` by default, which keeps the first
