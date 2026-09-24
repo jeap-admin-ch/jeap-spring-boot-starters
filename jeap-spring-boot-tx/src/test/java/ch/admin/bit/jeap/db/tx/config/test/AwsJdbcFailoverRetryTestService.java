@@ -14,7 +14,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class AwsJdbcFailoverRetryTestService {
 
     private final JdbcTemplate jdbcTemplate;
+    private final AwsJdbcFailoverRetryNestedTestService nestedTestService;
     private final AtomicInteger attempts = new AtomicInteger();
+    private final AtomicInteger globalAttempts = new AtomicInteger();
 
     @RetryOnAwsJdbcFailover(maxAttempts = 2, backoffMillis = 0)
     @Transactional
@@ -28,6 +30,19 @@ public class AwsJdbcFailoverRetryTestService {
 
     public int attempts() {
         return attempts.get();
+    }
+
+    @Transactional
+    public void insertWithGloballyEnabledRetry() {
+        int attempt = globalAttempts.incrementAndGet();
+        nestedTestService.insertPerson();
+        if (attempt == 1) {
+            throw new IllegalStateException("simulated persistence failure", new FailoverSuccessSQLException());
+        }
+    }
+
+    public int globalAttempts() {
+        return globalAttempts.get();
     }
 
     private static final class FailoverSuccessSQLException extends SQLException {

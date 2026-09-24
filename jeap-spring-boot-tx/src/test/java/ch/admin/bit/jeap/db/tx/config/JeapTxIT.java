@@ -14,7 +14,10 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest
+@SpringBootTest(properties = {
+        "jeap.datasource.aws.failover-retry.enabled=true",
+        "jeap.datasource.aws.failover-retry.backoff-millis=0"
+})
 class JeapTxIT {
 
     @Autowired
@@ -28,7 +31,7 @@ class JeapTxIT {
         List<Person> results = personRepository.findAll();
         Optional<Person> maybePerson = personRepository.findPersonById(1);
 
-        assertThat(results).hasSize(1);
+        assertThat(results).extracting(Person::getId).contains(1);
         assertThat(maybePerson).isPresent();
     }
 
@@ -47,5 +50,13 @@ class JeapTxIT {
 
         assertThat(failoverRetryTestService.attempts()).isEqualTo(2);
         assertThat(personRepository.findById(2)).isPresent();
+    }
+
+    @Test
+    void globallyEnabledAwsJdbcFailoverRetryStartsANewTransactionAndDoesNotRetryNestedRepositoryCalls() {
+        failoverRetryTestService.insertWithGloballyEnabledRetry();
+
+        assertThat(failoverRetryTestService.globalAttempts()).isEqualTo(2);
+        assertThat(personRepository.findById(3)).isPresent();
     }
 }

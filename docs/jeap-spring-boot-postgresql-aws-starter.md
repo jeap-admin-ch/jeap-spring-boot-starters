@@ -149,9 +149,10 @@ replicas are not updated in lockstep they can return mutually inconsistent (dive
 - **Token expiry** — keep Hikari `max-lifetime` below the 15-minute IAM token lifetime (the default
   840000 ms already does this); do not raise it carelessly.
 - **Failover exceptions** — the starter automatically installs the AWS wrapper's HikariCP exception
-  override. Applications can opt retry-safe transactional methods into `@RetryOnAwsJdbcFailover`,
-  provided by `jeap-spring-boot-tx`. It retries only `FailoverSuccessSQLException`/`08S02` and opens a
-  new transaction for every attempt; see [Transaction routing](jeap-spring-boot-tx.md).
+  override. Applications can opt individual retry-safe methods into `@RetryOnAwsJdbcFailover` or enable
+  retries globally with `jeap.datasource.aws.failover-retry.enabled=true`. The advice, provided by
+  `jeap-spring-boot-tx`, retries only `FailoverSuccessSQLException`/`08S02` and opens a new transaction
+  for every attempt; see [Transaction routing](jeap-spring-boot-tx.md).
 - **Local H2** — set a password and `hikari.schema: PUBLIC` (plus the matching
   `hibernate.default_schema`), since the wrapper and IAM auth do not apply locally.
 - **open-in-view** — Spring Boot enables `spring.jpa.open-in-view` by default, which keeps the first

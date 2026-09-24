@@ -22,7 +22,7 @@ class JeapTxTransactionAutoConfigTest {
                     assertThat(context)
                             .hasNotFailed();
                     assertThat(context)
-                            .hasSingleBean(AwsJdbcFailoverRetryAspect.class);
+                            .hasSingleBean(AwsJdbcFailoverRetryAdvisor.class);
                     assertThat(context)
                             .hasBean("transactionManager");
                     PlatformTransactionManager transactionManager = (PlatformTransactionManager) context.getBean("transactionManager");
@@ -49,7 +49,7 @@ class JeapTxTransactionAutoConfigTest {
                     assertThat(context)
                             .hasNotFailed();
                     assertThat(context)
-                            .hasSingleBean(AwsJdbcFailoverRetryAspect.class);
+                            .hasSingleBean(AwsJdbcFailoverRetryAdvisor.class);
                     assertThat(context)
                             .hasBean("transactionManager");
                     PlatformTransactionManager transactionManager = (PlatformTransactionManager) context.getBean("transactionManager");
@@ -74,7 +74,7 @@ class JeapTxTransactionAutoConfigTest {
                 .withConfiguration(AutoConfigurations.of(JeapTxTransactionAutoConfig.class))
                 .run(context -> {
                     assertThat(context).hasNotFailed();
-                    assertThat(context).doesNotHaveBean(AwsJdbcFailoverRetryAspect.class);
+                    assertThat(context).doesNotHaveBean(AwsJdbcFailoverRetryAdvisor.class);
                 });
     }
 }

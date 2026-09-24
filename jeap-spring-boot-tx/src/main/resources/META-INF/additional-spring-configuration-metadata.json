@@ -4,6 +4,24 @@
       "name": "jeap.datasource.replica.enabled",
       "defaultValue": false,
       "type": "java.lang.Boolean"
+    },
+    {
+      "name": "jeap.datasource.aws.failover-retry.enabled",
+      "description": "Enable retries for all REQUIRED transactions after a successful AWS JDBC failover.",
+      "defaultValue": false,
+      "type": "java.lang.Boolean"
+    },
+    {
+      "name": "jeap.datasource.aws.failover-retry.max-attempts",
+      "description": "Maximum number of attempts in global mode, including the initial call.",
+      "defaultValue": 2,
+      "type": "java.lang.Integer"
+    },
+    {
+      "name": "jeap.datasource.aws.failover-retry.backoff-millis",
+      "description": "Delay in milliseconds between attempts in global mode.",
+      "defaultValue": 100,
+      "type": "java.lang.Long"
     }
   ]
 }

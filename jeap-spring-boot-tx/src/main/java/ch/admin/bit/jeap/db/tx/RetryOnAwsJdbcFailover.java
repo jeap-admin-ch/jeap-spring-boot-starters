@@ -3,7 +3,8 @@ package ch.admin.bit.jeap.db.tx;
 import java.lang.annotation.*;
 
 /**
- * Retries an idempotent operation after the AWS Advanced JDBC Wrapper has successfully replaced a failed connection.
+ * Opts an idempotent operation into retries after the AWS Advanced JDBC Wrapper has successfully replaced a failed
+ * connection, independently of whether global failover retries are enabled.
  * Any existing transaction is suspended and each attempt runs in a new transaction. This annotation must be combined
  * with {@code @Transactional} using its default {@code REQUIRED} propagation and only used for operations that are
  * safe to repeat.

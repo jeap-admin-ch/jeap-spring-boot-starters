@@ -1,5 +1,6 @@
 package ch.admin.bit.jeap.db.tx.config;
 
+import ch.admin.bit.jeap.db.tx.RetryOnAwsJdbcFailover;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -20,7 +21,7 @@ import java.lang.reflect.Method;
 
 import static org.assertj.core.api.Assertions.*;
 
-class AwsJdbcFailoverRetryAspectTest {
+class AwsJdbcFailoverRetryAdvisorTest {
 
     private final DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory();
     private final AnnotationTransactionAttributeSource transactionAttributeSource =
@@ -28,20 +29,20 @@ class AwsJdbcFailoverRetryAspectTest {
     private final PlatformTransactionManager configuredDefault = new StubTransactionManager();
     private final PlatformTransactionManager secondary = new StubTransactionManager();
 
-    private AwsJdbcFailoverRetryAspect aspect;
+    private AwsJdbcFailoverRetryAdvisor advisor;
 
     @BeforeEach
     void setUp() {
         beanFactory.registerSingleton("configuredDefaultTransactionManager", configuredDefault);
         beanFactory.registerSingleton("secondaryTransactionManager", secondary);
-        aspect = new AwsJdbcFailoverRetryAspect(beanFactory, transactionAttributeSource, configuredDefault);
+        advisor = advisor(false);
     }
 
     @Test
     void transactionManager_usesConfiguredDefaultWhenMultipleManagersExist() throws Exception {
         TransactionAttribute transactionAttribute = transactionAttribute(DefaultService.class);
 
-        PlatformTransactionManager result = aspect.transactionManager(transactionAttribute, DefaultService.class);
+        PlatformTransactionManager result = advisor.transactionManager(transactionAttribute, DefaultService.class);
 
         assertThat(result).isSameAs(configuredDefault);
     }
@@ -51,7 +52,7 @@ class AwsJdbcFailoverRetryAspectTest {
         TransactionAttribute transactionAttribute = transactionAttribute(ExplicitlyQualifiedService.class);
 
         PlatformTransactionManager result =
-                aspect.transactionManager(transactionAttribute, ExplicitlyQualifiedService.class);
+                advisor.transactionManager(transactionAttribute, ExplicitlyQualifiedService.class);
 
         assertThat(result).isSameAs(secondary);
     }
@@ -60,7 +61,7 @@ class AwsJdbcFailoverRetryAspectTest {
     void transactionManager_honorsClassLevelQualifier() throws Exception {
         TransactionAttribute transactionAttribute = transactionAttribute(ClassQualifiedService.class);
 
-        PlatformTransactionManager result = aspect.transactionManager(transactionAttribute, ClassQualifiedService.class);
+        PlatformTransactionManager result = advisor.transactionManager(transactionAttribute, ClassQualifiedService.class);
 
         assertThat(result).isSameAs(secondary);
     }
@@ -70,7 +71,7 @@ class AwsJdbcFailoverRetryAspectTest {
         TransactionAttribute transactionAttribute =
                 new DefaultTransactionAttribute(Propagation.REQUIRED.value());
 
-        assertThatCode(() -> AwsJdbcFailoverRetryAspect.validateTransactionAttribute(transactionAttribute))
+        assertThatCode(() -> AwsJdbcFailoverRetryAdvisor.validateTransactionAttribute(transactionAttribute))
                 .doesNotThrowAnyException();
     }
 
@@ -80,8 +81,33 @@ class AwsJdbcFailoverRetryAspectTest {
         TransactionAttribute transactionAttribute = new DefaultTransactionAttribute(propagation.value());
 
         assertThatIllegalStateException()
-                .isThrownBy(() -> AwsJdbcFailoverRetryAspect.validateTransactionAttribute(transactionAttribute))
+                .isThrownBy(() -> AwsJdbcFailoverRetryAdvisor.validateTransactionAttribute(transactionAttribute))
                 .withMessage("@RetryOnAwsJdbcFailover requires @Transactional propagation REQUIRED");
+    }
+
+    @Test
+    void pointcut_whenGlobalRetryIsDisabled_matchesOnlyExplicitlyAnnotatedMethods() throws Exception {
+        assertThat(matches(advisor, DefaultService.class)).isFalse();
+        assertThat(matches(advisor, RetryService.class)).isTrue();
+    }
+
+    @Test
+    void pointcut_whenGlobalRetryIsEnabled_matchesRequiredTransactionalMethods() throws Exception {
+        AwsJdbcFailoverRetryAdvisor globalAdvisor = advisor(true);
+
+        assertThat(matches(globalAdvisor, DefaultService.class)).isTrue();
+        assertThat(matches(globalAdvisor, RequiresNewService.class)).isFalse();
+    }
+
+    private AwsJdbcFailoverRetryAdvisor advisor(boolean globalRetryEnabled) {
+        return new AwsJdbcFailoverRetryAdvisor(beanFactory, transactionAttributeSource, configuredDefault,
+                new AwsJdbcFailoverRetryProperties(globalRetryEnabled, 2, 0));
+    }
+
+    private static boolean matches(AwsJdbcFailoverRetryAdvisor advisor, Class<?> serviceClass)
+            throws NoSuchMethodException {
+        Method method = serviceClass.getDeclaredMethod("operation");
+        return advisor.getPointcut().getMethodMatcher().matches(method, serviceClass);
     }
 
     private TransactionAttribute transactionAttribute(Class<?> serviceClass) throws NoSuchMethodException {
@@ -101,6 +127,21 @@ class AwsJdbcFailoverRetryAspectTest {
 
     private static class ExplicitlyQualifiedService {
         @Transactional("secondaryTransactionManager")
+        public void operation() {
+            // Intentionally empty: only the method's transaction metadata is relevant to this test.
+        }
+    }
+
+    private static class RetryService {
+        @RetryOnAwsJdbcFailover
+        @Transactional
+        public void operation() {
+            // Intentionally empty: only the method's transaction metadata is relevant to this test.
+        }
+    }
+
+    private static class RequiresNewService {
+        @Transactional(propagation = Propagation.REQUIRES_NEW)
         public void operation() {
             // Intentionally empty: only the method's transaction metadata is relevant to this test.
         }

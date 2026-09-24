@@ -42,11 +42,12 @@ read replica refusing writes at runtime.
 Two Micrometer counters are exported: `jeap_db_transaction_readreplica` (transactions routed to a
 read replica) and `jeap_db_transaction_rw` (writer-instance transactions).
 
-The module also provides an opt-in `@RetryOnAwsJdbcFailover` advice. It recognizes only the AWS
-Advanced JDBC Wrapper's `FailoverSuccessSQLException` with SQL state `08S02`. The retry advice
-has highest precedence, explicitly suspends any existing transaction, and starts a new transaction
-for every attempt. Transaction state unknown (`08007`) and other connection failures are deliberately
-not retried.
+The module also provides AWS JDBC failover retry advice. Individual operations can opt in with
+`@RetryOnAwsJdbcFailover`, or applications whose transactional operations are retry-safe can enable
+the advice globally. It recognizes only the AWS Advanced JDBC Wrapper's `FailoverSuccessSQLException`
+with SQL state `08S02`. The retry advice has highest precedence, explicitly suspends any existing
+transaction, and starts a new transaction for every attempt. Transaction state unknown (`08007`) and
+other connection failures are deliberately not retried.
 
 ## Using `@TransactionalReadReplica`
 
@@ -105,6 +106,24 @@ public void updateOrder(Order order) {
 }
 ```
 
+Applications in which all `REQUIRED` transactional operations are safe to repeat can enable retries
+globally. This mode is disabled by default:
+
+```yaml
+jeap:
+  datasource:
+    aws:
+      failover-retry:
+        enabled: true
+        max-attempts: 2
+        backoff-millis: 100
+```
+
+An explicitly annotated outer retry boundary uses the values from its annotation, overriding the global
+defaults. In global mode, transactional methods with propagation modes other than `REQUIRED` are left
+unchanged. Nested transactional calls participate in the outer retry attempt and do not create additional
+retry loops or independent transaction boundaries.
+
 Retries use the same transaction manager that Spring selects for `@Transactional`, including an
 explicit transaction-manager name, a class-level qualifier, or a default supplied through
 `TransactionManagementConfigurer`.
@@ -114,15 +133,19 @@ propagation modes are rejected before the first attempt: applying them inside th
 transaction could suspend it, create a nested physical transaction, or execute the operation without
 the promised transaction boundary.
 
-The annotation is intentionally opt-in. Do not apply it to a method that performs non-idempotent
-effects outside its database transaction. In particular, `08007` means that the outcome of the old
-transaction is unknown and therefore requires an application-specific reconciliation decision.
+Enable either mode only for operations that do not perform non-idempotent effects outside their database
+transaction. Enabling the global mode declares that all matching transaction boundaries in the application
+are safe to repeat. In particular, `08007` means that the outcome of the old transaction is unknown and
+therefore requires an application-specific reconciliation decision.
 
 ## Configuration
 
-| Property                          | Default | Description                             |
-|-----------------------------------|---------|-----------------------------------------|
-| `jeap.datasource.replica.enabled` | `false` | Enable read-replica transaction routing |
+| Property                                                    | Default | Description                                                   |
+|-------------------------------------------------------------|---------|---------------------------------------------------------------|
+| `jeap.datasource.replica.enabled`                           | `false` | Enable read-replica transaction routing                       |
+| `jeap.datasource.aws.failover-retry.enabled`                | `false` | Retry all `REQUIRED` transactions after a successful failover |
+| `jeap.datasource.aws.failover-retry.max-attempts`           | `2`     | Maximum attempts in global mode, including the initial call   |
+| `jeap.datasource.aws.failover-retry.backoff-millis`         | `100`   | Delay between attempts in global mode                         |
 
 ## Common pitfalls
 
@@ -132,8 +155,8 @@ transaction is unknown and therefore requires an application-specific reconcilia
   open across a web request and can trigger the consistency check for an unannotated read-only entry
   point; annotate the entry method with `@Transactional` to mark the top-level transaction read-write.
 - **Stale reads** — only annotate methods whose reads tolerate replication lag.
-- **Unsafe failover retry** — use `@RetryOnAwsJdbcFailover` only when repeating the complete method is
-  safe. The interceptor cannot determine business idempotency.
+- **Unsafe failover retry** — use the annotation or global mode only when repeating the complete method
+  is safe. The interceptor cannot determine business idempotency.
 
 ## Related
 
