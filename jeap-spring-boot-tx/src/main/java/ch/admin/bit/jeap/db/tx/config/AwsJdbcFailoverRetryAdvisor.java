@@ -92,7 +92,13 @@ public class AwsJdbcFailoverRetryAdvisor implements PointcutAdvisor, MethodInter
                 log.info("AWS JDBC connection failover interrupted {}. " +
                          "Retrying with a new transaction (attempt {}/{})",
                         methodName(invocation.getMethod(), targetClass), attempt + 1, retrySettings.maxAttempts());
-                backoff(retrySettings.backoffMillis());
+                try {
+                    backoff(retrySettings.backoffMillis());
+                } catch (InterruptedException interruption) {
+                    Thread.currentThread().interrupt();
+                    throwable.addSuppressed(interruption);
+                    throw throwable;
+                }
                 attempt++;
             }
         }
@@ -140,12 +146,7 @@ public class AwsJdbcFailoverRetryAdvisor implements PointcutAdvisor, MethodInter
 
     private static void backoff(long backoffMillis) throws InterruptedException {
         if (backoffMillis > 0) {
-            try {
-                Thread.sleep(backoffMillis);
-            } catch (InterruptedException ex) {
-                Thread.currentThread().interrupt();
-                throw ex;
-            }
+            Thread.sleep(backoffMillis);
         }
     }
 

@@ -3,6 +3,7 @@ package ch.admin.bit.jeap.db.tx;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -36,14 +37,19 @@ class ReadReplicaAwareTransactionManagerTest {
 
     @BeforeEach
     void setUp() {
+        clearTransactionContext();
+        when(platformTransactionManager.getTransaction(any())).thenReturn(mock(TransactionStatus.class));
+        doNothing().when(platformTransactionManager).commit(any());
+        doNothing().when(platformTransactionManager).rollback(any());
+    }
+
+    @AfterEach
+    void clearTransactionContext() {
         NESTING_LEVEL.remove();
         DELEGATION_LEVEL.remove();
         TOP_LEVEL_TRANSACTION_READ_ONLY.remove();
         TOP_LEVEL_TRANSACTION_ROUTED_TO_READ_REPLICA.remove();
         TRANSACTION_CONTEXTS.remove();
-        when(platformTransactionManager.getTransaction(any())).thenReturn(mock(TransactionStatus.class));
-        doNothing().when(platformTransactionManager).commit(any());
-        doNothing().when(platformTransactionManager).rollback(any());
     }
 
     @Test

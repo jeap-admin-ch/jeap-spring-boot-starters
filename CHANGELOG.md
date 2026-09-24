@@ -14,6 +14,11 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   every retryable top-level invocation gets a new transaction per attempt, existing `REQUIRED` transactions retain
   their atomicity, and unknown transaction outcomes are not retried.
 
+### Fixed
+
+- Preserve the original database failure when failover retry backoff is interrupted, attaching the interruption
+  as a suppressed exception and retaining the thread's interrupt flag.
+
 ## [25.9.0] - 2026-09-22
 
 ### Changed
