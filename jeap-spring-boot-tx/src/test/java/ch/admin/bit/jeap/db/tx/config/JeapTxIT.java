@@ -31,6 +31,31 @@ class JeapTxIT {
     private AwsJdbcFailoverRetryCallerTestService failoverRetryCallerTestService;
 
     @Test
+    void checkedFailoverThatCommitsIsNotRetried() {
+        assertThatThrownBy(failoverRetryTestService::insertThenThrowCheckedFailover)
+                .isInstanceOf(java.sql.SQLException.class)
+                .hasMessage("connection changed");
+        assertThat(failoverRetryTestService.checkedFailureAttempts()).isEqualTo(1);
+        assertThat(personRepository.findById(7)).isPresent();
+    }
+
+    @Test
+    void noRollbackForFailoverThatCommitsIsNotRetried() {
+        assertThatThrownBy(failoverRetryTestService::insertThenThrowNoRollbackFailover)
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("committed despite failure");
+        assertThat(failoverRetryTestService.noRollbackAttempts()).isEqualTo(1);
+        assertThat(personRepository.findById(8)).isPresent();
+    }
+
+    @Test
+    void checkedFailoverWithExplicitRollbackIsRetried() throws Exception {
+        failoverRetryTestService.insertThenThrowCheckedFailoverWithRollback();
+        assertThat(failoverRetryTestService.explicitRollbackAttempts()).isEqualTo(2);
+        assertThat(personRepository.findById(9)).isPresent();
+    }
+
+    @Test
     void ensureTransactionalReadReplicaWorksWithoutSpecificDataSourceRoutingConfiguration() {
         List<Person> results = personRepository.findAll();
         Optional<Person> maybePerson = personRepository.findPersonById(1);

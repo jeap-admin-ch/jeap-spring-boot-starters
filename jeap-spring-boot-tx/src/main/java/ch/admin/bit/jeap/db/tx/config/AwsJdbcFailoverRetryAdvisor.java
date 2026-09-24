@@ -81,25 +81,27 @@ public class AwsJdbcFailoverRetryAdvisor implements PointcutAdvisor, MethodInter
                          RetrySettings retrySettings) throws Throwable {
         int attempt = 1;
         while (true) {
-            try {
-                // Re-run the remaining advice chain, including Spring's ordinary transaction interceptor. It creates,
-                // commits and rolls back exactly one transaction per attempt with the originally selected manager.
-                return retryableInvocation(invocation).proceed();
-            } catch (Throwable throwable) {
-                if (!isRetryable(throwable) || attempt >= retrySettings.maxAttempts()) {
-                    throw throwable;
-                }
-                log.info("AWS JDBC connection failover interrupted {}. " +
-                         "Retrying with a new transaction (attempt {}/{})",
-                        methodName(invocation.getMethod(), targetClass), attempt + 1, retrySettings.maxAttempts());
+            try (var completion = AwsJdbcFailoverRetryTransactionListener.beginAttempt()) {
                 try {
-                    backoff(retrySettings.backoffMillis());
-                } catch (InterruptedException interruption) {
-                    Thread.currentThread().interrupt();
-                    throwable.addSuppressed(interruption);
-                    throw throwable;
+                    // Re-run the remaining advice chain, including Spring's ordinary transaction interceptor. It creates,
+                    // commits and rolls back exactly one transaction per attempt with the originally selected manager.
+                    return retryableInvocation(invocation).proceed();
+                } catch (Throwable throwable) {
+                    if (!isRetryable(throwable) || !completion.canRetry() || attempt >= retrySettings.maxAttempts()) {
+                        throw throwable;
+                    }
+                    log.info("AWS JDBC connection failover interrupted {}. " +
+                             "Retrying with a new transaction (attempt {}/{})",
+                            methodName(invocation.getMethod(), targetClass), attempt + 1, retrySettings.maxAttempts());
+                    try {
+                        backoff(retrySettings.backoffMillis());
+                    } catch (InterruptedException interruption) {
+                        Thread.currentThread().interrupt();
+                        throwable.addSuppressed(interruption);
+                        throw throwable;
+                    }
+                    attempt++;
                 }
-                attempt++;
             }
         }
     }

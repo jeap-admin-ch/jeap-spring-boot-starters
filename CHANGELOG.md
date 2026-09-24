@@ -16,8 +16,14 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- Retry failover errors only after observed rollback or transaction-begin failure; exclude committed attempts
+  and uncertain completion outcomes, preserving checked-exception and `noRollbackFor` semantics.
 - Preserve the original database failure when failover retry backoff is interrupted, attaching the interruption
   as a suppressed exception and retaining the thread's interrupt flag.
+
+### Changed
+
+- Use the transaction context stack instead of a redundant nesting-depth counter.
 
 ## [25.9.0] - 2026-09-22
 

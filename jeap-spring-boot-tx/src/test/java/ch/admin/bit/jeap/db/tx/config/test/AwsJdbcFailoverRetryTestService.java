@@ -21,6 +21,44 @@ public class AwsJdbcFailoverRetryTestService {
     private final AtomicInteger attempts = new AtomicInteger();
     private final AtomicInteger globalAttempts = new AtomicInteger();
     private final AtomicInteger unknownOutcomeAttempts = new AtomicInteger();
+    private final AtomicInteger checkedFailureAttempts = new AtomicInteger();
+    private final AtomicInteger noRollbackAttempts = new AtomicInteger();
+    private final AtomicInteger explicitRollbackAttempts = new AtomicInteger();
+
+    @Transactional
+    public void insertThenThrowCheckedFailover() throws SQLException {
+        checkedFailureAttempts.incrementAndGet();
+        jdbcTemplate.update("INSERT INTO person(ID, FIRST_NAME, LAST_NAME) VALUES (7, 'Checked', 'Committed')");
+        throw new FailoverSuccessSQLException();
+    }
+
+    public int checkedFailureAttempts() {
+        return checkedFailureAttempts.get();
+    }
+
+    @Transactional(noRollbackFor = IllegalStateException.class)
+    public void insertThenThrowNoRollbackFailover() {
+        noRollbackAttempts.incrementAndGet();
+        jdbcTemplate.update("INSERT INTO person(ID, FIRST_NAME, LAST_NAME) VALUES (8, 'NoRollback', 'Committed')");
+        throw new IllegalStateException("committed despite failure", new FailoverSuccessSQLException());
+    }
+
+    public int noRollbackAttempts() {
+        return noRollbackAttempts.get();
+    }
+
+    @Transactional(rollbackFor = SQLException.class)
+    public void insertThenThrowCheckedFailoverWithRollback() throws SQLException {
+        int attempt = explicitRollbackAttempts.incrementAndGet();
+        jdbcTemplate.update("INSERT INTO person(ID, FIRST_NAME, LAST_NAME) VALUES (9, 'Checked', 'Rollback')");
+        if (attempt == 1) {
+            throw new FailoverSuccessSQLException();
+        }
+    }
+
+    public int explicitRollbackAttempts() {
+        return explicitRollbackAttempts.get();
+    }
 
     @RetryOnAwsJdbcFailover(maxAttempts = 2, backoffMillis = 0)
     @Transactional

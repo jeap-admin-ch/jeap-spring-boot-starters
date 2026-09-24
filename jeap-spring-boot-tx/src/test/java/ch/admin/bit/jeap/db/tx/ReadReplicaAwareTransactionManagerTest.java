@@ -45,7 +45,6 @@ class ReadReplicaAwareTransactionManagerTest {
 
     @AfterEach
     void clearTransactionContext() {
-        NESTING_LEVEL.remove();
         DELEGATION_LEVEL.remove();
         TOP_LEVEL_TRANSACTION_READ_ONLY.remove();
         TOP_LEVEL_TRANSACTION_ROUTED_TO_READ_REPLICA.remove();
@@ -53,57 +52,57 @@ class ReadReplicaAwareTransactionManagerTest {
     }
 
     @Test
-    void getTransaction_onTopLevelTransaction_nestingLevelIsUpdated() {
+    void getTransaction_onTopLevelTransaction_contextStackIsUpdated() {
         readReplicaAwareTransactionManager.getTransaction(getReadOnlyTransactionDefinition());
 
-        assertEquals(1, NESTING_LEVEL.get().get());
+        assertEquals(1, TRANSACTION_CONTEXTS.get().size());
         assertThreadLocalsAreSet();
     }
 
     @Test
-    void getTransaction_onTopLevelTransaction_whenCommitting_nestingLevelIsUpdated() {
+    void getTransaction_onTopLevelTransaction_whenCommitting_contextStackIsUpdated() {
         TransactionStatus transactionStatus = readReplicaAwareTransactionManager.getTransaction(getReadOnlyTransactionDefinition());
         readReplicaAwareTransactionManager.commit(transactionStatus);
 
-        assertEquals(0, NESTING_LEVEL.get().get());
+        assertEquals(0, TRANSACTION_CONTEXTS.get().size());
         assertThreadLocalsAreEmpty();
     }
 
     @Test
-    void getTransaction_onTopLevelTransaction_whenRollbacking_nestingLevelIsUpdated() {
+    void getTransaction_onTopLevelTransaction_whenRollbacking_contextStackIsUpdated() {
         TransactionStatus transactionStatus = readReplicaAwareTransactionManager.getTransaction(getReadOnlyTransactionDefinition());
         readReplicaAwareTransactionManager.rollback(transactionStatus);
 
-        assertEquals(0, NESTING_LEVEL.get().get());
+        assertEquals(0, TRANSACTION_CONTEXTS.get().size());
         assertThreadLocalsAreEmpty();
     }
 
     @Test
-    void getTransaction_onNestedTransaction_nestingLevelIsUpdated() {
+    void getTransaction_onNestedTransaction_contextStackIsUpdated() {
         readReplicaAwareTransactionManager.getTransaction(getReadOnlyTransactionDefinition());
         readReplicaAwareTransactionManager.getTransaction(getReadOnlyTransactionDefinition());
 
-        assertEquals(2, NESTING_LEVEL.get().get());
+        assertEquals(2, TRANSACTION_CONTEXTS.get().size());
         assertThreadLocalsAreSet();
     }
 
     @Test
-    void getTransaction_onNestedTransaction_whenCommitting_nestingLevelIsUpdated() {
+    void getTransaction_onNestedTransaction_whenCommitting_contextStackIsUpdated() {
         readReplicaAwareTransactionManager.getTransaction(getReadOnlyTransactionDefinition());
         TransactionStatus transactionStatus = readReplicaAwareTransactionManager.getTransaction(getReadOnlyTransactionDefinition());
         readReplicaAwareTransactionManager.commit(transactionStatus);
 
-        assertEquals(1, NESTING_LEVEL.get().get());
+        assertEquals(1, TRANSACTION_CONTEXTS.get().size());
         assertThreadLocalsAreSet();
     }
 
     @Test
-    void getTransaction_onNestedTransaction_whenRollbacking_nestingLevelIsUpdated() {
+    void getTransaction_onNestedTransaction_whenRollbacking_contextStackIsUpdated() {
         readReplicaAwareTransactionManager.getTransaction(getReadOnlyTransactionDefinition());
         TransactionStatus transactionStatus = readReplicaAwareTransactionManager.getTransaction(getReadOnlyTransactionDefinition());
         readReplicaAwareTransactionManager.rollback(transactionStatus);
 
-        assertEquals(1, NESTING_LEVEL.get().get());
+        assertEquals(1, TRANSACTION_CONTEXTS.get().size());
         assertThreadLocalsAreSet();
     }
 
@@ -147,7 +146,7 @@ class ReadReplicaAwareTransactionManagerTest {
     }
 
     @Test
-    void getTransaction_onTopLevelTransaction_whenOpeningTransactionFails_nestingLevelShouldBeReset() {
+    void getTransaction_onTopLevelTransaction_whenOpeningTransactionFails_contextStackShouldBeReset() {
         when(platformTransactionManager.getTransaction(any())).thenThrow(RuntimeException.class);
 
         try {
@@ -156,14 +155,14 @@ class ReadReplicaAwareTransactionManagerTest {
             //Expected, we simulate an error when opening the transaction, this has happened for instance when
             //a connection timeout is thrown when opening the physical connection to the database
         }
-        assertEquals(0, NESTING_LEVEL.get().get());
+        assertEquals(0, TRANSACTION_CONTEXTS.get().size());
         assertThreadLocalsAreEmpty();
     }
 
     @Test
-    void getTransaction_onNestedTransaction_whenOpeningTransactionFails_nestingLevelShouldBeReset() {
+    void getTransaction_onNestedTransaction_whenOpeningTransactionFails_contextStackShouldBeReset() {
         readReplicaAwareTransactionManager.getTransaction(getReadOnlyTransactionDefinition());
-        assertEquals(1, NESTING_LEVEL.get().get());
+        assertEquals(1, TRANSACTION_CONTEXTS.get().size());
         assertThreadLocalsAreSet();
 
         when(platformTransactionManager.getTransaction(any())).thenThrow(RuntimeException.class);
@@ -173,7 +172,7 @@ class ReadReplicaAwareTransactionManagerTest {
             //Expected, we simulate an error when opening the transaction, this has happened for instance when
             //a connection timeout is thrown when opening the physical connection to the database
         }
-        assertEquals(1, NESTING_LEVEL.get().get());
+        assertEquals(1, TRANSACTION_CONTEXTS.get().size());
         assertThreadLocalsAreSet();
     }
 
@@ -212,7 +211,7 @@ class ReadReplicaAwareTransactionManagerTest {
         });
 
         assertNotNull(transactionManager.getTransaction(getReadOnlyTransactionDefinition()));
-        assertEquals(1, NESTING_LEVEL.get().get());
+        assertEquals(1, TRANSACTION_CONTEXTS.get().size());
     }
 
     @Test

@@ -138,6 +138,16 @@ rollback behavior that Spring selects for `@Transactional`, including an
 explicit transaction-manager name, a class-level qualifier, or a default supplied through
 `TransactionManagementConfigurer`.
 
+A matching exception is retried only after an observed successful rollback, or a failed transaction
+begin before the business method ran. Spring's transaction execution callbacks provide this information.
+Checked exceptions and `noRollbackFor` rules can cause Spring to commit despite an exception; those
+attempts are not repeated. Commit attempts (including failed commits and nested independent commits)
+and failed rollbacks also prevent replay.
+
+Completion tracking is registered on Spring `ConfigurableTransactionManager` beans, including the
+standard JDBC and JPA transaction managers. Custom managers without these callbacks continue to execute
+normally, but their unobserved outcomes are not retried.
+
 `@RetryOnAwsJdbcFailover` requires `@Transactional` with its default `REQUIRED` propagation. Other
 propagation modes are unsupported. The advice preserves Spring's transaction boundaries and does not
 replace propagation with `REQUIRES_NEW`.

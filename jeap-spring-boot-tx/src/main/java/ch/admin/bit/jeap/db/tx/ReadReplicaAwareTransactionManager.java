@@ -38,7 +38,6 @@ public class ReadReplicaAwareTransactionManager implements PlatformTransactionMa
 
     static final ThreadLocal<Boolean> TOP_LEVEL_TRANSACTION_READ_ONLY = new ThreadLocal<>();
     static final ThreadLocal<Boolean> TOP_LEVEL_TRANSACTION_ROUTED_TO_READ_REPLICA = new ThreadLocal<>();
-    static final ThreadLocal<AtomicInteger> NESTING_LEVEL = ThreadLocal.withInitial(() -> new AtomicInteger(0));
     static final ThreadLocal<AtomicInteger> DELEGATION_LEVEL = ThreadLocal.withInitial(() -> new AtomicInteger(0));
     static final ThreadLocal<Deque<TransactionContext>> TRANSACTION_CONTEXTS =
             ThreadLocal.withInitial(ArrayDeque::new);
@@ -127,7 +126,6 @@ public class ReadReplicaAwareTransactionManager implements PlatformTransactionMa
         }
 
         TRANSACTION_CONTEXTS.get().push(transactionContext);
-        NESTING_LEVEL.get().incrementAndGet();
         DELEGATION_LEVEL.get().incrementAndGet();
         try {
             return delegate.getTransaction(definition);
@@ -194,7 +192,6 @@ public class ReadReplicaAwareTransactionManager implements PlatformTransactionMa
 
     private static void completeTransactionContext() {
         TransactionContext transactionContext = TRANSACTION_CONTEXTS.get().pop();
-        NESTING_LEVEL.get().decrementAndGet();
         if (transactionContext.independent()) {
             restoreThreadLocals(transactionContext);
         }
@@ -218,7 +215,7 @@ public class ReadReplicaAwareTransactionManager implements PlatformTransactionMa
     }
 
     private static boolean isTopLevelTransaction() {
-        return NESTING_LEVEL.get().get() == 0;
+        return TRANSACTION_CONTEXTS.get().isEmpty();
     }
 
     private static boolean isDelegatedTransactionStart() {

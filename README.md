@@ -46,7 +46,7 @@ parent. Modules ending in `-it`, `-it-*` or `-test` are test-support or integrat
 | [`jeap-spring-boot-vault-starter`](docs/jeap-spring-boot-vault-starter.md)                     | Secrets management via HashiCorp Vault (Spring Cloud Vault, AppRole/Kubernetes auth)     |
 | [`jeap-spring-boot-object-storage-starter`](docs/jeap-spring-boot-object-storage-starter.md)   | S3-compatible object-storage client (`S3Client`) configuration                           |
 | [`jeap-spring-boot-postgresql-aws-starter`](docs/jeap-spring-boot-postgresql-aws-starter.md)   | AWS RDS PostgreSQL with IAM auth and optional read replicas (AWS Advanced JDBC Wrapper)  |
-| [`jeap-spring-boot-tx`](docs/jeap-spring-boot-tx.md)                                           | Read-replica routing and configurable retries for AWS JDBC `08S02` failures               |
+| [`jeap-spring-boot-tx`](docs/jeap-spring-boot-tx.md)                                           | Read-replica routing and rollback-aware retries for AWS JDBC `08S02` failures               |
 | [`jeap-spring-boot-web-config-starter`](docs/jeap-spring-boot-web-config-starter.md)           | Frontend security headers (CSP, HSTS, ...) and caching headers                           |
 | [`jeap-spring-boot-swagger`](docs/jeap-spring-boot-swagger.md)                                 | OpenAPI/Swagger configuration (springdoc) with OAuth2 and HTTPS enforcement              |
 | [`jeap-spring-boot-swagger-starter`](docs/jeap-spring-boot-swagger-starter.md)                 | Convenience starter bundling `jeap-spring-boot-swagger` and the springdoc Swagger UI     |

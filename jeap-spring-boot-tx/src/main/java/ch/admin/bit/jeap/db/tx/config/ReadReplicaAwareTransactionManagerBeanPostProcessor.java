@@ -8,6 +8,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.config.BeanPostProcessor;
+import org.springframework.transaction.ConfigurableTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
 
 @Slf4j
@@ -20,11 +21,14 @@ public class ReadReplicaAwareTransactionManagerBeanPostProcessor implements Bean
 
     @Override
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+        if (bean instanceof ConfigurableTransactionManager transactionManager) {
+            transactionManager.addListener(new AwsJdbcFailoverRetryTransactionListener());
+        }
         if (TRANSACTION_MANAGER.equals(beanName) && PlatformTransactionManager.class.isAssignableFrom(bean.getClass())) {
             log.info("Replacing the transactionManager with a ReadReplicaAwareTransactionManager");
             boolean routeTransactionsToReadReplica = false; // The primary transactionManager does not route transactions to read replicas
             PlatformTransactionManager delegate = (PlatformTransactionManager) bean;
-            return new ReadReplicaAwareTransactionManager(delegate, routeTransactionsToReadReplica, () -> (MeterRegistry) beanFactory.getBean(MeterRegistry.class));
+            return new ReadReplicaAwareTransactionManager(delegate, routeTransactionsToReadReplica, () -> beanFactory.getBean(MeterRegistry.class));
         }
         return bean;
     }
