@@ -75,6 +75,18 @@ class JeapTxIT {
     void globallyEnabledRetry_preservesNormalSetRollbackOnlyBehavior() {
         assertThatCode(failoverRetryTestService::markCurrentTransactionRollbackOnly)
                 .doesNotThrowAnyException();
+        assertThat(personRepository.findById(5)).isEmpty();
+    }
+
+    @Test
+    void globallyEnabledRetry_doesNotReplayUnknownTransactionOutcome() {
+        assertThatThrownBy(failoverRetryTestService::insertWithUnknownTransactionOutcome)
+                .isInstanceOf(IllegalStateException.class)
+                .hasRootCauseMessage("transaction outcome unknown");
+
+        assertThat(failoverRetryTestService.unknownOutcomeAttempts()).isEqualTo(1);
+        // The synthetic H2 transaction rolls back. A real 08007 cannot guarantee this outcome.
+        assertThat(personRepository.findById(6)).isEmpty();
     }
 
     @Test

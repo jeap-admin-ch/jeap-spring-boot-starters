@@ -7,7 +7,7 @@
     },
     {
       "name": "jeap.datasource.aws.failover-retry.enabled",
-      "description": "Enable retries for all REQUIRED transactions after a successful AWS JDBC failover.",
+      "description": "Enable retries on AWS JDBC failover SQL state 08S02 for REQUIRED invocations starting their own transaction. Existing transactions and unknown outcomes (08007) are not retried.",
       "defaultValue": false,
       "type": "java.lang.Boolean"
     },

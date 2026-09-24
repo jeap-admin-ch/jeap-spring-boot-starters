@@ -52,6 +52,9 @@ Transaction state unknown (`08007`) and other connection failures are deliberate
 In particular, AWS Advanced JDBC Wrapper 4.4 reports a failover during an active transaction as
 `08007`; this advice therefore does not recover that in-flight transaction. It only automates replay
 for the unambiguous `08S02` case where the wrapper reports that the connection changed successfully.
+See the [AWS failover exception codes](https://github.com/aws/aws-advanced-jdbc-wrapper/blob/main/docs/using-the-jdbc-driver/using-plugins/UsingTheFailoverPlugin.md#failover-exception-codes).
+The local tests inject exceptions to verify replay and rollback mechanics; they do not simulate an
+RDS failover or establish recovery of an interrupted database transaction.
 
 ## Using `@TransactionalReadReplica`
 
@@ -136,9 +139,8 @@ explicit transaction-manager name, a class-level qualifier, or a default supplie
 `TransactionManagementConfigurer`.
 
 `@RetryOnAwsJdbcFailover` requires `@Transactional` with its default `REQUIRED` propagation. Other
-propagation modes are rejected before the first attempt: applying them inside the retry-managed
-transaction could suspend it, create a nested physical transaction, or execute the operation without
-the promised transaction boundary.
+propagation modes are unsupported. The advice preserves Spring's transaction boundaries and does not
+replace propagation with `REQUIRES_NEW`.
 
 Enable either mode only for operations that do not perform non-idempotent effects outside their database
 transaction. Enabling the global mode declares that all matching transaction boundaries in the application
@@ -150,7 +152,7 @@ therefore requires an application-specific reconciliation decision.
 | Property                                                    | Default | Description                                                   |
 |-------------------------------------------------------------|---------|---------------------------------------------------------------|
 | `jeap.datasource.replica.enabled`                           | `false` | Enable read-replica transaction routing                       |
-| `jeap.datasource.aws.failover-retry.enabled`                | `false` | Retry all `REQUIRED` transactions after a successful failover |
+| `jeap.datasource.aws.failover-retry.enabled`                | `false` | Retry eligible top-level `REQUIRED` invocations on `08S02` |
 | `jeap.datasource.aws.failover-retry.max-attempts`           | `2`     | Maximum attempts in global mode, including the initial call   |
 | `jeap.datasource.aws.failover-retry.backoff-millis`         | `100`   | Delay between attempts in global mode                         |
 
