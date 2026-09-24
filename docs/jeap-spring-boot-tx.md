@@ -45,9 +45,13 @@ read replica) and `jeap_db_transaction_rw` (writer-instance transactions).
 The module also provides AWS JDBC failover retry advice. Individual operations can opt in with
 `@RetryOnAwsJdbcFailover`, or applications whose transactional operations are retry-safe can enable
 the advice globally. It recognizes only the AWS Advanced JDBC Wrapper's `FailoverSuccessSQLException`
-with SQL state `08S02`. The retry advice has highest precedence, explicitly suspends any existing
-transaction, and starts a new transaction for every attempt. Transaction state unknown (`08007`) and
-other connection failures are deliberately not retried.
+with SQL state `08S02`. When an invocation starts its own transaction, the retry advice repeats the
+ordinary Spring transaction interceptor so that every attempt gets a fresh transaction. An invocation
+that participates in an existing transaction is not retried and retains normal `REQUIRED` atomicity.
+Transaction state unknown (`08007`) and other connection failures are deliberately not retried.
+In particular, AWS Advanced JDBC Wrapper 4.4 reports a failover during an active transaction as
+`08007`; this advice therefore does not recover that in-flight transaction. It only automates replay
+for the unambiguous `08S02` case where the wrapper reports that the connection changed successfully.
 
 ## Using `@TransactionalReadReplica`
 
@@ -122,9 +126,12 @@ jeap:
 An explicitly annotated outer retry boundary uses the values from its annotation, overriding the global
 defaults. In global mode, transactional methods with propagation modes other than `REQUIRED` are left
 unchanged. Nested transactional calls participate in the outer retry attempt and do not create additional
-retry loops or independent transaction boundaries.
+retry loops or independent transaction boundaries. A `REQUIRED` operation entered while another transaction
+is already active participates in that transaction without retry; this prevents a nested operation from
+committing independently if its caller later rolls back.
 
-Retries use the same transaction manager that Spring selects for `@Transactional`, including an
+Because retries repeat Spring's normal transaction interceptor, they use the same transaction manager and
+rollback behavior that Spring selects for `@Transactional`, including an
 explicit transaction-manager name, a class-level qualifier, or a default supplied through
 `TransactionManagementConfigurer`.
 

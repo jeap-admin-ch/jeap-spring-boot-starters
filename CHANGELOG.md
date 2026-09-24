@@ -11,7 +11,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Add configurable transaction retries for AWS JDBC Wrapper `FailoverSuccessSQLException` errors with SQL state
   `08S02`. Applications can opt in individual methods with `@RetryOnAwsJdbcFailover` or enable retries globally;
-  every attempt runs in a new transaction and unknown transaction outcomes are not retried.
+  every retryable top-level invocation gets a new transaction per attempt, existing `REQUIRED` transactions retain
+  their atomicity, and unknown transaction outcomes are not retried.
 
 ## [25.9.0] - 2026-09-22
 

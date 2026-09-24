@@ -10,17 +10,12 @@ import org.springframework.aop.PointcutAdvisor;
 import org.springframework.aop.ProxyMethodInvocation;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.aop.support.StaticMethodMatcherPointcut;
-import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.AnnotatedElementUtils;
-import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.TransactionManager;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.interceptor.DefaultTransactionAttribute;
-import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.transaction.interceptor.TransactionAttribute;
 import org.springframework.transaction.interceptor.TransactionAttributeSource;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.ClassUtils;
 
 import java.lang.reflect.Method;
@@ -28,8 +23,7 @@ import java.lang.reflect.Method;
 import static ch.admin.bit.jeap.db.tx.AwsJdbcFailoverExceptionClassifier.isRetryable;
 
 @Slf4j
-public class AwsJdbcFailoverRetryAdvisor extends TransactionAspectSupport
-        implements PointcutAdvisor, MethodInterceptor, Ordered {
+public class AwsJdbcFailoverRetryAdvisor implements PointcutAdvisor, MethodInterceptor, Ordered {
 
     private static final ThreadLocal<Boolean> RETRY_ACTIVE = new ThreadLocal<>();
 
@@ -37,18 +31,11 @@ public class AwsJdbcFailoverRetryAdvisor extends TransactionAspectSupport
     private final AwsJdbcFailoverRetryProperties properties;
     private final Pointcut pointcut = new RetryPointcut();
 
-    public AwsJdbcFailoverRetryAdvisor(ListableBeanFactory beanFactory,
-                                       TransactionAttributeSource transactionAttributeSource,
-                                       TransactionManager defaultTransactionManager,
+    public AwsJdbcFailoverRetryAdvisor(TransactionAttributeSource transactionAttributeSource,
                                        AwsJdbcFailoverRetryProperties properties) {
         this.transactionAttributeSource = transactionAttributeSource;
         this.properties = properties;
         validate(new RetrySettings(properties.maxAttempts(), properties.backoffMillis()));
-        setBeanFactory(beanFactory);
-        setTransactionAttributeSource(transactionAttributeSource);
-        if (defaultTransactionManager != null) {
-            setTransactionManager(defaultTransactionManager);
-        }
     }
 
     @Override
@@ -70,15 +57,20 @@ public class AwsJdbcFailoverRetryAdvisor extends TransactionAspectSupport
             return invocation.proceed();
         }
 
+        // A REQUIRED invocation inside an existing transaction must keep participating in that transaction.
+        // Retrying it independently would commit part of the caller's unit of work and break atomicity.
+        if (TransactionSynchronizationManager.isActualTransactionActive()) {
+            return invocation.proceed();
+        }
+
         RetrySettings retrySettings = retryAnnotation == null
                 ? new RetrySettings(properties.maxAttempts(), properties.backoffMillis())
                 : new RetrySettings(retryAnnotation.maxAttempts(), retryAnnotation.backoffMillis());
         validate(retrySettings);
-        PlatformTransactionManager transactionManager = transactionManager(transactionAttribute, targetClass);
 
         RETRY_ACTIVE.set(true);
         try {
-            return retry(invocation, targetClass, transactionManager, transactionAttribute, retrySettings);
+            return retry(invocation, targetClass, retrySettings);
         } finally {
             RETRY_ACTIVE.remove();
         }
@@ -86,13 +78,13 @@ public class AwsJdbcFailoverRetryAdvisor extends TransactionAspectSupport
 
     private Object retry(MethodInvocation invocation,
                          Class<?> targetClass,
-                         PlatformTransactionManager transactionManager,
-                         TransactionAttribute transactionAttribute,
                          RetrySettings retrySettings) throws Throwable {
         int attempt = 1;
         while (true) {
             try {
-                return executeInNewTransaction(invocation, targetClass, transactionManager, transactionAttribute);
+                // Re-run the remaining advice chain, including Spring's ordinary transaction interceptor. It creates,
+                // commits and rolls back exactly one transaction per attempt with the originally selected manager.
+                return retryableInvocation(invocation).proceed();
             } catch (Throwable throwable) {
                 if (!isRetryable(throwable) || attempt >= retrySettings.maxAttempts()) {
                     throw throwable;
@@ -120,39 +112,10 @@ public class AwsJdbcFailoverRetryAdvisor extends TransactionAspectSupport
         return target == null ? invocation.getMethod().getDeclaringClass() : AopUtils.getTargetClass(target);
     }
 
-    PlatformTransactionManager transactionManager(TransactionAttribute transactionAttribute, Class<?> targetClass) {
-        TransactionManager transactionManager = determineTransactionManager(transactionAttribute, targetClass);
-        if (transactionManager instanceof PlatformTransactionManager platformTransactionManager) {
-            return platformTransactionManager;
-        }
-        throw new IllegalStateException("Specified transaction manager is not a PlatformTransactionManager: " +
-                                        transactionManager);
-    }
-
     static void validateTransactionAttribute(TransactionAttribute transactionAttribute) {
         if (transactionAttribute.getPropagationBehavior() != TransactionDefinition.PROPAGATION_REQUIRED) {
             throw new IllegalStateException("@RetryOnAwsJdbcFailover requires @Transactional propagation REQUIRED");
         }
-    }
-
-    private static Object executeInNewTransaction(MethodInvocation invocation,
-                                                  Class<?> targetClass,
-                                                  PlatformTransactionManager transactionManager,
-                                                  TransactionAttribute transactionAttribute) throws Throwable {
-        DefaultTransactionAttribute definition = new DefaultTransactionAttribute(transactionAttribute);
-        definition.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
-        definition.setName(methodName(invocation.getMethod(), targetClass));
-
-        TransactionStatus status = transactionManager.getTransaction(definition);
-        Object result;
-        try {
-            result = retryableInvocation(invocation).proceed();
-        } catch (Throwable throwable) {
-            completeAfterException(transactionManager, transactionAttribute, status, throwable);
-            throw throwable;
-        }
-        transactionManager.commit(status);
-        return result;
     }
 
     private static MethodInvocation retryableInvocation(MethodInvocation invocation) {
@@ -164,17 +127,6 @@ public class AwsJdbcFailoverRetryAdvisor extends TransactionAspectSupport
 
     private static String methodName(Method method, Class<?> targetClass) {
         return ClassUtils.getQualifiedMethodName(method, targetClass);
-    }
-
-    private static void completeAfterException(PlatformTransactionManager transactionManager,
-                                               TransactionAttribute transactionAttribute,
-                                               TransactionStatus status,
-                                               Throwable throwable) {
-        if (isRetryable(throwable) || transactionAttribute.rollbackOn(throwable)) {
-            transactionManager.rollback(status);
-        } else {
-            transactionManager.commit(status);
-        }
     }
 
     private static void validate(RetrySettings retrySettings) {

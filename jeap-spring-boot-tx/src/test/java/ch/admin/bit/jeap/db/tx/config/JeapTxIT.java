@@ -1,22 +1,23 @@
 package ch.admin.bit.jeap.db.tx.config;
 
 import ch.admin.bit.jeap.db.tx.TransactionalReadReplica;
+import ch.admin.bit.jeap.db.tx.config.test.AwsJdbcFailoverRetryCallerTestService;
 import ch.admin.bit.jeap.db.tx.config.test.AwsJdbcFailoverRetryTestService;
 import ch.admin.bit.jeap.db.tx.config.test.Person;
 import ch.admin.bit.jeap.db.tx.config.test.PersonRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 @SpringBootTest(properties = {
         "jeap.datasource.aws.failover-retry.enabled=true",
-        "jeap.datasource.aws.failover-retry.backoff-millis=0"
+        "jeap.datasource.aws.failover-retry.backoff-millis=0",
+        "jeap.datasource.replica.enabled=true"
 })
 class JeapTxIT {
 
@@ -25,6 +26,9 @@ class JeapTxIT {
 
     @Autowired
     private AwsJdbcFailoverRetryTestService failoverRetryTestService;
+
+    @Autowired
+    private AwsJdbcFailoverRetryCallerTestService failoverRetryCallerTestService;
 
     @Test
     void ensureTransactionalReadReplicaWorksWithoutSpecificDataSourceRoutingConfiguration() {
@@ -44,7 +48,6 @@ class JeapTxIT {
     }
 
     @Test
-    @Transactional(readOnly = true)
     void awsJdbcFailoverRetryStartsANewTransaction() {
         failoverRetryTestService.insertWithFailoverAfterFirstInsert();
 
@@ -58,5 +61,24 @@ class JeapTxIT {
 
         assertThat(failoverRetryTestService.globalAttempts()).isEqualTo(2);
         assertThat(personRepository.findById(3)).isPresent();
+    }
+
+    @Test
+    void retryAnnotatedRequiredMethod_participatesInExistingTransaction() {
+        assertThatThrownBy(failoverRetryCallerTestService::insertThenRollbackOuterTransaction)
+                .isInstanceOf(AwsJdbcFailoverRetryCallerTestService.ExpectedRollbackException.class);
+
+        assertThat(personRepository.findById(4)).isEmpty();
+    }
+
+    @Test
+    void globallyEnabledRetry_preservesNormalSetRollbackOnlyBehavior() {
+        assertThatCode(failoverRetryTestService::markCurrentTransactionRollbackOnly)
+                .doesNotThrowAnyException();
+    }
+
+    @Test
+    void globallyEnabledRetry_preservesReadReplicaRouting() {
+        assertThat(failoverRetryTestService.isRoutedToReadReplica()).isTrue();
     }
 }

@@ -1,8 +1,5 @@
 package ch.admin.bit.jeap.db.tx.config;
 
-import org.springframework.beans.factory.ListableBeanFactory;
-import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -13,9 +10,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Role;
 import org.springframework.core.env.Environment;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionManager;
 import org.springframework.transaction.interceptor.TransactionAttributeSource;
-import org.springframework.transaction.interceptor.TransactionInterceptor;
 
 import static org.springframework.beans.factory.config.BeanDefinition.ROLE_INFRASTRUCTURE;
 
@@ -47,16 +42,10 @@ public class JeapTxTransactionAutoConfig {
     @Role(ROLE_INFRASTRUCTURE)
     @ConditionalOnBean({PlatformTransactionManager.class, TransactionAttributeSource.class})
     static AwsJdbcFailoverRetryAdvisor awsJdbcFailoverRetryAdvisor(
-            ListableBeanFactory beanFactory,
             TransactionAttributeSource transactionAttributeSource,
-            Environment environment,
-            @Qualifier("transactionInterceptor") ObjectProvider<TransactionInterceptor> transactionInterceptorProvider) {
-        TransactionInterceptor transactionInterceptor = transactionInterceptorProvider.getIfAvailable();
-        TransactionManager defaultTransactionManager =
-                transactionInterceptor == null ? null : transactionInterceptor.getTransactionManager();
+            Environment environment) {
         AwsJdbcFailoverRetryProperties properties = Binder.get(environment).bindOrCreate(
                 "jeap.datasource.aws.failover-retry", Bindable.of(AwsJdbcFailoverRetryProperties.class));
-        return new AwsJdbcFailoverRetryAdvisor(
-                beanFactory, transactionAttributeSource, defaultTransactionManager, properties);
+        return new AwsJdbcFailoverRetryAdvisor(transactionAttributeSource, properties);
     }
 }

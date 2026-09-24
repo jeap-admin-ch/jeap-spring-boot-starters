@@ -35,8 +35,9 @@ builds a HikariCP datasource. Two ingredients are central:
   mode; the pre-wrapper logic has been removed.) The starter also configures HikariCP's
   `exceptionOverrideClassName` with the wrapper-provided `HikariCPSQLException`. This prevents HikariCP
   from immediately evicting a connection after the wrapper reports the recoverable failover SQL states
-  `08S02` or `08007`, allowing the application to restore its session state and retry the interrupted
-  operation.
+  `08S02` or `08007`, allowing the application to handle the reported outcome. Automatic transaction
+  retries are limited to the unambiguous `08S02` case; `08007` means that the transaction outcome is
+  unknown and requires application-specific reconciliation.
 - **IAM authentication** — instead of a password, the application authenticates with a short-lived
   IAM token generated automatically by the wrapper's `iam` plugin. Because the default RDS IAM token
   lifetime is 15 minutes, the starter sets HikariCP `max-lifetime=840000` (14 min) so connections
@@ -151,8 +152,9 @@ replicas are not updated in lockstep they can return mutually inconsistent (dive
 - **Failover exceptions** — the starter automatically installs the AWS wrapper's HikariCP exception
   override. Applications can opt individual retry-safe methods into `@RetryOnAwsJdbcFailover` or enable
   retries globally with `jeap.datasource.aws.failover-retry.enabled=true`. The advice, provided by
-  `jeap-spring-boot-tx`, retries only `FailoverSuccessSQLException`/`08S02` and opens a new transaction
-  for every attempt; see [Transaction routing](jeap-spring-boot-tx.md).
+  `jeap-spring-boot-tx`, retries only `FailoverSuccessSQLException`/`08S02` when the invocation starts
+  its own transaction. Each attempt uses a fresh transaction, while calls participating in an existing
+  transaction retain normal `REQUIRED` semantics; see [Transaction routing](jeap-spring-boot-tx.md).
 - **Local H2** — set a password and `hikari.schema: PUBLIC` (plus the matching
   `hibernate.default_schema`), since the wrapper and IAM auth do not apply locally.
 - **open-in-view** — Spring Boot enables `spring.jpa.open-in-view` by default, which keeps the first

@@ -37,6 +37,7 @@ class ReadReplicaAwareTransactionManagerTest {
     @BeforeEach
     void setUp() {
         NESTING_LEVEL.remove();
+        DELEGATION_LEVEL.remove();
         TOP_LEVEL_TRANSACTION_READ_ONLY.remove();
         TOP_LEVEL_TRANSACTION_ROUTED_TO_READ_REPLICA.remove();
         TRANSACTION_CONTEXTS.remove();
@@ -120,6 +121,22 @@ class ReadReplicaAwareTransactionManagerTest {
         assertTrue(routeTopLevelTransactionToReadReplica());
 
         readReplicaAwareTransactionManager.commit(outerStatus);
+        assertThreadLocalsAreEmpty();
+    }
+
+    @Test
+    void getTransaction_requiresNewReadThroughChainedWrappers_preservesReadReplicaRouting() {
+        ReadReplicaAwareTransactionManager writerTransactionManager =
+                new ReadReplicaAwareTransactionManager(platformTransactionManager, false, meterRegistrySupplier);
+        ReadReplicaAwareTransactionManager readerTransactionManager =
+                new ReadReplicaAwareTransactionManager(writerTransactionManager, true, meterRegistrySupplier);
+        DefaultTransactionDefinition requiresNewRead = getReadOnlyTransactionDefinition();
+        requiresNewRead.setPropagationBehavior(DefaultTransactionDefinition.PROPAGATION_REQUIRES_NEW);
+
+        TransactionStatus status = readerTransactionManager.getTransaction(requiresNewRead);
+
+        assertTrue(routeTopLevelTransactionToReadReplica());
+        readerTransactionManager.commit(status);
         assertThreadLocalsAreEmpty();
     }
 

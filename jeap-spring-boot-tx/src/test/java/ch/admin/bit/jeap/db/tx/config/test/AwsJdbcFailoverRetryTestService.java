@@ -1,10 +1,13 @@
 package ch.admin.bit.jeap.db.tx.config.test;
 
+import ch.admin.bit.jeap.db.tx.ReadReplicaAwareTransactionManager;
 import ch.admin.bit.jeap.db.tx.RetryOnAwsJdbcFailover;
+import ch.admin.bit.jeap.db.tx.TransactionalReadReplica;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 import java.sql.SQLException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -43,6 +46,22 @@ public class AwsJdbcFailoverRetryTestService {
 
     public int globalAttempts() {
         return globalAttempts.get();
+    }
+
+    @RetryOnAwsJdbcFailover(maxAttempts = 2, backoffMillis = 0)
+    @Transactional
+    public void insertInExistingTransaction() {
+        jdbcTemplate.update("INSERT INTO person(ID, FIRST_NAME, LAST_NAME) VALUES (4, 'Atomic', 'Rollback')");
+    }
+
+    @Transactional
+    public void markCurrentTransactionRollbackOnly() {
+        TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+    }
+
+    @TransactionalReadReplica
+    public boolean isRoutedToReadReplica() {
+        return ReadReplicaAwareTransactionManager.routeTopLevelTransactionToReadReplica();
     }
 
     private static final class FailoverSuccessSQLException extends SQLException {

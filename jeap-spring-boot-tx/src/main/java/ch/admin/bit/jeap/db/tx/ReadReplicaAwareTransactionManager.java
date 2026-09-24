@@ -39,6 +39,7 @@ public class ReadReplicaAwareTransactionManager implements PlatformTransactionMa
     static final ThreadLocal<Boolean> TOP_LEVEL_TRANSACTION_READ_ONLY = new ThreadLocal<>();
     static final ThreadLocal<Boolean> TOP_LEVEL_TRANSACTION_ROUTED_TO_READ_REPLICA = new ThreadLocal<>();
     static final ThreadLocal<AtomicInteger> NESTING_LEVEL = ThreadLocal.withInitial(() -> new AtomicInteger(0));
+    static final ThreadLocal<AtomicInteger> DELEGATION_LEVEL = ThreadLocal.withInitial(() -> new AtomicInteger(0));
     static final ThreadLocal<Deque<TransactionContext>> TRANSACTION_CONTEXTS =
             ThreadLocal.withInitial(ArrayDeque::new);
 
@@ -92,7 +93,11 @@ public class ReadReplicaAwareTransactionManager implements PlatformTransactionMa
         if (log.isDebugEnabled()) {
             log.debug("Transaction definition is " + (definition.isReadOnly() ? "read-only" : "read-write"));
         }
-        boolean independentTransaction = isTopLevelTransaction() || requiresNewTransaction(definition);
+        // The read-replica manager delegates to the writer manager, which is another instance of this wrapper.
+        // Only the outer wrapper may establish the routing context for one getTransaction call. A separately
+        // invoked REQUIRES_NEW manager still establishes an independent context and restores the suspended one.
+        boolean independentTransaction = !isDelegatedTransactionStart() &&
+                                         (isTopLevelTransaction() || requiresNewTransaction(definition));
         TransactionContext transactionContext;
         if (independentTransaction) {
             if (routeTransactionsToReadReplica && !definition.isReadOnly()) {
@@ -123,6 +128,7 @@ public class ReadReplicaAwareTransactionManager implements PlatformTransactionMa
 
         TRANSACTION_CONTEXTS.get().push(transactionContext);
         NESTING_LEVEL.get().incrementAndGet();
+        DELEGATION_LEVEL.get().incrementAndGet();
         try {
             return delegate.getTransaction(definition);
         } catch (Exception e) {
@@ -130,6 +136,10 @@ public class ReadReplicaAwareTransactionManager implements PlatformTransactionMa
             // we still need to reflect this in the ThreadLocals
             completeTransactionContext();
             throw e;
+        } finally {
+            if (DELEGATION_LEVEL.get().decrementAndGet() == 0) {
+                DELEGATION_LEVEL.remove();
+            }
         }
     }
 
@@ -209,6 +219,10 @@ public class ReadReplicaAwareTransactionManager implements PlatformTransactionMa
 
     private static boolean isTopLevelTransaction() {
         return NESTING_LEVEL.get().get() == 0;
+    }
+
+    private static boolean isDelegatedTransactionStart() {
+        return DELEGATION_LEVEL.get().get() > 0;
     }
 
     private static void setTopLevelTransactionRoutedToReadReplica(boolean routeTransactionsToReadReplica) {
