@@ -172,7 +172,6 @@ Apache License Version 2.0
  * spring-boot-sql - [org.springframework.boot:spring-boot-sql](https://spring.io/projects/spring-boot)
  * spring-boot-starter - [org.springframework.boot:spring-boot-starter](https://spring.io/projects/spring-boot)
  * spring-boot-starter-actuator - [org.springframework.boot:spring-boot-starter-actuator](https://spring.io/projects/spring-boot)
- * spring-boot-starter-aspectj - [org.springframework.boot:spring-boot-starter-aspectj](https://spring.io/projects/spring-boot)
  * spring-boot-starter-cache - [org.springframework.boot:spring-boot-starter-cache](https://spring.io/projects/spring-boot)
  * spring-boot-starter-data-jpa - [org.springframework.boot:spring-boot-starter-data-jpa](https://spring.io/projects/spring-boot)
  * spring-boot-starter-jackson - [org.springframework.boot:spring-boot-starter-jackson](https://spring.io/projects/spring-boot)
