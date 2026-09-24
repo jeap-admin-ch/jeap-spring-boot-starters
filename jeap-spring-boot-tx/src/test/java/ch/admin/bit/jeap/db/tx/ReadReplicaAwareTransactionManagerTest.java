@@ -39,6 +39,7 @@ class ReadReplicaAwareTransactionManagerTest {
         NESTING_LEVEL.remove();
         TOP_LEVEL_TRANSACTION_READ_ONLY.remove();
         TOP_LEVEL_TRANSACTION_ROUTED_TO_READ_REPLICA.remove();
+        TRANSACTION_CONTEXTS.remove();
         when(platformTransactionManager.getTransaction(any())).thenReturn(mock(TransactionStatus.class));
         doNothing().when(platformTransactionManager).commit(any());
         doNothing().when(platformTransactionManager).rollback(any());
@@ -97,6 +98,29 @@ class ReadReplicaAwareTransactionManagerTest {
 
         assertEquals(1, NESTING_LEVEL.get().get());
         assertThreadLocalsAreSet();
+    }
+
+    @Test
+    void getTransaction_requiresNewWriteInsideReadOnlyTransaction_usesWriterAndRestoresOuterContext() {
+        TransactionStatus outerStatus =
+                readReplicaAwareTransactionManager.getTransaction(getReadOnlyTransactionDefinition());
+        ReadReplicaAwareTransactionManager writerTransactionManager =
+                new ReadReplicaAwareTransactionManager(platformTransactionManager, false, meterRegistrySupplier);
+        DefaultTransactionDefinition requiresNewWrite = new DefaultTransactionDefinition();
+        requiresNewWrite.setPropagationBehavior(DefaultTransactionDefinition.PROPAGATION_REQUIRES_NEW);
+
+        TransactionStatus innerStatus = writerTransactionManager.getTransaction(requiresNewWrite);
+
+        assertFalse(TOP_LEVEL_TRANSACTION_READ_ONLY.get());
+        assertFalse(routeTopLevelTransactionToReadReplica());
+
+        writerTransactionManager.commit(innerStatus);
+
+        assertTrue(TOP_LEVEL_TRANSACTION_READ_ONLY.get());
+        assertTrue(routeTopLevelTransactionToReadReplica());
+
+        readReplicaAwareTransactionManager.commit(outerStatus);
+        assertThreadLocalsAreEmpty();
     }
 
     @Test
@@ -205,6 +229,7 @@ class ReadReplicaAwareTransactionManagerTest {
         // transaction observed a partially initialized state and failed with a NullPointerException on the
         // read-write counter. The counters must therefore become visible to other threads all at once.
         CountDownLatch counterCreationStarted = new CountDownLatch(1);
+        CountDownLatch concurrentCounterCreationStarted = new CountDownLatch(1);
         Supplier<MeterRegistry> slowMeterRegistrySupplier = new Supplier<>() {
             private final AtomicInteger invocations = new AtomicInteger();
 
@@ -212,10 +237,9 @@ class ReadReplicaAwareTransactionManagerTest {
             public MeterRegistry get() {
                 if (invocations.incrementAndGet() == 1) {
                     counterCreationStarted.countDown();
+                    await(concurrentCounterCreationStarted, "Concurrent counter creation did not start in time");
                 } else {
-                    // Resolving the registry more than once means the counters are created one after the other:
-                    // stay in here long enough for the other thread to observe the incomplete state.
-                    sleep(500);
+                    concurrentCounterCreationStarted.countDown();
                 }
                 return meterRegistry;
             }
@@ -228,7 +252,6 @@ class ReadReplicaAwareTransactionManagerTest {
                 transactionManager.getTransaction(new DefaultTransactionDefinition()));
         Thread concurrentThread = startThread(failures, () -> {
             assertTrue(counterCreationStarted.await(10, TimeUnit.SECONDS), "Counter creation did not start in time");
-            sleep(100);
             transactionManager.getTransaction(new DefaultTransactionDefinition());
         });
         counterCreatingThread.join(TimeUnit.SECONDS.toMillis(30));
@@ -248,9 +271,11 @@ class ReadReplicaAwareTransactionManagerTest {
         });
     }
 
-    private static void sleep(long millis) {
+    private static void await(CountDownLatch latch, String timeoutMessage) {
         try {
-            Thread.sleep(millis);
+            if (!latch.await(10, TimeUnit.SECONDS)) {
+                throw new IllegalStateException(timeoutMessage);
+            }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new IllegalStateException(e);

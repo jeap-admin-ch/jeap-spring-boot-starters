@@ -2,6 +2,7 @@ package ch.admin.bit.jeap.db.tx.config;
 
 import ch.admin.bit.jeap.db.tx.ReadReplicaAwareTransactionManager;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -20,6 +21,8 @@ class JeapTxTransactionAutoConfigTest {
                 .run(context -> {
                     assertThat(context)
                             .hasNotFailed();
+                    assertThat(context)
+                            .hasSingleBean(AwsJdbcFailoverRetryAspect.class);
                     assertThat(context)
                             .hasBean("transactionManager");
                     PlatformTransactionManager transactionManager = (PlatformTransactionManager) context.getBean("transactionManager");
@@ -46,6 +49,8 @@ class JeapTxTransactionAutoConfigTest {
                     assertThat(context)
                             .hasNotFailed();
                     assertThat(context)
+                            .hasSingleBean(AwsJdbcFailoverRetryAspect.class);
+                    assertThat(context)
                             .hasBean("transactionManager");
                     PlatformTransactionManager transactionManager = (PlatformTransactionManager) context.getBean("transactionManager");
                     assertThat(transactionManager)
@@ -60,6 +65,16 @@ class JeapTxTransactionAutoConfigTest {
                     assertThat(transactionManager)
                             .describedAs("Transaction manager should be an alias of the primary transaction manager")
                             .isSameAs(readReplicaTransactionManager);
+                });
+    }
+
+    @Test
+    void retryAspect_withoutTransactionInfrastructure_isNotConfigured() {
+        new ApplicationContextRunner()
+                .withConfiguration(AutoConfigurations.of(JeapTxTransactionAutoConfig.class))
+                .run(context -> {
+                    assertThat(context).hasNotFailed();
+                    assertThat(context).doesNotHaveBean(AwsJdbcFailoverRetryAspect.class);
                 });
     }
 }

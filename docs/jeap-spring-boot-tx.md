@@ -42,6 +42,12 @@ read replica refusing writes at runtime.
 Two Micrometer counters are exported: `jeap_db_transaction_readreplica` (transactions routed to a
 read replica) and `jeap_db_transaction_rw` (writer-instance transactions).
 
+The module also provides an opt-in `@RetryOnAwsJdbcFailover` advice. It recognizes only the AWS
+Advanced JDBC Wrapper's `FailoverSuccessSQLException` with SQL state `08S02`. The retry advice
+has highest precedence, explicitly suspends any existing transaction, and starts a new transaction
+for every attempt. Transaction state unknown (`08007`) and other connection failures are deliberately
+not retried.
+
 ## Using `@TransactionalReadReplica`
 
 `@TransactionalReadReplica` is a meta-annotation over `@Transactional`, bound to
@@ -75,6 +81,43 @@ TransactionTemplate template = new TransactionTemplate(readReplicaTransactionMan
 The annotation forwards the usual `@Transactional` attributes (`propagation`, `isolation`, `timeout`,
 `timeoutString`, `rollbackFor`, `rollbackForClassName`, `noRollbackFor`, `noRollbackForClassName`).
 
+## Retrying after a successful AWS JDBC failover
+
+Annotate only operations that are safe to repeat. The default is one retry after a 100 ms backoff:
+
+```java
+import ch.admin.bit.jeap.db.tx.RetryOnAwsJdbcFailover;
+
+@RetryOnAwsJdbcFailover
+@Transactional
+public void updateOrder(Order order) {
+    orderRepository.save(order);
+}
+```
+
+`maxAttempts` includes the initial call. Both values can be customized per operation:
+
+```java
+@RetryOnAwsJdbcFailover(maxAttempts = 3, backoffMillis = 250)
+@Transactional
+public void updateOrder(Order order) {
+    orderRepository.save(order);
+}
+```
+
+Retries use the same transaction manager that Spring selects for `@Transactional`, including an
+explicit transaction-manager name, a class-level qualifier, or a default supplied through
+`TransactionManagementConfigurer`.
+
+`@RetryOnAwsJdbcFailover` requires `@Transactional` with its default `REQUIRED` propagation. Other
+propagation modes are rejected before the first attempt: applying them inside the retry-managed
+transaction could suspend it, create a nested physical transaction, or execute the operation without
+the promised transaction boundary.
+
+The annotation is intentionally opt-in. Do not apply it to a method that performs non-idempotent
+effects outside its database transaction. In particular, `08007` means that the outcome of the old
+transaction is unknown and therefore requires an application-specific reconciliation decision.
+
 ## Configuration
 
 | Property                          | Default | Description                             |
@@ -89,6 +132,8 @@ The annotation forwards the usual `@Transactional` attributes (`propagation`, `i
   open across a web request and can trigger the consistency check for an unannotated read-only entry
   point; annotate the entry method with `@Transactional` to mark the top-level transaction read-write.
 - **Stale reads** — only annotate methods whose reads tolerate replication lag.
+- **Unsafe failover retry** — use `@RetryOnAwsJdbcFailover` only when repeating the complete method is
+  safe. The interceptor cannot determine business idempotency.
 
 ## Related
 

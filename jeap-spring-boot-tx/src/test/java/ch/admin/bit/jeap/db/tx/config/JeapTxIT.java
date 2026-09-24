@@ -1,11 +1,13 @@
 package ch.admin.bit.jeap.db.tx.config;
 
 import ch.admin.bit.jeap.db.tx.TransactionalReadReplica;
+import ch.admin.bit.jeap.db.tx.config.test.AwsJdbcFailoverRetryTestService;
 import ch.admin.bit.jeap.db.tx.config.test.Person;
 import ch.admin.bit.jeap.db.tx.config.test.PersonRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -13,10 +15,13 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
-public class JeapTxIT {
+class JeapTxIT {
 
     @Autowired
     private PersonRepository personRepository;
+
+    @Autowired
+    private AwsJdbcFailoverRetryTestService failoverRetryTestService;
 
     @Test
     void ensureTransactionalReadReplicaWorksWithoutSpecificDataSourceRoutingConfiguration() {
@@ -33,5 +38,14 @@ public class JeapTxIT {
         Optional<Person> maybePerson = personRepository.findPersonById(1);
 
         assertThat(maybePerson).isPresent();
+    }
+
+    @Test
+    @Transactional(readOnly = true)
+    void awsJdbcFailoverRetryStartsANewTransaction() {
+        failoverRetryTestService.insertWithFailoverAfterFirstInsert();
+
+        assertThat(failoverRetryTestService.attempts()).isEqualTo(2);
+        assertThat(personRepository.findById(2)).isPresent();
     }
 }

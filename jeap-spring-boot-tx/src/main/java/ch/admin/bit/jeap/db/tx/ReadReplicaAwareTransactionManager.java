@@ -9,8 +9,11 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionStatus;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
 /**
@@ -36,6 +39,8 @@ public class ReadReplicaAwareTransactionManager implements PlatformTransactionMa
     static final ThreadLocal<Boolean> TOP_LEVEL_TRANSACTION_READ_ONLY = new ThreadLocal<>();
     static final ThreadLocal<Boolean> TOP_LEVEL_TRANSACTION_ROUTED_TO_READ_REPLICA = new ThreadLocal<>();
     static final ThreadLocal<AtomicInteger> NESTING_LEVEL = ThreadLocal.withInitial(() -> new AtomicInteger(0));
+    static final ThreadLocal<Deque<TransactionContext>> TRANSACTION_CONTEXTS =
+            ThreadLocal.withInitial(ArrayDeque::new);
 
     private final PlatformTransactionManager delegate;
 
@@ -46,11 +51,11 @@ public class ReadReplicaAwareTransactionManager implements PlatformTransactionMa
     /**
      * The counters are created lazily, as the {@link MeterRegistry} cannot be resolved yet when this transaction
      * manager is created early in the spring context lifecycle. Both counters are held in a single immutable,
-     * volatile field such that they are always published together: transactions may be started concurrently by
+     * atomic reference such that they are always published together: transactions may be started concurrently by
      * multiple threads as soon as the application accepts work, and a partially initialized state would lead to
      * NullPointerExceptions failing those transactions.
      */
-    private volatile TransactionCounters transactionCounters;
+    private final AtomicReference<TransactionCounters> transactionCounters = new AtomicReference<>();
     private final AtomicBoolean counterInitializationFailureLogged = new AtomicBoolean();
 
     public ReadReplicaAwareTransactionManager(PlatformTransactionManager delegate,
@@ -62,7 +67,7 @@ public class ReadReplicaAwareTransactionManager implements PlatformTransactionMa
     }
 
     private TransactionCounters getOrCreateCounters() {
-        TransactionCounters existingCounters = transactionCounters;
+        TransactionCounters existingCounters = transactionCounters.get();
         if (existingCounters != null) {
             return existingCounters;
         }
@@ -76,8 +81,10 @@ public class ReadReplicaAwareTransactionManager implements PlatformTransactionMa
                 Counter.builder(JEAP_AWS_DB_TRANSACTION_RW)
                         .description("Writer instance transactions")
                         .register(meterRegistry));
-        transactionCounters = createdCounters;
-        return createdCounters;
+        if (transactionCounters.compareAndSet(null, createdCounters)) {
+            return createdCounters;
+        }
+        return transactionCounters.get();
     }
 
     @Override
@@ -85,17 +92,22 @@ public class ReadReplicaAwareTransactionManager implements PlatformTransactionMa
         if (log.isDebugEnabled()) {
             log.debug("Transaction definition is " + (definition.isReadOnly() ? "read-only" : "read-write"));
         }
-        if (isTopLevelTransaction()) {
+        boolean independentTransaction = isTopLevelTransaction() || requiresNewTransaction(definition);
+        TransactionContext transactionContext;
+        if (independentTransaction) {
             if (routeTransactionsToReadReplica && !definition.isReadOnly()) {
                 throw new IllegalStateException("Read-write transactions cannot be annotated with " +
                                                 TransactionalReadReplica.class.getSimpleName() + " or handled by the " +
                                                 getClass().getSimpleName() + " when routing to read replicas.");
             }
 
+            transactionContext = new TransactionContext(true, TOP_LEVEL_TRANSACTION_READ_ONLY.get(),
+                    TOP_LEVEL_TRANSACTION_ROUTED_TO_READ_REPLICA.get());
             setTopLevelTransactionReadOnly(definition.isReadOnly());
             setTopLevelTransactionRoutedToReadReplica(routeTransactionsToReadReplica);
             updateMetric(routeTransactionsToReadReplica);
         } else {
+            transactionContext = TransactionContext.nested();
             /*
                 Nesting read-write transaction definitions inside a top-level read-only transaction might fail in two ways:
                 - The Hibernate flush mode will be set to NEVER, JPA writes might be lost silently
@@ -109,16 +121,14 @@ public class ReadReplicaAwareTransactionManager implements PlatformTransactionMa
             }
         }
 
+        TRANSACTION_CONTEXTS.get().push(transactionContext);
         NESTING_LEVEL.get().incrementAndGet();
         try {
             return delegate.getTransaction(definition);
         } catch (Exception e) {
             // If an exception happens while getting the transaction (i.e. when facing timeouts connecting to db),
             // we still need to reflect this in the ThreadLocals
-            NESTING_LEVEL.get().decrementAndGet();
-            if (isTopLevelTransaction()) {
-                clearTransactionThreadLocals();
-            }
+            completeTransactionContext();
             throw e;
         }
     }
@@ -152,10 +162,7 @@ public class ReadReplicaAwareTransactionManager implements PlatformTransactionMa
         try {
             delegate.commit(status);
         } finally {
-            NESTING_LEVEL.get().decrementAndGet();
-            if (isTopLevelTransaction()) {
-                clearTransactionThreadLocals();
-            }
+            completeTransactionContext();
         }
     }
 
@@ -167,10 +174,36 @@ public class ReadReplicaAwareTransactionManager implements PlatformTransactionMa
         try {
             delegate.rollback(status);
         } finally {
-            NESTING_LEVEL.get().decrementAndGet();
-            if (isTopLevelTransaction()) {
-                clearTransactionThreadLocals();
-            }
+            completeTransactionContext();
+        }
+    }
+
+    private static boolean requiresNewTransaction(TransactionDefinition definition) {
+        return definition.getPropagationBehavior() == TransactionDefinition.PROPAGATION_REQUIRES_NEW;
+    }
+
+    private static void completeTransactionContext() {
+        TransactionContext transactionContext = TRANSACTION_CONTEXTS.get().pop();
+        NESTING_LEVEL.get().decrementAndGet();
+        if (transactionContext.independent()) {
+            restoreThreadLocals(transactionContext);
+        }
+        if (isTopLevelTransaction()) {
+            clearTransactionThreadLocals();
+            TRANSACTION_CONTEXTS.remove();
+        }
+    }
+
+    private static void restoreThreadLocals(TransactionContext transactionContext) {
+        setOrRemove(TOP_LEVEL_TRANSACTION_READ_ONLY, transactionContext.previousReadOnly());
+        setOrRemove(TOP_LEVEL_TRANSACTION_ROUTED_TO_READ_REPLICA, transactionContext.previousRoutedToReadReplica());
+    }
+
+    private static <T> void setOrRemove(ThreadLocal<T> threadLocal, T value) {
+        if (value == null) {
+            threadLocal.remove();
+        } else {
+            threadLocal.set(value);
         }
     }
 
@@ -187,12 +220,11 @@ public class ReadReplicaAwareTransactionManager implements PlatformTransactionMa
     }
 
     public static boolean routeTopLevelTransactionToReadReplica() {
-        Boolean value = TOP_LEVEL_TRANSACTION_ROUTED_TO_READ_REPLICA.get();
-        return value != null && value;
+        return Boolean.TRUE.equals(TOP_LEVEL_TRANSACTION_ROUTED_TO_READ_REPLICA.get());
     }
 
-    private static Boolean isTopLevelTransactionReadOnly() {
-        return TOP_LEVEL_TRANSACTION_READ_ONLY.get();
+    private static boolean isTopLevelTransactionReadOnly() {
+        return Boolean.TRUE.equals(TOP_LEVEL_TRANSACTION_READ_ONLY.get());
     }
 
     private static void clearTransactionThreadLocals() {
@@ -201,5 +233,11 @@ public class ReadReplicaAwareTransactionManager implements PlatformTransactionMa
     }
 
     private record TransactionCounters(Counter readReplica, Counter readWrite) {
+    }
+
+    record TransactionContext(boolean independent, Boolean previousReadOnly, Boolean previousRoutedToReadReplica) {
+        private static TransactionContext nested() {
+            return new TransactionContext(false, null, null);
+        }
     }
 }
