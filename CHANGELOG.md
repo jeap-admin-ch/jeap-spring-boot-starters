@@ -12,11 +12,6 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Add the platform-independent `@RetryOnDatabaseFailover` annotation. Retryable failures remain
   limited to the supported AWS JDBC failover case.
 
-### Changed
-
-- Leave the PostgreSQL AWS socket read timeout unset by default; document application-specific
-  configuration for primary and replica data sources, retaining the `aurora-pg` dialect default.
-
 ### Deprecated
 
 - Deprecate `@RetryOnAwsJdbcFailover` in favor of `@RetryOnDatabaseFailover`; retain it as a
