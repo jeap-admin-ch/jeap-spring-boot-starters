@@ -1,10 +1,12 @@
 package ch.admin.bit.jeap.db.tx.config;
 
 import ch.admin.bit.jeap.db.tx.RetryOnAwsJdbcFailover;
+import ch.admin.bit.jeap.db.tx.RetryOnDatabaseFailover;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.transaction.annotation.AnnotationTransactionAttributeSource;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,13 +45,25 @@ class AwsJdbcFailoverRetryAdvisorTest {
 
         assertThatIllegalStateException()
                 .isThrownBy(() -> AwsJdbcFailoverRetryAdvisor.validateTransactionAttribute(transactionAttribute))
-                .withMessage("@RetryOnAwsJdbcFailover requires @Transactional propagation REQUIRED");
+                .withMessage("@RetryOnDatabaseFailover requires @Transactional propagation REQUIRED");
     }
 
     @Test
     void pointcut_whenGlobalRetryIsDisabled_matchesOnlyExplicitlyAnnotatedMethods() throws Exception {
         assertThat(matches(advisor, DefaultService.class)).isFalse();
         assertThat(matches(advisor, RetryService.class)).isTrue();
+    }
+
+    @Test
+    @SuppressWarnings("deprecation")
+    void legacyAnnotationPreservesCustomRetrySettings() throws Exception {
+        assertThat(matches(advisor, LegacyRetryService.class)).isTrue();
+        RetryOnDatabaseFailover annotation = AnnotatedElementUtils.findMergedAnnotation(
+                LegacyRetryService.class.getDeclaredMethod("operation"), RetryOnDatabaseFailover.class);
+
+        assertThat(annotation).isNotNull();
+        assertThat(annotation.maxAttempts()).isEqualTo(4);
+        assertThat(annotation.backoffMillis()).isEqualTo(250);
     }
 
     @Test
@@ -79,10 +93,19 @@ class AwsJdbcFailoverRetryAdvisorTest {
     }
 
     private static class RetryService {
-        @RetryOnAwsJdbcFailover
+        @RetryOnDatabaseFailover
         @Transactional
         public void operation() {
             // Intentionally empty: only the method's transaction metadata is relevant to this test.
+        }
+    }
+
+    @SuppressWarnings("deprecation")
+    private static class LegacyRetryService {
+        @RetryOnAwsJdbcFailover(maxAttempts = 4, backoffMillis = 250)
+        @Transactional
+        public void operation() {
+            // Only annotation metadata is relevant to this test.
         }
     }
 

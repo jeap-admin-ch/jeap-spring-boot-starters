@@ -102,6 +102,58 @@ jeap:
           wrapperDialect: rds-pg
 ```
 
+### Socket read timeout
+
+The starter explicitly configures `socketTimeout=30000` (milliseconds) for the AWS wrapper, which converts it to 30 seconds for pgJDBC,
+shared by the primary and replica data sources. Applications can override it through
+`jeap.datasource.aws.wrapper.target-data-source-properties.socketTimeout`, for example
+with `60000` for 60 seconds, or use `0` to disable it. The `aurora-pg` dialect remains the default.
+
+This setting bounds socket reads; it is separate from HikariCP's validation and connection
+acquisition timeouts. Choose a value that accommodates expected query execution and lock
+waits. Longer timeouts can also increase waiting time during network problems. See the
+[pgJDBC connection parameters](https://jdbc.postgresql.org/documentation/use/).
+
+The successful 15-second Aurora lock-wait experiment used `socketTimeout=30`.
+In wrapper 4.4.0 that means 30 milliseconds, rounded down to zero seconds by
+`PgDriverHelper.applyKeepAliveAndTimeouts`, disabling the pgJDBC socket timeout.
+It therefore does not validate the new 30000-millisecond default; that AWS run remains pending.
+The driver conversion is covered by a test. Runtime JDBC network timeouts may be changed
+later and should also be measured immediately before the blocked statement.
+
+### Dialect choice, failover exceptions and HikariCP
+
+The following distinction concerns the AWS Advanced JDBC Wrapper and HikariCP independently of this
+starter. In wrapper version `4.4.0`, `rds-pg` inherits the `ConnectionStringHostListProvider` from
+`PgDialect`: it obtains hosts from the connection URL and does not query the Aurora cluster topology.
+`aurora-pg` supplies an Aurora-aware topology provider and queries `aurora_replica_status()` to
+identify writer and reader instances. This enables the failover plugin to select an instance from
+the Aurora topology. See the AWS sources for [RdsPgDialect](https://github.com/aws/aws-advanced-jdbc-wrapper/blob/4.4.0/wrapper/src/main/java/software/amazon/jdbc/dialect/RdsPgDialect.java),
+[PgDialect](https://github.com/aws/aws-advanced-jdbc-wrapper/blob/4.4.0/wrapper/src/main/java/software/amazon/jdbc/dialect/PgDialect.java)
+and [AuroraPgDialect](https://github.com/aws/aws-advanced-jdbc-wrapper/blob/4.4.0/wrapper/src/main/java/software/amazon/jdbc/dialect/AuroraPgDialect.java).
+
+After successful recovery outside a transaction, the failover plugin reports
+`FailoverSuccessSQLException` with SQLState `08S02`. The connection has recovered, but the interrupted
+operation has not been replayed, and session state may need to be restored. A dialect change can
+therefore change the failover path and the exceptions observed. `08S02` alone proves neither a wrong
+dialect nor an Aurora writer promotion. Neither dialect provides automatic replay of a failed
+business operation; retries require application or framework handling. See the
+[AWS failover exception documentation](https://github.com/aws/aws-advanced-jdbc-wrapper/blob/4.4.0/docs/using-the-jdbc-driver/using-plugins/UsingTheFailoverPlugin.md#failover-exception-codes).
+
+HikariCP applies the same pool validation rules with either dialect. During `getConnection()`, it
+can detect and discard an invalid connection and try another one before returning a connection to
+the application. Recently used connections can bypass validation; if no usable connection becomes
+available within the acquisition timeout, the caller receives an exception. This is connection
+acquisition, not replay of application SQL. A failure after checkout can still reach the application.
+See [HikariPool.getConnection()](https://github.com/brettwooldridge/HikariCP/blob/dev/src/main/java/com/zaxxer/hikari/pool/HikariPool.java)
+and [PoolBase.isConnectionDead()](https://github.com/brettwooldridge/HikariCP/blob/dev/src/main/java/com/zaxxer/hikari/pool/PoolBase.java).
+
+Consequently, observing fewer or no application errors with `rds-pg` does not establish that HikariCP
+validated connections earlier, or that `rds-pg` retried failed statements. Confirm the effective
+dialect, plugins and the failing JDBC call from correlated logs before attributing the difference to
+a particular recovery path. The HikariCP exception override described above controls eviction of
+recovered connections; it does not retry the interrupted operation.
+
 ## Read replicas
 
 In a multi-instance Aurora cluster, read-only replicas can serve read traffic and relieve the writer.
@@ -150,7 +202,7 @@ replicas are not updated in lockstep they can return mutually inconsistent (dive
 - **Token expiry** — keep Hikari `max-lifetime` below the 15-minute IAM token lifetime (the default
   840000 ms already does this); do not raise it carelessly.
 - **Failover exceptions** — the starter automatically installs the AWS wrapper's HikariCP exception
-  override. Applications can opt individual retry-safe methods into `@RetryOnAwsJdbcFailover` or enable
+  override. Applications can opt individual retry-safe methods into `@RetryOnDatabaseFailover` or enable
   retries globally with `jeap.datasource.aws.failover-retry.enabled=true`. The advice, provided by
   `jeap-spring-boot-tx`, retries only `FailoverSuccessSQLException`/`08S02` when the invocation starts
   its own transaction. Each attempt uses a fresh transaction, while calls participating in an existing

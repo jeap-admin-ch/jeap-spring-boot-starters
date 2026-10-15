@@ -22,6 +22,12 @@
       "description": "Database dialect used by the AWS Advanced JDBC Wrapper. Defaults to 'aurora-pg'; set to 'rds-pg' for standard RDS PostgreSQL.",
       "defaultValue": "aurora-pg",
       "type": "java.lang.String"
+    },
+    {
+      "name": "jeap.datasource.aws.wrapper.target-data-source-properties.socketTimeout",
+      "description": "AWS wrapper socket read timeout in milliseconds for primary and replica connections (converted to seconds for pgJDBC). Set to 0 to disable. This is not the HikariCP validation or connection acquisition timeout.",
+      "defaultValue": 30000,
+      "type": "java.lang.Integer"
     }
   ],
   "hints": [

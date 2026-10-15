@@ -43,7 +43,7 @@ Two Micrometer counters are exported: `jeap_db_transaction_readreplica` (transac
 read replica) and `jeap_db_transaction_rw` (writer-instance transactions).
 
 The module also provides AWS JDBC failover retry advice. Individual operations can opt in with
-`@RetryOnAwsJdbcFailover`, or applications whose transactional operations are retry-safe can enable
+`@RetryOnDatabaseFailover`, or applications whose transactional operations are retry-safe can enable
 the advice globally. It recognizes only the AWS Advanced JDBC Wrapper's `FailoverSuccessSQLException`
 with SQL state `08S02`. When an invocation starts its own transaction, the retry advice repeats the
 ordinary Spring transaction interceptor so that every attempt gets a fresh transaction. An invocation
@@ -89,14 +89,21 @@ TransactionTemplate template = new TransactionTemplate(readReplicaTransactionMan
 The annotation forwards the usual `@Transactional` attributes (`propagation`, `isolation`, `timeout`,
 `timeoutString`, `rollbackFor`, `rollbackForClassName`, `noRollbackFor`, `noRollbackForClassName`).
 
-## Retrying after a successful AWS JDBC failover
+## Retrying after a database failover
+
+The platform-independent `@RetryOnDatabaseFailover` annotation can be used across deployment
+platforms. The current implementation supports only AWS JDBC failover errors described above;
+the annotation alone does not add failover recovery for RHOS or other drivers.
+`@RetryOnAwsJdbcFailover` remains available as a deprecated compatibility alias, including its
+`maxAttempts` and `backoffMillis` attributes. Migrate by changing the annotation name and import.
+The AWS-specific global configuration properties remain unchanged.
 
 Annotate only operations that are safe to repeat. The default is one retry after a 100 ms backoff:
 
 ```java
-import ch.admin.bit.jeap.db.tx.RetryOnAwsJdbcFailover;
+import ch.admin.bit.jeap.db.tx.RetryOnDatabaseFailover;
 
-@RetryOnAwsJdbcFailover
+@RetryOnDatabaseFailover
 @Transactional
 public void updateOrder(Order order) {
     orderRepository.save(order);
@@ -106,7 +113,7 @@ public void updateOrder(Order order) {
 `maxAttempts` includes the initial call. Both values can be customized per operation:
 
 ```java
-@RetryOnAwsJdbcFailover(maxAttempts = 3, backoffMillis = 250)
+@RetryOnDatabaseFailover(maxAttempts = 3, backoffMillis = 250)
 @Transactional
 public void updateOrder(Order order) {
     orderRepository.save(order);
@@ -148,7 +155,7 @@ Completion tracking is registered on Spring `ConfigurableTransactionManager` bea
 standard JDBC and JPA transaction managers. Custom managers without these callbacks continue to execute
 normally, but their unobserved outcomes are not retried.
 
-`@RetryOnAwsJdbcFailover` requires `@Transactional` with its default `REQUIRED` propagation. Other
+`@RetryOnDatabaseFailover` requires `@Transactional` with its default `REQUIRED` propagation. Other
 propagation modes are unsupported. The advice preserves Spring's transaction boundaries and does not
 replace propagation with `REQUIRES_NEW`.
 

@@ -1,7 +1,7 @@
 package ch.admin.bit.jeap.db.tx.config.test;
 
 import ch.admin.bit.jeap.db.tx.ReadReplicaAwareTransactionManager;
-import ch.admin.bit.jeap.db.tx.RetryOnAwsJdbcFailover;
+import ch.admin.bit.jeap.db.tx.RetryOnDatabaseFailover;
 import ch.admin.bit.jeap.db.tx.TransactionalReadReplica;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -60,7 +60,7 @@ public class AwsJdbcFailoverRetryTestService {
         return explicitRollbackAttempts.get();
     }
 
-    @RetryOnAwsJdbcFailover(maxAttempts = 2, backoffMillis = 0)
+    @RetryOnDatabaseFailover(maxAttempts = 2, backoffMillis = 0)
     @Transactional
     public void insertWithFailoverAfterFirstInsert() {
         // Synthetic failure: verifies rollback and replay, not an actual AWS in-flight failover (08007).
@@ -88,7 +88,7 @@ public class AwsJdbcFailoverRetryTestService {
         return globalAttempts.get();
     }
 
-    @RetryOnAwsJdbcFailover(maxAttempts = 2, backoffMillis = 0)
+    @RetryOnDatabaseFailover(maxAttempts = 2, backoffMillis = 0)
     @Transactional
     public void insertInExistingTransaction() {
         jdbcTemplate.update("INSERT INTO person(ID, FIRST_NAME, LAST_NAME) VALUES (4, 'Atomic', 'Rollback')");

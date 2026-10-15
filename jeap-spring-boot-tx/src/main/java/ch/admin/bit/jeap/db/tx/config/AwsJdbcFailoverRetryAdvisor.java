@@ -1,6 +1,6 @@
 package ch.admin.bit.jeap.db.tx.config;
 
-import ch.admin.bit.jeap.db.tx.RetryOnAwsJdbcFailover;
+import ch.admin.bit.jeap.db.tx.RetryOnDatabaseFailover;
 import lombok.extern.slf4j.Slf4j;
 import org.aopalliance.aop.Advice;
 import org.aopalliance.intercept.MethodInterceptor;
@@ -45,11 +45,11 @@ public class AwsJdbcFailoverRetryAdvisor implements PointcutAdvisor, MethodInter
         }
 
         Class<?> targetClass = targetClass(invocation);
-        RetryOnAwsJdbcFailover retryAnnotation = retryAnnotation(invocation.getMethod(), targetClass);
+        RetryOnDatabaseFailover retryAnnotation = retryAnnotation(invocation.getMethod(), targetClass);
         TransactionAttribute transactionAttribute =
                 transactionAttributeSource.getTransactionAttribute(invocation.getMethod(), targetClass);
         if (transactionAttribute == null) {
-            throw new IllegalStateException("@RetryOnAwsJdbcFailover requires a transactional method");
+            throw new IllegalStateException("@RetryOnDatabaseFailover requires a transactional method");
         }
         if (retryAnnotation != null) {
             validateTransactionAttribute(transactionAttribute);
@@ -106,11 +106,11 @@ public class AwsJdbcFailoverRetryAdvisor implements PointcutAdvisor, MethodInter
         }
     }
 
-    private static RetryOnAwsJdbcFailover retryAnnotation(Method method, Class<?> targetClass) {
-        RetryOnAwsJdbcFailover retry = AnnotatedElementUtils.findMergedAnnotation(
-                AopUtils.getMostSpecificMethod(method, targetClass), RetryOnAwsJdbcFailover.class);
+    private static RetryOnDatabaseFailover retryAnnotation(Method method, Class<?> targetClass) {
+        RetryOnDatabaseFailover retry = AnnotatedElementUtils.findMergedAnnotation(
+                AopUtils.getMostSpecificMethod(method, targetClass), RetryOnDatabaseFailover.class);
         if (retry == null) {
-            retry = AnnotatedElementUtils.findMergedAnnotation(method, RetryOnAwsJdbcFailover.class);
+            retry = AnnotatedElementUtils.findMergedAnnotation(method, RetryOnDatabaseFailover.class);
         }
         return retry;
     }
@@ -122,7 +122,7 @@ public class AwsJdbcFailoverRetryAdvisor implements PointcutAdvisor, MethodInter
 
     static void validateTransactionAttribute(TransactionAttribute transactionAttribute) {
         if (transactionAttribute.getPropagationBehavior() != TransactionDefinition.PROPAGATION_REQUIRED) {
-            throw new IllegalStateException("@RetryOnAwsJdbcFailover requires @Transactional propagation REQUIRED");
+            throw new IllegalStateException("@RetryOnDatabaseFailover requires @Transactional propagation REQUIRED");
         }
     }
 

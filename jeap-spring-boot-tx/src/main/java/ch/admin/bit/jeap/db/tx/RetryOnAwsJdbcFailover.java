@@ -1,21 +1,24 @@
 package ch.admin.bit.jeap.db.tx;
 
+import org.springframework.core.annotation.AliasFor;
+
 import java.lang.annotation.*;
 
 /**
- * Opts an idempotent operation into retries after the AWS Advanced JDBC Wrapper has successfully replaced a failed
- * connection, independently of whether global failover retries are enabled.
- * A retry is performed only when the annotated invocation starts its own transaction. If it participates in an
- * existing transaction, normal {@code REQUIRED} semantics are preserved and no retry is attempted. This annotation
- * must be combined with {@code @Transactional} using its default {@code REQUIRED} propagation and only used for
- * operations that are safe to repeat.
+ * Compatibility alias for {@link RetryOnDatabaseFailover}.
+ *
+ * @deprecated Use the platform-independent {@link RetryOnDatabaseFailover} instead.
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
+@Deprecated(since = "25.18.0", forRemoval = true)
+@RetryOnDatabaseFailover
 public @interface RetryOnAwsJdbcFailover {
 
+    @AliasFor(annotation = RetryOnDatabaseFailover.class, attribute = "maxAttempts")
     int maxAttempts() default 2;
 
+    @AliasFor(annotation = RetryOnDatabaseFailover.class, attribute = "backoffMillis")
     long backoffMillis() default 100;
 }

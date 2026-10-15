@@ -5,8 +5,15 @@ import ch.admin.bit.jeap.db.tx.ReadReplicaAwareTransactionRoutingDataSource;
 import ch.admin.bit.jeap.postgresql.aws.TestConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.junit.jupiter.api.Test;
+import org.postgresql.ds.PGSimpleDataSource;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import software.amazon.jdbc.HostSpecBuilder;
+import software.amazon.jdbc.hostavailability.SimpleHostAvailabilityStrategy;
+import software.amazon.jdbc.targetdriverdialect.PgTargetDriverDialect;
+
+import java.sql.SQLException;
+import java.util.Properties;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -37,6 +44,48 @@ class ContextConfigurationTest {
                     assertThat(context.getBean(WrapperTargetDataSourceProperties.class).getProperty("wrapperDialect"))
                             .isEqualTo("rds-pg");
                 });
+    }
+
+    @Test
+    void configuresSocketTimeoutByDefault() {
+        wrapperPropertiesContextRunner()
+                .run(context -> {
+                    assertThat(context).hasNotFailed();
+                    assertThat(context.getBean(WrapperTargetDataSourceProperties.class).getProperty("socketTimeout"))
+                            .isEqualTo("30000");
+                    assertDriverSocketTimeout(context.getBean(WrapperTargetDataSourceProperties.class), 30);
+                });
+    }
+
+    @Test
+    void allowsOverridingSocketTimeout() {
+        assertSocketTimeoutOverride("60000");
+    }
+
+    @Test
+    void allowsDisablingSocketTimeout() {
+        assertSocketTimeoutOverride("0");
+    }
+
+    private void assertSocketTimeoutOverride(String milliseconds) {
+        wrapperPropertiesContextRunner()
+                .withPropertyValues("jeap.datasource.aws.wrapper.target-data-source-properties.socketTimeout=" + milliseconds)
+                .run(context -> {
+                    assertThat(context).hasNotFailed();
+                    assertThat(context.getBean(WrapperTargetDataSourceProperties.class).getProperty("socketTimeout"))
+                            .isEqualTo(milliseconds);
+                    assertDriverSocketTimeout(context.getBean(WrapperTargetDataSourceProperties.class),
+                            Integer.parseInt(milliseconds) / 1000);
+                });
+    }
+
+    private void assertDriverSocketTimeout(WrapperTargetDataSourceProperties properties, int expectedSeconds) throws SQLException {
+        PGSimpleDataSource target = new PGSimpleDataSource();
+        Properties connectionProperties = new Properties();
+        connectionProperties.putAll(properties);
+        var host = new HostSpecBuilder(new SimpleHostAvailabilityStrategy()).host("localhost").port(5432).build();
+        new PgTargetDriverDialect().prepareDataSource(target, "jdbc:postgresql:", host, connectionProperties);
+        assertThat(target.getSocketTimeout()).isEqualTo(expectedSeconds);
     }
 
     private ApplicationContextRunner wrapperPropertiesContextRunner() {
