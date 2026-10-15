@@ -47,18 +47,18 @@ class ContextConfigurationTest {
     }
 
     @Test
-    void configuresSocketTimeoutByDefault() {
+    void leavesSocketTimeoutUnsetByDefault() {
         wrapperPropertiesContextRunner()
                 .run(context -> {
                     assertThat(context).hasNotFailed();
                     assertThat(context.getBean(WrapperTargetDataSourceProperties.class).getProperty("socketTimeout"))
-                            .isEqualTo("30000");
-                    assertDriverSocketTimeout(context.getBean(WrapperTargetDataSourceProperties.class), 30);
+                            .isNull();
+                    assertDriverSocketTimeout(context.getBean(WrapperTargetDataSourceProperties.class), 0);
                 });
     }
 
     @Test
-    void allowsOverridingSocketTimeout() {
+    void allowsConfiguringSocketTimeout() {
         assertSocketTimeoutOverride("60000");
     }
 

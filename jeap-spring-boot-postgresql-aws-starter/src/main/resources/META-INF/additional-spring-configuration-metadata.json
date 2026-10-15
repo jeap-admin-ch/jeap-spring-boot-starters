@@ -25,8 +25,7 @@
     },
     {
       "name": "jeap.datasource.aws.wrapper.target-data-source-properties.socketTimeout",
-      "description": "AWS wrapper socket read timeout in milliseconds for primary and replica connections (converted to seconds for pgJDBC). Set to 0 to disable. This is not the HikariCP validation or connection acquisition timeout.",
-      "defaultValue": 30000,
+      "description": "AWS wrapper socket read timeout in milliseconds for primary and replica connections (converted to seconds for pgJDBC). No default is set by the starter; configure according to application query and lock-wait durations. Set to 0 to disable. This is not the HikariCP validation or connection acquisition timeout.",
       "type": "java.lang.Integer"
     }
   ],

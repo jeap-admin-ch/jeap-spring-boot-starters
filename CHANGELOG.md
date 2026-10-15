@@ -14,8 +14,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
-- Configure an overridable 30-second pgJDBC socket read timeout in the PostgreSQL AWS starter
-  for primary and replica data sources, retaining the `aurora-pg` dialect default.
+- Leave the PostgreSQL AWS socket read timeout unset by default; document application-specific
+  configuration for primary and replica data sources, retaining the `aurora-pg` dialect default.
 
 ### Deprecated
 

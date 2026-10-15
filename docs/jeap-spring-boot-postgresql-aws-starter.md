@@ -104,22 +104,21 @@ jeap:
 
 ### Socket read timeout
 
-The starter explicitly configures `socketTimeout=30000` (milliseconds) for the AWS wrapper, which converts it to 30 seconds for pgJDBC,
-shared by the primary and replica data sources. Applications can override it through
-`jeap.datasource.aws.wrapper.target-data-source-properties.socketTimeout`, for example
-with `60000` for 60 seconds, or use `0` to disable it. The `aurora-pg` dialect remains the default.
+The starter does not set a default `socketTimeout`. Applications can configure it through
+`jeap.datasource.aws.wrapper.target-data-source-properties.socketTimeout`, shared by the primary
+and replica data sources. The AWS wrapper accepts milliseconds and converts them to seconds for
+pgJDBC: for example, `60000` configures 60 seconds, while `0` disables the socket read timeout.
+The `aurora-pg` dialect remains the default.
 
-This setting bounds socket reads; it is separate from HikariCP's validation and connection
-acquisition timeouts. Choose a value that accommodates expected query execution and lock
-waits. Longer timeouts can also increase waiting time during network problems. See the
+Choose a value that accommodates the application's expected query execution and lock waits.
+A socket read timeout can close the connection even while a valid query is still running.
+It is separate from HikariCP's validation and connection acquisition timeouts. Longer timeouts
+can also increase waiting time during network problems. See the
 [pgJDBC connection parameters](https://jdbc.postgresql.org/documentation/use/).
 
-The successful 15-second Aurora lock-wait experiment used `socketTimeout=30`.
-In wrapper 4.4.0 that means 30 milliseconds, rounded down to zero seconds by
-`PgDriverHelper.applyKeepAliveAndTimeouts`, disabling the pgJDBC socket timeout.
-It therefore does not validate the new 30000-millisecond default; that AWS run remains pending.
-The driver conversion is covered by a test. Runtime JDBC network timeouts may be changed
-later and should also be measured immediately before the blocked statement.
+Leaving the property unset delegates timeout handling to the wrapper and target driver; it does
+not guarantee that the effective runtime network timeout remains zero. Runtime JDBC network
+timeouts may be changed later and should be measured immediately before a blocked statement.
 
 ### Dialect choice, failover exceptions and HikariCP
 
