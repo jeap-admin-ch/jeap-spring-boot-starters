@@ -141,9 +141,26 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
-- Default the AWS Advanced JDBC Wrapper dialect to `aurora-pg`, avoiding database-dialect auto-detection for Aurora
-  PostgreSQL. Applications using standard RDS PostgreSQL must override
-  `jeap.datasource.aws.wrapper.target-data-source-properties.wrapperDialect=rds-pg`.
+- Use the Aurora PostgreSQL dialect `aurora-pg` by default in the AWS Advanced JDBC Wrapper to support
+  Aurora cluster topology and connection management. **Breaking change.**
+
+### Migration Note
+
+The wrapper uses internal database connections to monitor Aurora's cluster topology, with a default
+socket read timeout of five seconds. In Wrapper 4.4.0, reuse of the same DataSource can unintentionally
+apply this timeout to application connections when no explicit socket timeout is configured.
+Keep `aurora-pg` for Aurora and explicitly configure
+`jeap.datasource.aws.wrapper.target-data-source-properties.socketTimeout`
+to accommodate the application's query and lock waits. For example, `30000` means 30 seconds;
+choose an application-specific value. The starter sets no default. `0` disables this socket read
+timeout; leaving the property unset does not prevent application connections from inheriting the monitoring value.
+
+Shorten transactions and lock holding times, for example with smaller batches in separate transactions
+where business atomicity permits. Starting with 25.18.0, safely repeatable transactional
+operations can use `@RetryOnDatabaseFailover`; alternatively, enable retries globally with
+`jeap.datasource.aws.failover-retry.enabled=true` if all affected operations are safe to repeat.
+Only eligible `08S02` failures are retried; unknown transaction outcomes (`08007`) are not.
+Retry complements, but does not replace, explicit timeout configuration.
 
 ## [24.33.0] - 2026-09-10
 
