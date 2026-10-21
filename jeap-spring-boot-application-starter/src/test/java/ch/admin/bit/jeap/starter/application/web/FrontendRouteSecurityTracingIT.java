@@ -15,10 +15,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.containsString;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
@@ -27,9 +29,14 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  * {@link FrontendRouteRedirectExceptionHandler} or by the static resource handler - are not reported to the
  * {@link RestSecurityResponseListener}, i.e. that they do not show up in the metric jeap_rest_endpoint_without_jwt,
  * while requests reaching a backend endpoint still are.
+ * <p>
+ * The tracer reports a request only after the filter chain has returned. A response with a body is already committed
+ * and flushed to the client at that point, so a trace may arrive shortly after the client received the response.
  */
 @SpringBootTest(classes = FrontendRouteSecurityTracingIT.TestApp.class, webEnvironment = RANDOM_PORT)
 class FrontendRouteSecurityTracingIT {
+
+    private static final Duration TRACE_TIMEOUT = Duration.ofSeconds(5);
 
     @LocalServerPort
     int localServerPort;
@@ -97,9 +104,10 @@ class FrontendRouteSecurityTracingIT {
                 .then().assertThat()
                 .statusCode(200);
 
-        assertThat(securityResponseListener.traces)
-                .extracting(RestResponseSecurityTrace::requestUriPattern)
-                .containsExactly("/api/data");
+        await().atMost(TRACE_TIMEOUT).untilAsserted(() ->
+                assertThat(securityResponseListener.traces)
+                        .extracting(RestResponseSecurityTrace::requestUriPattern)
+                        .containsExactly("/api/data"));
     }
 
     @Test
@@ -108,9 +116,10 @@ class FrontendRouteSecurityTracingIT {
                 .then().assertThat()
                 .statusCode(404);
 
-        assertThat(securityResponseListener.traces)
-                .extracting(RestResponseSecurityTrace::requestUriPattern)
-                .containsExactly("/api/missing-entity");
+        await().atMost(TRACE_TIMEOUT).untilAsserted(() ->
+                assertThat(securityResponseListener.traces)
+                        .extracting(RestResponseSecurityTrace::requestUriPattern)
+                        .containsExactly("/api/missing-entity"));
     }
 
     @Test
