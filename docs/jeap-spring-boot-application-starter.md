@@ -24,19 +24,29 @@ applied as a lowest-precedence property source, so an application can still over
 
 ### Reverse proxy / forward headers
 
-`ReverseProxyPropertiesEnvPostProcessor` (also an `EnvironmentPostProcessor`) sets defaults suited to
+`ReverseProxyPropertiesEnvPostProcessor` (also an `EnvironmentPostProcessor`) sets a default suited to
 jEAP apps deployed behind a load balancer / reverse proxy that performs TLS termination and sets the
 standard forwarding headers:
 
-| Property                               | Default  | Why                                                                                                                                                               |
-|----------------------------------------|----------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `server.tomcat.use-relative-redirects` | `true`   | Avoids HTTPS→HTTP protocol downgrade when Tomcat redirects the context root (e.g. `/svc` → `/svc/`) and reduces forwarding-header confusion in multi-proxy chains |
-| `server.forward-headers-strategy`      | `NATIVE` | Makes Spring reconstruct the original request URL from `X-Forwarded-*` headers                                                                                    |
+| Property                                   | Default      | Why                                                                                                                  |
+|--------------------------------------------|--------------|----------------------------------------------------------------------------------------------------------------------|
+| `server.request.header.forwarded.strategy` | `web-server` | Makes the web server (Tomcat) reconstruct the original request URL (scheme, host, port) from `X-Forwarded-*` headers |
 
-Relative redirects are the official jEAP default (from `jeap-spring-boot-parent` 18.2.0 onward): when a
-context-root redirect was sent as an absolute URL, Tomcat did not honour `X-Forwarded-Proto` and
-downgraded the scheme to HTTP. Emitting a relative `Location` (e.g. `/my-service/target`) fixes both
-the protocol-downgrade and the wrong-external-host problems. Both defaults can be overridden.
+Spring Boot only deduces this strategy on cloud platforms it detects, so jEAP sets it explicitly. The
+default is applied as a lowest-precedence property source, and only if the application sets neither
+`server.request.header.forwarded.strategy` nor the deprecated `server.forward-headers-strategy` in any
+property source (`application.yml`, profiles, config imports, system properties, environment variables
+such as `SERVER_REQUEST_HEADER_FORWARDED_STRATEGY` or `SERVER_FORWARDHEADERSSTRATEGY`, ...). Spring Boot
+refuses to start if both properties have a value, so jEAP never adds its default next to an
+application's own setting. To use Spring's `ForwardedHeaderFilter` or to ignore forwarded headers, set
+`server.request.header.forwarded.strategy` to `framework` or `none`. An application still setting
+`server.forward-headers-strategy` keeps working, but should move to the new property, as Spring Boot
+deprecated the old one.
+
+Redirects are relative: Spring Boot defaults `server.tomcat.servlet.use-relative-redirects` to `true`,
+so jEAP does not set it. A relative `Location` (e.g. `/my-service/target`) avoids the HTTPS→HTTP
+protocol downgrade when Tomcat redirects the context root (e.g. `/svc` → `/svc/`) and reduces
+forwarding-header confusion in multi-proxy chains. Do not set it to `false` behind a reverse proxy.
 
 ### Frontend route handling
 
@@ -94,7 +104,7 @@ The starter also raises `server.max-http-request-header-size` to `64KB` (large a
 ## Key classes
 
 - `DbPoolingDefaultsEnvPostProcessor` — HikariCP defaults (classpath-conditional)
-- `ReverseProxyPropertiesEnvPostProcessor` — relative redirects + `NATIVE` forward headers
+- `ReverseProxyPropertiesEnvPostProcessor` — `web-server` forwarded header strategy, unless the application sets one
 - `FrontendRouteRedirectExceptionHandler` / `FrontendRouteMatcher` — SPA deep-link handling
 
 ## Pitfalls
